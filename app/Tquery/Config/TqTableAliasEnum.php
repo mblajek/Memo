@@ -11,7 +11,13 @@ enum TqTableAliasEnum
     case updated_by;
 
     case facilities;
+    case facility;
     case last_login_facility;
+
+    case attributes;
+    case dictionaries;
+    case dictionary;
+    case positions;
 
     case members;
     case meetings;
@@ -34,7 +40,8 @@ enum TqTableAliasEnum
     {
         return match ($this) {
             self::created_by, self::updated_by => self::users,
-            self::last_login_facility, self::managed_by_facility => self::facilities,
+            self::facility, self::last_login_facility, self::managed_by_facility => self::facilities,
+            self::dictionary => self::dictionaries,
             self::error_log_entry => self::log_entries,
             default => $this,
             /* self::members => TqTableEnum::members,

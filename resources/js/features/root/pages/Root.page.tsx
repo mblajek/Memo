@@ -57,7 +57,7 @@ const SystemStatusUpdateNotification: VoidComponent = () => {
         }
         class="
           absolute m-3 p-2 w-56 bg-yellow-200 dark:bg-yellow-400 border border-input-border
-          rounded z-modal text-sm hover:text-memo-active flex items-stretch gap-1
+          rounded-sm z-modal text-sm hover:text-memo-active flex items-stretch gap-1
         "
         style={{"transition-duration": "300ms"}}
         onClick={() => location.reload()}

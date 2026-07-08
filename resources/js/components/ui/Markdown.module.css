@@ -1,0 +1,118 @@
+@reference "/resources/js/index.css";
+
+@keyframes blink {
+  to {
+    background-color: var(--tc-memo-active);
+  }
+}
+
+.markdown {
+  @apply text-justify;
+
+  /* Bottom margin shared by every block-level element. */
+  :is(h1, h2, h3, h4, h5, h6, p, blockquote, pre, ul, ol, hr, table, img) {
+    @apply mb-3;
+  }
+
+  h1 {
+    @apply text-3xl font-bold;
+  }
+
+  h2 {
+    @apply text-2xl font-bold mt-1;
+  }
+
+  h3 {
+    @apply text-xl font-bold mt-1;
+  }
+
+  h4 {
+    @apply text-lg font-bold;
+  }
+
+  h5 {
+    @apply font-bold;
+  }
+
+  h6 {
+    @apply font-semibold;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    a {
+      color: initial;
+    }
+
+    @apply -mx-0.5 px-0.5 rounded-sm;
+    &.activeHeader {
+      animation-duration: 230ms;
+      animation-name: blink;
+      animation-iteration-count: 6;
+      animation-direction: alternate;
+      animation-timing-function: ease-in-out;
+      background-color: var(--tc-hover);
+    }
+  }
+
+  a:not([href]) {
+    @apply no-underline;
+  }
+
+  hr {
+    @apply border border-gray-500;
+  }
+
+  blockquote {
+    @apply text-gray-700 pl-2 border-l-4 border-gray-300 italic;
+  }
+
+  pre {
+    @apply bg-gray-100 border border-gray-400 rounded-sm p-0.5;
+    code {
+      @apply border-0;
+    }
+  }
+
+  code {
+    @apply bg-gray-100 border border-gray-300 rounded-sm px-0.5 pb-0.5 text-sm text-gray-700 whitespace-pre;
+  }
+
+  ul {
+    @apply pl-6;
+    list-style-type: disc;
+  }
+
+  ul ul,
+  ol ul {
+    list-style-type: circle;
+  }
+
+  ol {
+    @apply pl-6 list-decimal;
+  }
+
+  strong {
+    @apply font-bold;
+  }
+
+  em {
+    @apply italic;
+  }
+
+  img {
+    @apply mx-auto rounded-lg;
+  }
+
+  table {
+    @apply table w-full;
+  }
+
+  th,
+  td {
+    @apply px-1 py-0.5 border border-gray-500 text-left;
+  }
+
+  th {
+    @apply py-1 font-bold;
+  }
+}

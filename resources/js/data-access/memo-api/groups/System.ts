@@ -1,4 +1,4 @@
-import {SolidQueryOptions} from "@tanstack/solid-query";
+import {QueryOptions} from "@tanstack/solid-query";
 import {V1} from "data-access/memo-api/config/v1.instance";
 import {probablyLoggedIn} from "state/probablyLoggedIn.state";
 import {SystemStatusResource} from "../resources/SystemStatusResource";
@@ -23,7 +23,7 @@ export namespace System {
       staleTime: 10 * 60 * 1000,
       refetchOnMount: false,
       enabled: probablyLoggedIn(),
-    }) satisfies SolidQueryOptions;
+    }) satisfies QueryOptions;
 
   const getDictionariesList = (config?: Api.Config) =>
     V1.get<Api.Response.GetList<DictionaryResource>>("/system/dictionary/list", config).then(parseListResponse);
@@ -34,7 +34,7 @@ export namespace System {
       // The dictionaries normally don't change.
       staleTime: 3600 * 1000,
       refetchOnMount: false,
-    }) satisfies SolidQueryOptions;
+    }) satisfies QueryOptions;
 
   const getAttributesList = (config?: Api.Config) =>
     V1.get<Api.Response.GetList<AttributeResource>>("/system/attribute/list", config).then(parseListResponse);
@@ -45,7 +45,7 @@ export namespace System {
       // The attributes normally don't change.
       staleTime: 3600 * 1000,
       refetchOnMount: false,
-    }) satisfies SolidQueryOptions;
+    }) satisfies QueryOptions;
 
   const getStatus = (config?: Api.Config) =>
     V1.get<Api.Response.Get<SystemStatusResource>>("/system/status", config).then(parseGetResponse);
@@ -56,7 +56,7 @@ export namespace System {
       staleTime: 0,
       refetchOnWindowFocus: true,
       refetchInterval: 60 * 1000,
-    }) satisfies SolidQueryOptions;
+    }) satisfies QueryOptions;
 
   export const log = (req: LogRequest) => V1.post<Api.Response.Post<LogResponse>>("/system/log", req);
 

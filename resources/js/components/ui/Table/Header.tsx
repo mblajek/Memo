@@ -89,7 +89,7 @@ export const Header: VoidComponent<Props> = (props) => {
         <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
           {(filterControl) => (
             <div class="flex items-stretch min-h-0 gap-0.5">
-              <div class="flex-grow basis-0 overflow-y-auto">{filterControl()()}</div>
+              <div class="grow basis-0 overflow-y-auto">{filterControl()()}</div>
               <FilterIconButton
                 class="self-end mb-1"
                 isFiltering={!!props.filter![0]()}

@@ -627,7 +627,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         control = elem;
         installFocusHandlers(elem);
       }}
-      class="outline-none"
+      class="outline-hidden"
       tabindex="0"
       onKeyDown={handleKey}
     >
@@ -710,7 +710,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                 // The onClick handler from the whole component is used to open/close, as well as Up/Down arrows.
                 tabindex="-1"
               >
-                <AiFillCaretDown class={cx("text-black", isDisabled() ? "text-opacity-30" : undefined)} />
+                <AiFillCaretDown class={isDisabled() ? "text-black/30" : "text-black"} />
               </Button>
             </div>
           );
@@ -733,7 +733,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                   <Match when={props.multiple}>
                     <div
                       class={cx(
-                        "grow min-w-8 h-full border border-input-border rounded overflow-hidden flex flex-wrap items-center gap-0.5 relative",
+                        "grow min-w-8 h-full border border-input-border rounded-sm overflow-hidden flex flex-wrap items-center gap-0.5 relative",
                         props.small ? "min-h-small-input" : "min-h-big-input",
                         isDisabled() ? "bg-disabled" : "bg-white",
                         isInvalid() ? "border-red-400" : undefined,
@@ -745,7 +745,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                     >
                       <For each={chipValues()}>
                         {(chipValue) => (
-                          <div class="px-1 border border-input-border rounded flex gap-0.5">
+                          <div class="px-1 border border-input-border rounded-sm flex gap-0.5">
                             <div class="wrapTextAnywhere">{getValueLabel(chipValue)}</div>
                             <Button
                               class="px-0.5"
@@ -755,10 +755,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                                 delSelection(chipValue);
                               }}
                             >
-                              <ImCross
-                                class={cx("text-black", isDisabled() ? "text-opacity-30" : undefined)}
-                                size="8"
-                              />
+                              <ImCross class={isDisabled() ? "text-black/30" : "text-black"} size="8" />
                             </Button>
                           </div>
                         )}
@@ -768,7 +765,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         {...inputProps}
                         // This is just for user entry, and not the actual form value.
                         name=""
-                        class="grow shrink basis-0 px-1 w-8 bg-inherit outline-none rounded"
+                        class="grow shrink basis-0 px-1 w-8 bg-inherit outline-hidden rounded-sm"
                         value={filterText()}
                         onInput={(e) => setFilterText(e.currentTarget.value)}
                         placeholder={selection().size ? undefined : props.placeholder}
@@ -782,7 +779,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                   <Match when="single">
                     <div
                       class={cx(
-                        "grow min-w-8 h-full border border-input-border rounded relative grid",
+                        "grow min-w-8 h-full border border-input-border rounded-sm relative grid",
                         props.small ? "min-h-small-input" : "min-h-big-input",
                         isDisabled() ? "bg-disabled" : "bg-white",
                         isInvalid() ? "border-red-400" : undefined,
@@ -810,7 +807,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         {...inputProps}
                         // This is just for user entry, and not the actual form value.
                         name=""
-                        class="col-start-1 row-start-1 min-w-0 bg-transparent rounded"
+                        class="col-start-1 row-start-1 min-w-0 bg-transparent rounded-sm"
                         style={{padding: paddingStyle()}}
                         value={filterText()}
                         onInput={(e) => setFilterText(e.currentTarget.value)}
@@ -837,7 +834,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         installFocusHandlers(elem);
                       }}
                       class={cx(
-                        "z-dropdown max-w-fit border rounded overflow-x-clip overflow-y-auto shadow-xl",
+                        "z-dropdown max-w-fit border border-gray-200 rounded-sm overflow-x-clip overflow-y-auto shadow-xl",
                         props.isLoading ? "bg-gray-200" : "bg-popup-bg",
                       )}
                       style={posStyle()}
@@ -858,14 +855,14 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                           <li
                             id={elemId(item.value)}
                             class={cx(
-                              "px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip text-black",
+                              "px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip",
+                              props.isLoading ? "text-black/40" : item.disabled ? "text-black/60" : "text-black",
                               selection().has(item.value) ? "border-s-memo-active bg-select" : undefined,
                               item === focusedItem()
                                 ? ["bg-hover", isKeyboardFocus() ? "border-e-gray-400" : undefined]
                                 : undefined,
                               props.small ? "py-0.5" : "py-1",
                               item.disabled || props.isLoading ? "cursor-default" : "cursor-pointer",
-                              props.isLoading ? "text-opacity-40" : item.disabled ? "text-opacity-60" : undefined,
                             )}
                             tabindex="0"
                             role="option"

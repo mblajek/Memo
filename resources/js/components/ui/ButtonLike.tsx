@@ -26,7 +26,6 @@ export const ButtonLike: ParentComponent<ButtonLikeProps> = (props) => {
   return (
     <div
       {...htmlAttributes.merge(props, {
-        class: "inline-block",
         onKeyDown: (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();

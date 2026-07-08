@@ -262,7 +262,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       let titleLines: string[];
       if (conflict === "unknown") {
         iconType = BiRegularCalendarAlt;
-        styleClass = "text-black text-opacity-50";
+        styleClass = "text-black/50";
         titleLines = [t("meetings.conflicts.unknown")];
       } else {
         iconType = BiRegularCalendarCheck;

@@ -1,6 +1,6 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent, VoidComponent, splitProps} from "solid-js";
-import {applyTextOpacity, bleachColor, randomColor} from "./colors";
+import {bleachColor, randomColor} from "./colors";
 
 interface TagProps extends htmlAttributes.div {
   readonly color: string;
@@ -8,16 +8,15 @@ interface TagProps extends htmlAttributes.div {
 
 export const Tag: ParentComponent<TagProps> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["color"]);
-  const colorWithOpacity = () => applyTextOpacity(props.color);
   return (
     <div
       {...htmlAttributes.merge(divProps, {
         class: "border py-0.5 px-1 inline-block",
         style: {
-          "color": colorWithOpacity(),
-          "border-color": colorWithOpacity(),
+          "color": props.color,
+          "border-color": props.color,
           "border-radius": "0.8em",
-          "background-color": bleachColor(colorWithOpacity(), {amount: 0.85}),
+          "background-color": bleachColor(props.color, {amount: 0.85}),
         },
       })}
     />

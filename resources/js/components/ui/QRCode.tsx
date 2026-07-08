@@ -341,7 +341,7 @@ export const QRCode: VoidComponent<Props> = (props) => {
   }
 
   return (
-    <NoDarkTheme class="rounded overflow-clip grid">
+    <NoDarkTheme class="rounded-sm overflow-clip grid">
       <canvas
         class="col-start-1 row-start-1"
         ref={(elem) => {

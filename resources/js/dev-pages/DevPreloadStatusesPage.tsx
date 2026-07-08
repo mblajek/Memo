@@ -24,7 +24,7 @@ export default (() => {
             ];
             return (
               <>
-                <div class="text-xs text-black text-opacity-40">
+                <div class="text-xs text-black/40">
                   {match[1]}
                   <span class="text-sm text-black">{match[2]}</span>
                   {match[3]}

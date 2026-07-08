@@ -206,11 +206,7 @@ export function useWeeklyTimeTablesActions() {
             <ThingsList
               things={getWeekdays()}
               map={({weekday, exampleDay}) => (
-                <span
-                  class={
-                    action.weekdaysSelection.get(weekday)!() ? undefined : "line-through text-black text-opacity-40"
-                  }
-                >
+                <span class={action.weekdaysSelection.get(weekday)!() ? undefined : "line-through text-black/40"}>
                   {exampleDay.weekdayLong}
                 </span>
               )}

@@ -386,7 +386,7 @@ export default (() => {
                 when={weekDate().toMillis() !== selectedWeekDate()?.toMillis()}
                 fallback={
                   <Button
-                    class="minimal !px-1 my-0.5 !border-select !bg-memo-active !text-white"
+                    class="minimal px-1! my-0.5 border-select! bg-memo-active! text-white!"
                     onClick={[setSelectedWeekDate, undefined]}
                     title={t("facility_user.weekly_time_tables.selected_week_click_to_deselect")}
                   >
@@ -397,7 +397,7 @@ export default (() => {
                 <PopOver
                   trigger={(popOver) => (
                     <Button
-                      class={cx("minimal !px-1 my-0.5", popOver.isOpen ? "!bg-select" : undefined)}
+                      class={cx("minimal px-1! my-0.5", popOver.isOpen ? "bg-select!" : undefined)}
                       title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
@@ -578,8 +578,13 @@ export default (() => {
                               class={cx(
                                 "whitespace-nowrap",
                                 index() ? "-mt-1" : undefined,
-                                conflict() ? "text-red-600" : "text-black",
-                                weekdaySelected() ? undefined : "text-opacity-20",
+                                conflict()
+                                  ? weekdaySelected()
+                                    ? "text-red-600"
+                                    : "text-red-600/20"
+                                  : weekdaySelected()
+                                    ? "text-black"
+                                    : "text-black/20",
                               )}
                             >
                               <AlignedTime dayMinute={meeting.startDayminute} />

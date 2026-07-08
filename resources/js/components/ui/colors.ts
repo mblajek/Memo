@@ -31,16 +31,3 @@ export function randomColor({seedString, lightness, chroma}: RandomColorParams) 
 export function bleachColor(baseColor: string, {amount = 0.8} = {}) {
   return `color-mix(in srgb, ${baseColor}, white ${100 * amount}%)`;
 }
-
-/** Applies the opacity to the CSS color. The opacity can be a CSS expression, e.g. `var(--something)`. */
-export function applyOpacity(baseColor: string, opacity: number | string) {
-  return `rgb(from ${baseColor} r g b / ${opacity})`;
-}
-
-export function applyTextOpacity(baseColor: string) {
-  return applyOpacity(baseColor, "var(--tw-text-opacity, 1)");
-}
-
-export function applyBgOpacity(baseColor: string) {
-  return applyOpacity(baseColor, "var(--tw-bg-opacity, 1)");
-}

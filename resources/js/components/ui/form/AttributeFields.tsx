@@ -410,7 +410,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                             <Capitalize text={relevantAttributes().get(separatorBeforeId())?.attribute.label} />
                             <Show when={groupFolding?.enabled}>
                               <ButtonLike
-                                class="minimal !p-1"
+                                class="minimal p-1!"
                                 onClick={() => setIsFolded((f) => !f)}
                                 title={isFolded() ? t("actions.expand") : t("actions.collapse")}
                               >

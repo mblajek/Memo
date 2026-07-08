@@ -106,7 +106,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
         $config = parent::getConfig();
         $config->addQuery(
             type: TqDataTypeEnum::bool,
-            columnOrQuery: fn(string $tableName) => "`managed_by_facility_id` <=> '{$this->facility->id}'",
+            columnOrQuery: fn(string $tableName) => "`$tableName`.`managed_by_facility_id` <=> '{$this->facility->id}'",
             columnAlias: 'is_managed_by_this_facility',
         );
         self::addAttendantFields($this->facility, $config);

@@ -37,7 +37,7 @@ export const SearchInput: VoidComponent<Props> = (allProps) => {
         autocapitalize="off"
         spellcheck={false}
         {...htmlAttributes.merge(inputProps, {
-          class: cx("px-1 grow", (props.clearButton ?? true) ? "!pr-6" : undefined),
+          class: cx("px-1 grow", (props.clearButton ?? true) ? "pr-6!" : undefined),
           onInput: setNow,
           onChange: setNow,
         })}

@@ -84,6 +84,11 @@ export const Maurtue: VoidComponent<Props> = (allProps) => {
   // wipes on the visible canvas don't affect the persistent mask state.
   const maskBuffer = document.createElement("canvas");
   const maskBufferCtx = maskBuffer.getContext("2d")!;
+  // A fresh canvas reports a default 300x150 size before we ever draw to it, so dimension checks
+  // alone can't tell first init from a resize. Without this flag, the first init would snapshot
+  // the blank default-size buffer and paste its transparent pixels into the center of the new
+  // buffer, leaving a 300x150 transparent hole.
+  let maskBufferInitialized = false;
   let maskCanvas: HTMLCanvasElement | undefined;
   let maskCtx: CanvasRenderingContext2D | undefined;
   let maurCtx: CanvasRenderingContext2D | undefined;
@@ -108,7 +113,7 @@ export const Maurtue: VoidComponent<Props> = (allProps) => {
     }
     // Snapshot the existing buffer (persistent across visible-canvas resizes).
     let snapshot: HTMLCanvasElement | undefined;
-    if (maskBuffer.width > 0 && maskBuffer.height > 0) {
+    if (maskBufferInitialized) {
       snapshot = document.createElement("canvas");
       snapshot.width = maskBuffer.width;
       snapshot.height = maskBuffer.height;
@@ -117,6 +122,7 @@ export const Maurtue: VoidComponent<Props> = (allProps) => {
     // Resize wipes the buffer to fully transparent.
     maskBuffer.width = w;
     maskBuffer.height = h;
+    maskBufferInitialized = true;
     maskBufferCtx.globalCompositeOperation = "source-over";
     if (snapshot) {
       // Paste the snapshot onto the transparent buffer first so its per-pixel alpha (the carved
@@ -165,28 +171,22 @@ export const Maurtue: VoidComponent<Props> = (allProps) => {
     }
     const [w, h] = size;
     const margin = 30;
-    const edge = Math.floor(Math.random() * 4);
-    let x: number;
-    let y: number;
-    let baseAngle: number;
-    if (edge === 0) {
-      x = Math.random() * w;
-      y = -margin;
-      baseAngle = Math.PI / 2;
-    } else if (edge === 1) {
-      x = w + margin;
-      y = Math.random() * h;
-      baseAngle = Math.PI;
-    } else if (edge === 2) {
-      x = Math.random() * w;
-      y = h + margin;
-      baseAngle = -Math.PI / 2;
-    } else {
-      x = -margin;
-      y = Math.random() * h;
-      baseAngle = 0;
-    }
-    const angle = baseAngle + (Math.random() - 0.5) * Math.PI * 0.5;
+    const cx = w / 2;
+    const cy = h / 2;
+    // Spawn just outside the border at the point where a ray cast from the center at a uniformly
+    // random angle meets the border. This distributes spawns by the angle each edge subtends from
+    // the center, so the long edges (which span the wider axis) get proportionally more maur, and
+    // it tapers spawn density toward the corners (a corner is reached by only a narrow sliver of
+    // angles) — avoiding both the edge bias and the corner over-coverage of per-edge spawning.
+    const theta = Math.random() * 2 * Math.PI;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    // Distance from center along the ray to the nearest border (whichever axis is hit first).
+    const t = Math.min(cx / Math.abs(cos), cy / Math.abs(sin));
+    const x = cx + (t + margin) * cos;
+    const y = cy + (t + margin) * sin;
+    // Head back toward the center, with the same spread as before.
+    const angle = theta + Math.PI + (Math.random() - 0.5) * Math.PI * 0.5;
     maur.push({x, y, angle, angleVel: 0, age: 0});
   }
 

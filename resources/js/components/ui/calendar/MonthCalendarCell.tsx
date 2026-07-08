@@ -59,9 +59,14 @@ export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
           </div>
           <Button
             class={cx(
-              "bg-inherit px-0.5 rounded font-semibold flex gap-0.5 items-center text-base -mb-0.5",
-              props.day.isWeekend || holidays.isHoliday(props.day) ? "text-red-800" : "text-black",
-              isThisMonth() ? undefined : "text-opacity-50",
+              "bg-inherit px-0.5 rounded-sm font-semibold flex gap-0.5 items-center text-base -mb-0.5",
+              props.day.isWeekend || holidays.isHoliday(props.day)
+                ? isThisMonth()
+                  ? "text-red-800"
+                  : "text-red-800/50"
+                : isThisMonth()
+                  ? "text-black"
+                  : "text-black/50",
               holidays.isHoliday(props.day)
                 ? ["underline decoration-1", props.onDateClick ? "hover:decoration-2" : undefined]
                 : props.onDateClick

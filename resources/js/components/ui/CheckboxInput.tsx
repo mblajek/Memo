@@ -17,7 +17,7 @@ export const CheckboxInput: VoidComponent<Props> = (allProps) => {
       <input
         type="checkbox"
         {...htmlAttributes.merge(inputProps, {
-          class: "m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400",
+          class: "m-px aria-invalid:outline aria-invalid:outline-red-400",
           onChange: (e) => props.onChecked?.((e.target as HTMLInputElement).checked),
         })}
       />{" "}

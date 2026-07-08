@@ -10,7 +10,7 @@ import {typed} from "components/utils/typed";
 import {FilterH, filterHToObject} from "data-access/memo-api/tquery/filter_utils";
 import {createComputed, createMemo, createSignal, VoidComponent} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
 import {makeSelectItem} from "./select_items";
 import {FilterControlProps, FilterHWithState} from "./types";

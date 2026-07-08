@@ -1,3 +1,5 @@
+@reference "/resources/js/index.css";
+
 .tippy-box[data-theme^="memo"] {
   --bg-color: color-mix(in srgb, var(--tc-select), white 30%);
 

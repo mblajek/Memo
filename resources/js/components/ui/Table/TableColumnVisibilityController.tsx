@@ -75,8 +75,8 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             <actionIcons.Search class="shrink-0 px-0.5" size="24" />
             <SearchInput
               ref={searchInput}
-              divClass="flex-grow"
-              class="outline-none"
+              divClass="grow"
+              class="outline-hidden"
               value={search()}
               onValueChange={setSearch}
               placeholder={t("tables.columns_search.placeholder")}
@@ -103,7 +103,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                   <label
                     class={cx(
                       "px-2 pt-0.5 hover:bg-hover flex justify-between gap-2 items-baseline select-none",
-                      selectBg() ? "!bg-select" : undefined,
+                      selectBg() ? "bg-select!" : undefined,
                     )}
                     use:hoverSignal={hover}
                   >
@@ -231,7 +231,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
     <PopOver
       trigger={(popOver) => (
         <Button
-          class="rounded px-2 border border-input-border pressedWithShadow"
+          class="rounded-sm px-2 border border-input-border pressedWithShadow"
           onClick={popOver.open}
           disabled={!table.getAllLeafColumns().length}
         >

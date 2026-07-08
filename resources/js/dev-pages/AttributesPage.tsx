@@ -1,180 +1,153 @@
-import {useQuery} from "@tanstack/solid-query";
-import {createSolidTable} from "@tanstack/solid-table";
-import {createColumnHelper} from "@tanstack/table-core";
+import {A} from "@solidjs/router";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {CheckboxInput} from "components/ui/CheckboxInput";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
-import {BigSpinner} from "components/ui/Spinner";
-import {Header} from "components/ui/Table/Header";
-import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
-import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
-import {QueryBarrier} from "components/utils/QueryBarrier";
-import {Attribute} from "data-access/memo-api/attributes";
-import {System} from "data-access/memo-api/groups/System";
-import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
-import {AttributeTypeView} from "dev-pages/AttributeTypeView";
+import {createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
+import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {useLangFunc} from "components/utils/lang";
+import {ScrollableCell, useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
-import {createMemo, createSignal, Setter, Show, VoidComponent} from "solid-js";
-import {Select} from "../components/ui/form/Select";
-import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
-import {filterByFacility, textSort, useAttrValueFormatter} from "./util";
+import {createComputed, createSignal, Show, VoidComponent} from "solid-js";
+import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
+import {thisFacilityOnlyFilter} from "./util";
+
+const BASE_HEIGHT = "6rem";
+
+/** Pretty-prints the stored JSON metadata, falling back to the raw text when it is not valid JSON. */
+function formatMetadata(value: string): string {
+  try {
+    return JSON.stringify(JSON.parse(value), null, 2);
+  } catch {
+    return value;
+  }
+}
 
 export default (() => {
-  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
-  function getFacility(facilityId: string) {
-    return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
-  }
-  const attributes = useAllAttributes();
-  const models = createMemo(() => [...new Set(Array.from(attributes() || [], (a) => a.model))].sort());
-  const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
+  const t = useLangFunc();
+  const {getCreatedUpdatedColumns} = useTableColumns();
+  const activeFacility = useActiveFacility();
+  const [thisFacilityOnly, setThisFacilityOnly] = createSignal(false);
   createPersistence({
-    value: onlyActiveFacility,
-    onLoad: setOnlyActiveFacility,
-    storage: localStorageStorage("DEVPages:onlyActiveFacility"),
+    value: thisFacilityOnly,
+    onLoad: setThisFacilityOnly,
+    storage: localStorageStorage("AttrAndDict:onlyActiveFacility"),
   });
-  const attrValueFormatter = useAttrValueFormatter();
-  const tableCells = useTableCells();
-  const h = createColumnHelper<Attribute>();
-
-  const table = createMemo(() =>
-    createSolidTable({
-      ...getBaseTableOptions<Attribute>({
-        features: {sorting: [{id: "Name", desc: false}]},
-        defaultColumn: AUTO_SIZE_COLUMN_DEFS,
-      }),
-      get data() {
-        return filterByFacility(attributes(), onlyActiveFacility());
-      },
-      columns: [
-        h.accessor("id", {
-          id: "Id",
-          cell: tableCells.uuid(),
-          enableSorting: false,
-          size: 60,
-        }),
-        h.accessor((p) => p.resource.defaultOrder, {
-          id: "Order",
-          cell: cellFunc<number, Attribute>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
-          sortDescFirst: false,
-        }),
-        h.accessor("name", {
-          id: "Name",
-          ...textSort(),
-        }),
-        h.accessor("label", {
-          id: "Label",
-          cell: cellFunc<string, Attribute>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
-          ...textSort(),
-        }),
-        h.accessor("resource.facilityId", {
-          id: "Facility",
-          cell: cellFunc<string, Attribute>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
-            </PaddedCell>
-          )),
-          ...textSort(),
-        }),
-        h.accessor("isFixed", {
-          id: "Fixed",
-        }),
-        h.accessor("model", {
-          id: "Model",
-          ...textSort(),
-          header: (ctx) => (
-            <Header
-              ctx={ctx}
-              filter={[ctx.column.getFilterValue, ctx.column.setFilterValue as Setter<unknown>]}
-              filterControl={() => (
-                <Select
-                  name="modelFilter"
-                  items={models().map((model) => ({value: model}))}
-                  // Clearable by the "reset filter" button in the header.
-                  nullable={false}
-                  onValueChange={ctx.column.setFilterValue}
-                  small
-                />
-              )}
-            />
-          ),
-          filterFn: (row, columnId, filter: string) => row.getValue(columnId) === filter,
-        }),
-        h.accessor("apiName", {
-          id: "API name",
-          ...textSort(),
-        }),
-        h.accessor("type", {
-          id: "Type",
-          cell: cellFunc<AttributeType, Attribute>((props) => (
-            <PaddedCell>
-              <AttributeTypeView attr={props.row as Attribute} />
-            </PaddedCell>
-          )),
-          ...textSort(),
-        }),
-        h.accessor("multiple", {
-          id: "Multiple",
-          cell: cellFunc<boolean, Attribute>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v} fallback={<EmptyValueSymbol />}>
-                {(v) => String(v())}
-              </ShowCellVal>
-            </PaddedCell>
-          )),
-        }),
-        h.accessor("requirementLevel", {
-          id: "Req. level",
-          ...textSort(),
-        }),
-        h.accessor("description", {
-          id: "Description",
-          cell: cellFunc<string, Attribute>((props) => (
-            <PaddedCell class="whitespace-pre-wrap wrapText">
-              <ShowCellVal v={props.v}>{(v) => v()}</ShowCellVal>
-            </PaddedCell>
-          )),
-          ...textSort(),
-          size: 400,
-        }),
-        h.accessor("metadata", {
-          id: "Metadata",
-          cell: cellFunc<Record<string, unknown>, Attribute>((props) => (
-            <PaddedCell class="whitespace-pre-wrap font-mono text-xs">
-              <ShowCellVal v={props.v}>{(v) => JSON.stringify(v(), null, 2)}</ShowCellVal>
-            </PaddedCell>
-          )),
-        }),
-        ...(attributes()
-          ?.getForModel("attribute")
-          .map((attr) =>
-            h.accessor((row) => attr.readFrom(row.resource), {
-              id: `@${attr.name}`,
-              cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
-            }),
-          ) || []),
-      ],
-    }),
-  );
-
+  createComputed(() => {
+    if (!activeFacility()) {
+      setThisFacilityOnly(false);
+    }
+  });
   return (
-    <QueryBarrier queries={[facilitiesQuery]}>
+    <>
       <AppTitlePrefix prefix="Attributes" />
-      <div class="contents text-sm">
-        <Show when={attributes()} fallback={<BigSpinner />}>
-          <Table
-            table={table()}
-            mode="standalone"
-            aboveTable={() => (
-              <CheckboxInput
-                checked={onlyActiveFacility()}
-                onChecked={setOnlyActiveFacility}
-                label="Only active facility"
-              />
+      <TQueryTable
+        mode="standalone"
+        staticPrefixQueryKey={["system", "attribute"]}
+        staticEntityURL="system/attribute"
+        staticPersistenceKey="attributes"
+        staticTranslations={createTableTranslations("attribute")}
+        columns={[
+          {name: "id", initialVisible: false},
+          {name: "defaultOrder", columnDef: {enableColumnFilter: false, sortDescFirst: false, size: 100}},
+          {name: "name"},
+          {name: "facility.id", initialVisible: false, columnGroups: "facility.name"},
+          {name: "facility.name", columnGroups: true},
+          {name: "isFixed", columnDef: {size: 100}},
+          {name: "table", columnGroups: true},
+          {
+            name: "apiName",
+            columnDef: {
+              cell: cellFunc<string>((props) => (
+                <PaddedCell class="font-mono text-xs">
+                  <ShowCellVal v={props.v}>{(v) => <>{v()}</>}</ShowCellVal>
+                </PaddedCell>
+              )),
+              // Displayed camelCased but stored snake_cased, so a text filter on the raw value would mislead.
+              enableColumnFilter: false,
+              size: 300,
+            },
+          },
+          {
+            name: "type",
+            extraDataColumns: ["dictionary.id", "dictionary.name"],
+            columnGroups: true,
+            columnDef: {
+              cell: cellFunc<string>((props) => (
+                <PaddedCell>
+                  <ShowCellVal v={props.v}>
+                    {(v) => (
+                      <Show
+                        when={v() === "dict" && (props.row["dictionary.id"] as string | null)}
+                        fallback={<>{v()}</>}
+                      >
+                        {(dictionaryId) => (
+                          <>
+                            dict:{" "}
+                            <A href={`/dev/dictionaries/${dictionaryId()}`}>{props.row["dictionary.name"] as string}</A>
+                          </>
+                        )}
+                      </Show>
+                    )}
+                  </ShowCellVal>
+                </PaddedCell>
+              )),
+            },
+          },
+          {name: "dictionary.id", initialVisible: false},
+          {name: "dictionary.name", initialVisible: false},
+          {name: "isMultiValue"},
+          {name: "requirementLevel", columnGroups: true},
+          {
+            name: "description",
+            columnDef: {
+              cell: cellFunc<string>((props) => (
+                <ScrollableCell class="whitespace-pre-wrap wrapText" baseHeight={BASE_HEIGHT}>
+                  <ShowCellVal v={props.v}>{(v) => <>{v()}</>}</ShowCellVal>
+                </ScrollableCell>
+              )),
+              size: 400,
+            },
+          },
+          {
+            name: "metadata",
+            columnDef: {
+              cell: cellFunc<string>((props) => (
+                <ScrollableCell class="font-mono text-xs whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
+                  <ShowCellVal v={props.v}>{(v) => <>{formatMetadata(v())}</>}</ShowCellVal>
+                </ScrollableCell>
+              )),
+              // Displayed with camelCased keys but stored snake_cased, so filtering the raw value would mislead.
+              enableColumnFilter: false,
+              size: 300,
+            },
+          },
+          ...getCreatedUpdatedColumns(),
+        ]}
+        initialSort={[
+          {id: "table", desc: false},
+          {id: "defaultOrder", desc: false},
+        ]}
+        intrinsicFilter={thisFacilityOnlyFilter(thisFacilityOnly(), activeFacilityId())}
+        customSectionBelowTable={
+          <Show when={activeFacility()}>
+            {(activeFacility) => (
+              <div class="flex items-center ml-2">
+                <CheckboxInput
+                  checked={thisFacilityOnly()}
+                  onChecked={setThisFacilityOnly}
+                  label={
+                    <span class="font-normal">
+                      {t("attributes.attribs_and_dicts.in_this_facility_only", {facilityName: activeFacility().name})}
+                    </span>
+                  }
+                />
+              </div>
             )}
-          />
-        </Show>
-      </div>
-    </QueryBarrier>
+          </Show>
+        }
+        savedViews
+      />
+    </>
   );
 }) satisfies VoidComponent;

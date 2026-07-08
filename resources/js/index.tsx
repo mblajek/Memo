@@ -1,5 +1,5 @@
 /* @refresh reload */
-import "./index.scss";
+import "./index.css";
 import "./init_luxon";
 import "./init_solid";
 import "./init_types";

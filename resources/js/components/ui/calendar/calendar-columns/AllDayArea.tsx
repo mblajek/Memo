@@ -75,7 +75,7 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
         </div>
         <Show when={showAddButton()}>
           <Button
-            class="bg-white hover:bg-hover text-grey-text border border-input-border rounded flex justify-center"
+            class="bg-white hover:bg-hover text-grey-text border border-input-border rounded-sm flex justify-center"
             title={t("actions.add")}
           >
             <actionIcons.Add />

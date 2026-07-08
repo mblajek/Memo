@@ -5,7 +5,7 @@ import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/ty
 import {Api} from "data-access/memo-api/types";
 import {createComputed} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {FilterControl, FilterHWithState} from "./types";
 
 type Filter = FilterHWithState<{value: string}, NullColumnFilter | UuidColumnFilter>;
@@ -45,7 +45,7 @@ export const UuidFilterControl: FilterControl<Filter> = (props) => {
           name={filterFieldNames.get(`val_${props.schema.name}`)}
           type="text"
           autocomplete="off"
-          class="h-full w-full border border-input-border rounded font-mono"
+          class="h-full w-full border border-input-border rounded-sm font-mono"
           value={value()}
           onInput={({target: {value}}) => setValue(value)}
         />

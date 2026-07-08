@@ -15,7 +15,7 @@ export const TableFiltersClearButton: VoidComponent<Props> = (props) => {
   return (
     <FilterIconButton
       class={cx(
-        "border border-input-border rounded px-1",
+        "border border-input-border rounded-sm px-1",
         props.columnsWithActiveFilters.length ? "border-memo-active" : undefined,
       )}
       isFiltering={props.columnsWithActiveFilters.length > 0}

@@ -1,4 +1,4 @@
-import {keepPreviousData, SolidQueryOptions} from "@tanstack/solid-query";
+import {keepPreviousData, QueryOptions} from "@tanstack/solid-query";
 import {V1} from "data-access/memo-api/config/v1.instance";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {MemberResource} from "../resources/member.resource";
@@ -89,17 +89,17 @@ export namespace User {
       refetchOnMount: false,
       refetchOnWindowFocus: true,
       refetchInterval: 60 * 1000,
-    }) satisfies SolidQueryOptions<GetStatusData>;
+    }) satisfies QueryOptions<GetStatusData>;
 
   export const storageListQueryOptions = () =>
     ({
       queryFn: () => storageList(),
       queryKey: keys.storageList(),
-    }) satisfies SolidQueryOptions<readonly string[]>;
+    }) satisfies QueryOptions<readonly string[]>;
 
   export const storageEntryQueryOptions = <T extends JSONValue>(key: string) =>
     ({
       queryFn: () => storageGet(key) as Promise<T | null>,
       queryKey: keys.storageEntry(key),
-    }) satisfies SolidQueryOptions<T | null>;
+    }) satisfies QueryOptions<T | null>;
 }

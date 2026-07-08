@@ -47,7 +47,7 @@ function isTitleProps(pr: InfoIconProps): pr is TitleVariantProps {
  */
 export const InfoIcon: Component<InfoIconProps> = (props) => {
   const t = useLangFunc();
-  const icon = <actionIcons.Info class="inlineIcon !mb-0.5 text-blue-500" size="16" />;
+  const icon = <actionIcons.Info class="inlineIcon mb-0.5! text-blue-500" size="16" />;
   const titleContent = () => props.title ?? t("more_info");
   return (
     <Switch>

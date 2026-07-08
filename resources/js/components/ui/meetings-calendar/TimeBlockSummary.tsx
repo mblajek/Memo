@@ -37,7 +37,7 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
     <div
       {...htmlAttributes.merge(divProps, {
         class: cx(
-          "whitespace-nowrap rounded overflow-clip text-ellipsis cursor-default",
+          "whitespace-nowrap rounded-sm overflow-clip text-ellipsis cursor-default",
           props.hovered ? "outline outline-2 outline-memo-active cursor-pointer" : undefined,
         ),
         style: {"outline-offset": "-2px"},

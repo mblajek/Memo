@@ -45,7 +45,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
         return (
           <ButtonLike
             {...htmlAttributes.merge(divProps, {
-              class: cx("border rounded cursor-pointer select-none relative", eventBlockAlertFrameClass(meeting())),
+              class: cx("border rounded-sm cursor-pointer select-none relative", eventBlockAlertFrameClass(meeting())),
               style: {
                 height: `${props.height || DEFAULT_HEIGHT}px`,
                 ...coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
@@ -106,7 +106,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
                   </Show>
                 </div>
                 <Show when={meeting().fromMeetingId}>
-                  <div class="absolute bottom-0 right-0 bg-inherit rounded">
+                  <div class="absolute bottom-0 right-0 bg-inherit rounded-sm">
                     <MeetingRepeatIcon seriesData={meeting()} />
                   </div>
                 </Show>

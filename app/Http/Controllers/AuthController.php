@@ -90,7 +90,7 @@ class AuthController extends ApiController
                 $otpVerifyResult = $google2fa->verifyKeyNewer(
                     secret: $user->otp_secret,
                     key: $otpData,
-                    oldTimestamp: $user->otp_used_ts,
+                    oldTimestamp: $user->otp_used_ts ?? 0,
                 );
                 if (is_int($otpVerifyResult)) {
                     $user->fill(['otp_used_ts' => $otpVerifyResult])->saveQuietly();
@@ -120,7 +120,7 @@ class AuthController extends ApiController
         $logService->addEntry(
             request: $request,
             source: ($user === null) ? 'user_login_unknown'
-                : ($isAuthValid ? 'user_login_success' : 'user_login_failure'),
+            : ($isAuthValid ? 'user_login_success' : 'user_login_failure'),
             logLevel: LogLevel::INFO,
             message: $authData['email'],
             user: $user,

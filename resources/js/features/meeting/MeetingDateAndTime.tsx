@@ -111,7 +111,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       type="time"
       step={STEP_MINUTES * 60}
       list={hoursList()?.listId}
-      class="basis-24 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
+      class="basis-24 grow min-h-big-input border border-input-border rounded-sm px-2 aria-invalid:border-red-400 disabled:bg-disabled"
       onKeyDown={({key, target}) => {
         const dir = KEY_DIRS.get(key);
         if (dir) {

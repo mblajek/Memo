@@ -25,7 +25,7 @@ export default (() => {
       <div class="w-full flex flex-col items-stretch gap-1">
         <div class="bg-purple-100 m-2 p-4 rounded-md flex items-center justify-between">
           <div>Test your components here during development by creating a test page in TestPage.tsx.</div>
-          <Button class="secondary small !bg-white" onClick={[setRecreatorSignal, recreatorSignal() + 1]}>
+          <Button class="secondary small bg-white!" onClick={[setRecreatorSignal, recreatorSignal() + 1]}>
             Reload
           </Button>
         </div>

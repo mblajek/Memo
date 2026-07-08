@@ -89,7 +89,7 @@ export const PopOver: Component<Props> = (props) => {
           >
             <Show when={open()}>
               <div
-                class="z-dropdown max-w-fit bg-white border border-gray-700 rounded shadow-xl flex flex-col overflow-clip"
+                class="z-dropdown max-w-fit bg-white border border-gray-700 rounded-sm shadow-xl flex flex-col overflow-clip"
                 style={posStyle()}
               >
                 {getChildrenElement(props.children, popOver)}

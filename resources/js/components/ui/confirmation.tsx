@@ -66,12 +66,12 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
           <div class="flex flex-col gap-1 items-stretch">
             <div>{body()}</div>
             <div class="flex gap-1 justify-center items-stretch">
-              <Button class="flex-grow basis-0 secondary" onClick={[resolve, false]}>
+              <Button class="grow basis-0 secondary" onClick={[resolve, false]}>
                 {jsx({element: data().cancelText, defaultValue: t("actions.cancel")})}
               </Button>
               <Button
                 ref={(el) => focusThis(el)}
-                class={cx("flex-grow basis-0", (data().mode || "default") === "default" ? "primary" : "secondary")}
+                class={cx("grow basis-0", (data().mode || "default") === "default" ? "primary" : "secondary")}
                 title={[
                   data().mode === "danger" ? t("confirmation.read_before_confirm") : undefined,
                   {placement: "bottom"},

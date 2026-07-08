@@ -1,10 +1,12 @@
+@reference "/resources/js/index.css";
+
 .simpleMenu {
   > button,
-  // Buttons with title are wrapped in <span class="contents">.
+  /* Buttons with title are wrapped in <span class="contents">. */
   > span:global(.contents) > button {
-    @apply px-2 py-1 text-left text-black disabled:text-opacity-50;
+    @apply px-2 py-1 text-left text-black disabled:text-black/50;
     &:disabled button {
-      @apply text-opacity-50;
+      @apply text-black/50;
     }
     &:not(:disabled) {
       &:hover {

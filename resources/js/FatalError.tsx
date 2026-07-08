@@ -111,7 +111,7 @@ export const FatalError: VoidComponent<Props> = (props) => {
         </div>
         <Show when={isDEV()}>
           <div class="fixed bottom-4 right-4 flex gap-1">
-            <Button class="p-2 border rounded border-red-700 bg-white" onClick={() => props.reset()}>
+            <Button class="p-2 border rounded-sm border-red-700 bg-white" onClick={() => props.reset()}>
               Retry
             </Button>
           </div>

@@ -7,7 +7,7 @@ import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
 import {createMemo, VoidComponent} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {useSingleSelectFilterHelper} from "./select_filters_helper";
 import {FilterControlProps, FilterHWithState} from "./types";
 

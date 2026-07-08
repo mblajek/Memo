@@ -43,7 +43,7 @@ import {Dynamic} from "solid-js/web";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
 import {CellRenderer} from "./CellRenderer";
-import s from "./Table.module.scss";
+import s from "./Table.module.css";
 import {useColumnsByPrefixUtil} from "./tquery_filters/fuzzy_filter";
 
 export interface TableTranslations {

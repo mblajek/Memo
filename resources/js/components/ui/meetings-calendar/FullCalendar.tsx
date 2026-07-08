@@ -233,7 +233,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
                 </span>
                 <Show when={props.staticCalendarFunction === "work"}>
                   <span
-                    class="shrink-0 self-center border rounded"
+                    class="shrink-0 self-center border rounded-sm"
                     style={{
                       width: "14px",
                       height: "14px",
@@ -286,7 +286,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
       </span>
       <PopOver
         trigger={(popOver) => (
-          <Button class="my-0.5 !px-1 minimal" onClick={popOver.open}>
+          <Button class="my-0.5 px-1! minimal" onClick={popOver.open}>
             <actionIcons.ThreeDots size="12" />
           </Button>
         )}
@@ -985,7 +985,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
                   label={() => (
                     <Button
                       class={cx(
-                        "rounded hover:underline",
+                        "rounded-sm hover:underline",
                         id === hoveredResource() ? "bg-hover" : undefined,
                         isStaff ? undefined : "text-teal-700 font-semibold",
                       )}
@@ -1140,7 +1140,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
             <Show when={props.staticCalendarFunction === "work" && userStatus.data?.permissions.facilityStaff}>
               <div class="mx-1 flex gap-1 items-stretch">
                 <Button
-                  class={cx("grow !px-0 overflow-clip", selectedResources().size ? "minimal" : "primary small")}
+                  class={cx("grow px-0! overflow-clip", selectedResources().size ? "minimal" : "primary small")}
                   onClick={() => {
                     if (mode() === "day") {
                       setMode("week");
@@ -1179,11 +1179,11 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
             <div class="flex">
-              <Button class="h-full secondary small !rounded-r-none" onClick={[moveDaysSelection, -1]}>
+              <Button class="h-full secondary small rounded-r-none!" onClick={[moveDaysSelection, -1]}>
                 <IoArrowBackOutline class="text-current" />
               </Button>
               <Button
-                class="h-full secondary small !rounded-l-none"
+                class="h-full secondary small rounded-l-none!"
                 style={{"margin-left": "-1px"}}
                 onClick={[moveDaysSelection, 1]}
               >

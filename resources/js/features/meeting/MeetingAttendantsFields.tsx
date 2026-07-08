@@ -492,13 +492,13 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <div class="flex gap-1 items-start">
                     <Switch>
                       <Match when={props.viewMode}>
-                        <div class="flex-grow flex items-center">
+                        <div class="grow flex items-center">
                           <PlaceholderField name={`${props.name}.${index}.userId`} />
                           <UserLink type={props.name} userId={userId()} />
                         </div>
                       </Match>
                       <Match when="edit mode">
-                        <div class="flex-grow flex flex-col">
+                        <div class="grow flex flex-col">
                           <TQuerySelect
                             name={`${props.name}.${index}.userId`}
                             label=""
@@ -603,7 +603,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         <>
                           <PlaceholderField name={`${props.name}.${index}.attendanceStatusDictId`} />
                           <div
-                            class={cx("w-full h-full rounded border border-input-border", {
+                            class={cx("w-full h-full rounded-sm border border-input-border", {
                               "bg-disabled": isFormDisabled(),
                             })}
                           />
@@ -649,7 +649,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       <Show when={form.data(props.name)[index]?.userId || index}>
                         <div>
                           <Button
-                            class="secondary small !min-h-small-input"
+                            class="secondary small min-h-small-input!"
                             title={t("actions.delete")}
                             onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                           >
@@ -661,7 +661,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
                         <div>
                           <Button
-                            class="secondary small !min-h-small-input"
+                            class="secondary small min-h-small-input!"
                             title={t(`forms.meeting.add_attendant.${props.name}`)}
                             onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                           >
@@ -697,7 +697,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                               />
                             }
                           >
-                            <div class="flex-grow">
+                            <div class="grow">
                               <Select
                                 name={`clients.${index}.clientGroupId`}
                                 label=""

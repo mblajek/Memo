@@ -124,7 +124,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                             class={cx("flex items-stretch min-w-0", userId() ? undefined : "opacity-40")}
                             bool:inert={!userId()}
                           >
-                            <div class="flex-grow">
+                            <div class="grow">
                               <TextField
                                 class="w-full rounded-e-none"
                                 autocapitalize="off"
@@ -137,7 +137,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                             <PopOver
                               trigger={(popOver) => (
                                 <Button
-                                  class="secondary small !min-h-small-input !px-0.5 !rounded-s-none -ml-px"
+                                  class="secondary small min-h-small-input! px-0.5! rounded-s-none! -ml-px"
                                   onClick={popOver.open}
                                 >
                                   <AiFillCaretDown class="text-current" />
@@ -183,7 +183,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                           </div>
                         </div>
                         <Button
-                          class="secondary small !min-h-small-input"
+                          class="secondary small min-h-small-input!"
                           title={
                             isCurrentClient()
                               ? t("facility_user.client_groups.first_client_frozen")

@@ -21,7 +21,7 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   return (
-    <div class="max-w-sm bg-white border border-gray-400 rounded shadow p-1">
+    <div class="max-w-sm bg-white border border-gray-400 rounded-sm shadow p-1">
       <div
         class="flex flex-col gap-2 text-sm pointer-events-auto p-1"
         // pointer-events-auto to allow detecting hover, even if the outside has pointer-events-none,

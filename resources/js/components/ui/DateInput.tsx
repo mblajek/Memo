@@ -40,7 +40,7 @@ export const DateInput: VoidComponent<DateInputProps> = (allProps) => {
           }
         }}
         {...htmlAttributes.merge(inputProps, {
-          class: cx("row-start-1 col-start-1 text-black", value() ? undefined : "text-opacity-50"),
+          class: cx("row-start-1 col-start-1", value() ? "text-black" : "text-black/50"),
           ...(formContext
             ? undefined
             : {

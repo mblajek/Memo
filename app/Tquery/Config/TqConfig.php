@@ -56,6 +56,7 @@ final class TqConfig
         TqDataTypeEnum|TqDictDef $type,
         string $columnName,
         ?string $columnAlias = null,
+        ?Closure $renderer = null,
     ): void {
         self::assertStringOrUuidList($type, false);
         $this->addColumn(
@@ -63,6 +64,7 @@ final class TqConfig
             columnOrQuery: $columnName,
             table: null,
             columnAlias: Str::camel($columnAlias ?? $columnName),
+            renderer: $renderer,
         );
     }
 

@@ -9,7 +9,7 @@ export class Timeout {
     }
   }
 
-  set(...[callback, delay]: Parameters<typeof setTimeout>) {
+  set(callback: () => void, delay = 0) {
     this.clear();
     this.timeoutId = setTimeout(() => {
       this.timeoutId = undefined;

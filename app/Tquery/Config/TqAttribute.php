@@ -38,6 +38,9 @@ trait TqAttribute
             return;
         }
         $valueColumn = Value::getTypeColumn($attribute->type);
+        // Date attributes share the `datetime_value` column, so the raw value carries a time part
+        // ("Y-m-d H:i:s"). Reduce it to a date, matching the `date` type's expected output.
+        $valueExpr = ($attribute->type === AttributeType::Date) ? "date(`$valueColumn`)" : "`$valueColumn`";
         $from = "`values` where `object_id` = `{$table->name}`.`id` and `attribute_id` = '{$attribute->id}'";
         $multi = $attribute->is_multi_value;
         self::assertType(
@@ -51,11 +54,11 @@ trait TqAttribute
         if ($multi) {
             $this->addColumn(
                 type: $type,
-                columnOrQuery: fn(string $tableName) => "select json_arrayagg(`$valueColumn` order by `default_order`) from $from",
+                columnOrQuery: fn(string $tableName) => "select json_arrayagg($valueExpr order by `default_order`) from $from",
                 table: $table,
                 columnAlias: Str::camel($columnAlias),
                 attributeId: $attributeId,
-                filter: fn(string $query) => "select count(distinct `$valueColumn`) from $from and (`$valueColumn`",
+                filter: fn(string $query) => "select count(distinct $valueExpr) from $from and ($valueExpr",
             );
             $this->addColumn(
                 type: TqDataTypeEnum::int,
@@ -68,7 +71,7 @@ trait TqAttribute
         } else {
             $this->addColumn(
                 type: $type,
-                columnOrQuery: fn(string $tableName) => "select `$valueColumn` from $from limit 1", // redundant limit
+                columnOrQuery: fn(string $tableName) => "select $valueExpr from $from limit 1", // redundant limit
                 table: $table,
                 columnAlias: $columnAlias,
                 attributeId: $attributeId,

@@ -269,7 +269,7 @@ export const Navbar: VoidComponent = () => {
           class={cx("flex", collapsed() ? "flex-col-reverse items-center" : "items-end justify-between", "p-2 gap-1")}
         >
           <div class={cx("flex flex-col", collapsed() ? "items-center" : undefined)}>
-            <A href="/help/about" class="!text-grey-text">
+            <A href="/help/about" class="text-grey-text!">
               <Show when={!collapsed()}>{t("app_name")} </Show>
               <BaseAppVersion />
             </A>
@@ -288,7 +288,7 @@ export const Navbar: VoidComponent = () => {
                   </A>
                   <Show when={!collapsed()}>
                     <Button onClick={() => newspaper.reportNewsRead()}>
-                      <VsChromeClose size="14" class="mt-1 !text-grey-text" />
+                      <VsChromeClose size="14" class="mt-1 text-grey-text!" />
                     </Button>
                   </Show>
                 </div>
