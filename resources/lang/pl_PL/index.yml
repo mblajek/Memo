@@ -141,6 +141,7 @@ about_page:
   commit_info: "Commit:"
   last_dump: "Kopia bezpieczeństwa:"
   cpu_load: "Obciążenie CPU:"
+  free_disk_space: "Wolne miejsce na dysku:"
   integration_events: "Baza zdarzeń:"
   integration_events_last_seq: "Ostatnie zdarzenie:"
 

@@ -214,7 +214,18 @@ class SystemController extends ApiController
                     new OA\Property(property: 'commitHash', type: 'string', nullable: true),
                     new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
                     new OA\Property(property: 'lastDump', type: 'datetime', nullable: true),
-                    new OA\Property(property: 'cpu15m', type: 'float', nullable: true),
+                    new OA\Property(
+                        property: 'cpu15m',
+                        description: 'Present only for a global admin.',
+                        type: 'float',
+                        nullable: true,
+                    ),
+                    new OA\Property(
+                        property: 'freeDiskSpaceMb',
+                        description: 'Present only for a global admin.',
+                        type: 'integer',
+                        nullable: true,
+                    ),
                     new OA\Property(
                         property: 'integrationEvents',
                         description: 'Present only when integration events are initialized.',
@@ -252,8 +263,8 @@ class SystemController extends ApiController
     public function status(): JsonResponse
     {
         $cache = Cache::get('system_status');
-        if (is_array($cache) && count($cache) === 4) {
-            [$commitHash, $commitDateZulu, $cpu15m, $lastDump, $isRc] = $cache;
+        if (is_array($cache) && count($cache) === 6) {
+            [$commitHash, $commitDateZulu, $cpu15m, $freeDiskSpaceMb, $lastDump, $isRc] = $cache;
         } else {
             try {
                 [$commitHash, $commitDate, $branch] = file(
@@ -269,11 +280,18 @@ class SystemController extends ApiController
                 system('uptime');
                 $cpu15m = Str::match('/[.0-9]+$/', trim(ob_get_clean() ?? ''));
                 $cpu15m = strlen($cpu15m) ? floatval($cpu15m) : null;
+                $freeDiskSpace = disk_free_space(App::storagePath());
+                $freeDiskSpaceMb = ($freeDiskSpace === false) ? null : (int)round($freeDiskSpace / (1 << 20));
                 $lastDump = Nullable::call(DatabaseDumpHelper::lastDumpDatetime(), DateHelper::toZuluString(...));
             } catch (Throwable) {
-                [$commitHash, $commitDateZulu, $cpu15m, $lastDump, $isRc] = [null, null, null, null, null];
+                [$commitHash, $commitDateZulu, $cpu15m, $freeDiskSpaceMb, $lastDump, $isRc] =
+                    [null, null, null, null, null, null];
             }
-            Cache::put('system_status', [$commitHash, $commitDateZulu, $cpu15m, $lastDump, $isRc], 15 /* 15s */);
+            Cache::put(
+                'system_status',
+                [$commitHash, $commitDateZulu, $cpu15m, $freeDiskSpaceMb, $lastDump, $isRc],
+                15 /* 15s */,
+            );
         }
         return new JsonResponse([
             'data' => [
@@ -288,7 +306,8 @@ class SystemController extends ApiController
                 'commitDate' => $commitDateZulu,
                 'dumpsEnabled' => DatabaseDumpHelper::dumpsEnabled(),
                 'lastDump' => $lastDump,
-                'cpu15m' => $cpu15m,
+                ...(PermissionMiddleware::permissions()->globalAdmin
+                    ? ['cpu15m' => $cpu15m, 'freeDiskSpaceMb' => $freeDiskSpaceMb] : []),
                 ...$this->eventsDbStatus(),
             ],
         ]);

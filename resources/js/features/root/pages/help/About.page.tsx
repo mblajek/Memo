@@ -1,4 +1,5 @@
 import {A} from "@solidjs/router";
+import {ByteSize} from "components/ui/ByteSize";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
@@ -129,6 +130,12 @@ export default (() => {
                   <Show when={status().cpu15m?.toFixed(2)} fallback={<EmptyValueSymbol />}>
                     {(cpu15m) => <div>{cpu15m()}</div>}
                   </Show>
+                  <label class="font-semibold">{t("about_page.free_disk_space")}</label>
+                  <div>
+                    <Show when={status().freeDiskSpaceMb != null} fallback={<EmptyValueSymbol />}>
+                      <ByteSize bytes={status().freeDiskSpaceMb! * 2 ** 20} />
+                    </Show>
+                  </div>
                   <Show when={isDEV() && status().integrationEvents}>
                     {(integrationEvents) => (
                       <>
