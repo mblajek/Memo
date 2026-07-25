@@ -2,8 +2,10 @@ export interface SystemStatusResource {
   readonly version: string;
   readonly commitHash: string | null;
   readonly commitDate: string | null;
-  /** The CPU average load over the last 15 minutes. */
-  readonly cpu15m: number | null;
+  /** The CPU average load over the last 15 minutes. Present only for a global admin. */
+  readonly cpu15m?: number | null;
+  /** The free disk space in megabytes. Present only for a global admin. */
+  readonly freeDiskSpaceMb?: number | null;
   readonly appEnv: string;
   readonly appEnvColor: string | null;
   readonly appEnvFgColor: string | null;
