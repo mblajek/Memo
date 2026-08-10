@@ -1,5 +1,7 @@
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - '@testing-library/jest-dom@7.0.1'
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - esbuild

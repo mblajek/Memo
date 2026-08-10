@@ -60,7 +60,7 @@ import {SimpleMultiField} from "./multi_fields";
 type _Directives = typeof title;
 
 export type AttributesType = Record<string, unknown>;
-export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
+export const ATTRIBUTES_SCHEMA = z.record(z.string(), z.unknown());
 
 interface Props {
   readonly model: string;

@@ -23,7 +23,7 @@ export const getMeetingSeriesSchema = () =>
     // Float between 0 and 1, scaled non-linearly to the number of meetings, so that the slider is more accurate
     // closer to the start of the range.
     seriesLength: z.number(),
-    seriesIncludeDate: z.record(z.boolean()),
+    seriesIncludeDate: z.record(z.string(), z.boolean()),
   });
 
 export type MeetingSeriesFormType = z.infer<ReturnType<typeof getMeetingSeriesSchema>>;

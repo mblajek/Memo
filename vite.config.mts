@@ -4,7 +4,6 @@ import {PluginOption} from "vite";
 import eslint from "vite-plugin-eslint";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
-import tsConfigPaths from "vite-tsconfig-paths";
 import {defineConfig} from "vitest/config";
 
 function betterHotReload(): PluginOption {
@@ -44,11 +43,13 @@ export default defineConfig({
         inlineStyles: false,
       },
     }),
-    tsConfigPaths(),
     eslint({include: ["resources/js"]}),
     solidSvg({defaultAsComponent: true}),
     betterHotReload(),
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
   optimizeDeps: {
     // Based on https://github.com/andi23rosca/solid-markdown/issues/33#issuecomment-2612454745
     include: ["solid-markdown > micromark", "solid-markdown > unified"],

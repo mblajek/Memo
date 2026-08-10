@@ -1,4 +1,4 @@
-import {Navigate, Route, RouteProps, Router, useNavigate, useParams} from "@solidjs/router";
+import {Navigate, Route, RouteProps, Router, RouteSectionProps, useNavigate, useParams} from "@solidjs/router";
 import {useQuery} from "@tanstack/solid-query";
 import {AppContextProvider} from "app_context";
 import {capitalizeString} from "components/ui/Capitalize";
@@ -106,7 +106,9 @@ const App: VoidComponent = () => {
             </Route>
             <Route
               path="/admin"
-              component={(props) => <AccessBarrier roles={["globalAdmin"]}>{props.children}</AccessBarrier>}
+              component={(props: RouteSectionProps) => (
+                <AccessBarrier roles={["globalAdmin"]}>{props.children}</AccessBarrier>
+              )}
             >
               <UnknownNotFound />
               <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
@@ -119,7 +121,7 @@ const App: VoidComponent = () => {
               matchFilters={{
                 facilityUrl: facilitiesQuery.isSuccess ? facilitiesQuery.data?.map(({url}) => url) || [] : undefined,
               }}
-              component={(props) => (
+              component={(props: RouteSectionProps) => (
                 <AccessBarrier roles={["facilityMember"]}>
                   <QueryBarrier queries={[facilitiesQuery]}>{props.children}</QueryBarrier>
                 </AccessBarrier>
@@ -162,7 +164,9 @@ const App: VoidComponent = () => {
               </Route>
               <Route
                 path="/admin"
-                component={(props) => <AccessBarrier roles={["facilityAdmin"]}>{props.children}</AccessBarrier>}
+                component={(props: RouteSectionProps) => (
+                  <AccessBarrier roles={["facilityAdmin"]}>{props.children}</AccessBarrier>
+                )}
               >
                 <UnknownNotFound />
                 <Route path="/time-tables">
@@ -211,7 +215,7 @@ const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => 
   return (
     <Route
       {...routeProps}
-      component={(innerProps) => (
+      component={(innerProps: RouteSectionProps) => (
         <>
           <AppTitlePrefix prefix={pageName()} />
           <Dynamic component={props.component} {...innerProps} />

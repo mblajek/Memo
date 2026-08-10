@@ -35,9 +35,9 @@ export const getUserBaseInfoSchema = () =>
     otpRequiredAt: z.string(),
     hasOtpConfigured: z.boolean(),
     /** Helper fields, not part of the API. The type is unknown to avoid form validator errors. */
-    passwordExpireAt_daysLeft: z.unknown(), // number
-    otpRequiredAt_daysLeft: z.unknown(), // number
-    resetOtp: z.unknown(), //boolean
+    passwordExpireAt_daysLeft: z.unknown().optional(), // number
+    otpRequiredAt_daysLeft: z.unknown().optional(), // number
+    resetOtp: z.unknown().optional(), //boolean
   });
 
 export type UserBaseInfoFormType = z.infer<ReturnType<typeof getUserBaseInfoSchema>>;

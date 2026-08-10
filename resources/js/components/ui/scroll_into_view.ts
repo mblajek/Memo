@@ -17,7 +17,7 @@ export const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
   block: "nearest",
 };
 
-export function scrollIntoView(element: HTMLElement, accessor: Accessor<unknown | [unknown, ScrollIntoViewOptions]>) {
+export function scrollIntoView(element: Element, accessor: Accessor<unknown | [unknown, ScrollIntoViewOptions]>) {
   const acc = createMemo(() => {
     const accVal = accessor();
     let signal;
