@@ -25,7 +25,17 @@ function betterHotReload(): PluginOption {
 
 export default defineConfig({
   build: {
-    target: "ESNext",
+    // Lowercase, as vite's CSS target conversion matches "esnext" case-sensitively.
+    target: "esnext",
+    rollupOptions: {
+      onLog(level, log, handler) {
+        // The tailwind plugin does not generate CSS sourcemaps (https://github.com/tailwindlabs/tailwindcss/issues/17926).
+        if (log.code === "SOURCEMAP_BROKEN" && log.plugin?.startsWith("@tailwindcss/vite")) {
+          return;
+        }
+        handler(level, log);
+      },
+    },
   },
   plugins: [
     tailwindcss(),

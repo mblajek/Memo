@@ -149,8 +149,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                                   form.setFields(`clients.${index}.role`, role);
                                   (
                                     formContext.getElement()?.querySelector(`#clients\\.${index}\\.role`) as
-                                      | HTMLElement
-                                      | undefined
+                                      HTMLElement | undefined
                                   )?.focus();
                                 }
                                 return (

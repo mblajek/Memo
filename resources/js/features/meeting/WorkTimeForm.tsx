@@ -22,8 +22,8 @@ const getSchema = () =>
       createSeries: z.boolean().optional(),
       fromMeetingId: z.string().optional(),
     })
-    .merge(getMeetingTimeFieldsSchemaPart())
-    .merge(getMeetingSeriesSchema().partial());
+    .extend(getMeetingTimeFieldsSchemaPart().shape)
+    .extend(getMeetingSeriesSchema().partial().shape);
 
 export type WorkTimeFormType = z.infer<ReturnType<typeof getSchema>>;
 

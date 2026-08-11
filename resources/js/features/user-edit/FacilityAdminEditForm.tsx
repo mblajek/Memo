@@ -25,13 +25,11 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 
 const getSchema = () =>
-  getUserBaseInfoSchema().merge(
-    z.object({
-      member: z.object({
-        hasFacilityAdmin: z.boolean(),
-      }),
+  getUserBaseInfoSchema().extend({
+    member: z.object({
+      hasFacilityAdmin: z.boolean(),
     }),
-  );
+  });
 
 type FormType = z.infer<ReturnType<typeof getSchema>>;
 
