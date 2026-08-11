@@ -205,10 +205,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         <DictFilterControl
           {...props}
           positionItemsFunc={(dict, defItem) =>
-            dict.allPositions
-              .filter((p) => getMeetingTypeCategory(p) !== meetingCategoryDict()?.system.id)
-              .sort((a, b) => Number(a.disabled) - Number(b.disabled))
-              .map(defItem)
+            dict.allPositions.filter((p) => getMeetingTypeCategory(p) !== meetingCategoryDict()?.system.id).map(defItem)
           }
         />
       ),
@@ -222,7 +219,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           positionItemsFunc={(dict, defItem) =>
             dict.allPositions
               .filter((p) => p.id === meetingTypeDict()?.work_time.id || p.id === meetingTypeDict()?.leave_time.id)
-              .sort((a, b) => Number(a.disabled) - Number(b.disabled))
               .map((pos) => ({...defItem(pos), groupName: undefined}))
           }
         />

@@ -35,9 +35,7 @@ export const DictFilterControl: VoidComponent<DictFilterControlProps> = (props) 
     initial: {value: [] satisfies readonly string[]},
     filter: () => props.filter,
   });
-  const positionItemsFunc = () =>
-    props.positionItemsFunc ||
-    ((dict, defItem) => dict.allPositions.toSorted((a, b) => Number(a.disabled) - Number(b.disabled)).map(defItem));
+  const positionItemsFunc = () => props.positionItemsFunc || ((dict, defItem) => dict.allPositions.map(defItem));
   const items = createMemo(() => {
     const dict = dictionaries()?.get(schema().dictionaryId);
     if (!dict) {
