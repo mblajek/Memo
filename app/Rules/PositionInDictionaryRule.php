@@ -18,7 +18,8 @@ final class PositionInDictionaryRule extends AbstractRule
     {
         $facilityId = PermissionMiddleware::permissions()->facility?->id;
         /** @var Position $position */
-        $position = Position::query()->where('id', $value)->where('is_disabled', false)->first();
+        // Disabled positions are treated as merely deprecated, so they are accepted as well.
+        $position = Position::query()->where('id', $value)->first();
         if (
             $position && ($facilityId === null || (
                 ($position->facility_id ?? $facilityId) === $facilityId

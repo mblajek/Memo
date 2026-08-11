@@ -76,7 +76,7 @@ export class Dictionaries {
 export class Dictionary {
   readonly resource;
   /** A list of non-disabled positions in the dictionary. */
-  readonly activePositions;
+  readonly activePositions: readonly Position[];
 
   private readonly byIdOrName = new Map<string, Position>();
 
@@ -88,7 +88,7 @@ export class Dictionary {
     /** The translated name of the dictionary. */
     readonly label: string,
     /** The list of all positions of the dictionary, including the disabled ones. */
-    readonly allPositions: Position[],
+    readonly allPositions: readonly Position[],
   ) {
     this.resource = makeAttributable(resource, "dictionary");
     this.activePositions = this.allPositions.filter((position) => !position.resource.isDisabled);

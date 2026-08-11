@@ -16,6 +16,7 @@ export const MeetingTypeFields: VoidComponent = () => {
     <DictionarySelect
       name="typeDictId"
       dictionary="meetingType"
+      disabledItemsMode="deprecate"
       nullable={false}
       itemFunc={(pos, defItem) => {
         if (isSystemType(pos)) {
@@ -25,7 +26,7 @@ export const MeetingTypeFields: VoidComponent = () => {
               ...def,
               label: () => (
                 <div class="flex gap-2 justify-between items-baseline">
-                  <div>{def.text}</div>
+                  <div>{def.label ? def.label() : def.text}</div>
                   <div class="text-xs">DEV</div>
                 </div>
               ),

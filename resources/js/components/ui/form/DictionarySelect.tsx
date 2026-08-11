@@ -2,6 +2,7 @@ import {NON_NULLABLE} from "components/utils/array_filter";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {useLangFunc} from "components/utils/lang";
 import {VoidComponent, createMemo, mergeProps, splitProps} from "solid-js";
 import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSelectPropsPart} from "./Select";
 import {mergeSelectProps} from "./select_helper";
@@ -13,8 +14,13 @@ interface BaseProps extends Pick<
   /** The id or name of the dictionary. */
   readonly dictionary: string;
   readonly filterable?: boolean;
-  /** What to do with disabled dictionary positions. Default: hide. */
-  readonly disabledItemsMode?: "show" | "showAsActive" | "hide";
+  /**
+   * What to do with disabled dictionary positions. Default: hide.
+   * - "showSameAsActive": indistinguishable from the active positions,
+   * - "deprecate": greyed out, at the bottom of the list, but still selectable,
+   * - "hide": not shown at all.
+   */
+  readonly disabledItemsMode?: "showSameAsActive" | "deprecate" | "hide";
   readonly positionsSorter?: (a: Position, b: Position) => number;
   /** A function creating the items. It can make use of the default item properties provided. */
   readonly itemFunc?: (pos: Position, defItem: () => DefaultDictionarySelectItem) => SelectItem | undefined;
@@ -22,8 +28,8 @@ interface BaseProps extends Pick<
   readonly useGrouping?: boolean;
 }
 
-export type DefaultDictionarySelectItem = Required<Pick<SelectItem, "value" | "text" | "disabled">> &
-  Pick<SelectItem, "groupName">;
+export type DefaultDictionarySelectItem = Required<Pick<SelectItem, "value" | "text">> &
+  Pick<SelectItem, "label" | "groupName">;
 
 type Props = BaseProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
 
@@ -55,13 +61,17 @@ export const DictionarySelect: VoidComponent<Props> = (allProps) => {
     if (props.positionsSorter) {
       positions = positions.toSorted(props.positionsSorter);
     }
+    const deprecate = props.disabledItemsMode === "deprecate";
+    if (deprecate) {
+      positions = [...positions.filter((pos) => !pos.disabled), ...positions.filter((pos) => pos.disabled)];
+    }
     const useGrouping = props.useGrouping ?? !props.positionsSorter;
     return positions
       .map((pos) => {
         const defItem = (): DefaultDictionarySelectItem => ({
           value: pos.id,
           text: pos.label,
-          disabled: props.disabledItemsMode === "show" && pos.disabled,
+          label: deprecate && pos.disabled ? () => <DeprecatedPositionItem position={pos} /> : undefined,
           groupName: useGrouping
             ? getGroupName({dictId: dict.id, pos, mode: selectProps.getGroupHeader ? "id" : "label"})
             : undefined,
@@ -102,3 +112,17 @@ export function usePositionsGrouping() {
     getMeetingTypeCategory,
   };
 }
+
+interface DeprecatedPositionItemProps {
+  readonly position: Position;
+}
+
+export const DeprecatedPositionItem: VoidComponent<DeprecatedPositionItemProps> = (props) => {
+  const t = useLangFunc();
+  return (
+    <div class="flex gap-2 justify-between items-baseline text-grey-text">
+      <div>{props.position.label}</div>
+      <div class="text-sm whitespace-nowrap">{t("position_disabled_suffix")}</div>
+    </div>
+  );
+};
