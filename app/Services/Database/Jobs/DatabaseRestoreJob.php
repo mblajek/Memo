@@ -3,9 +3,9 @@
 namespace App\Services\Database\Jobs;
 
 use App\Models\DbDump;
+use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
 use DateTimeImmutable;
-use Illuminate\Console\Application;
 
 final readonly class DatabaseRestoreJob extends AbstractDatabaseJob
 {
@@ -18,9 +18,9 @@ final readonly class DatabaseRestoreJob extends AbstractDatabaseJob
 
     protected function run(): void
     {
-        $this->executeCommand(
-            command: Application::formatCommandString("fz:db-echo {$this->dbDump->id}")
-            . ' | ' . $this->getRestoreCommand(isToRc: $this->isToRc),
+        DatabaseDumpHelper::readDumpSql(
+            $this->dbDump,
+            fn(mixed $sql) => $this->executeRestore(isToRc: $this->isToRc, input: $sql),
         );
 
         $this->dbDump->status = DatabaseDumpStatus::created;

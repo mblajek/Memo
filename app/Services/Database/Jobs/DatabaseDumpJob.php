@@ -2,6 +2,7 @@
 
 namespace App\Services\Database\Jobs;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Models\DbDump;
 use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
@@ -22,23 +23,37 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
         $isFromRc = $this->dbDump->is_from_rc;
         $newDumpName = $this->dbDump->getNewDumpName();
 
-        $sql = $this->executeCommand(
-            command: $this->getDumpCommand(isFromRc: $isFromRc),
-        );
-
         $zipPath = DbDump::fullPath($newDumpName);
         if (!is_dir(dirname($zipPath))) {
             mkdir(dirname($zipPath));
         }
         $innerFile = DbDump::innerFileName($newDumpName);
 
-        $zip = new ZipArchive();
-        $zip->open($zipPath, ZipArchive::CREATE);
-        $zip->addFromString($innerFile, $sql);
-        $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
-        $zip->setPassword(DatabaseDumpHelper::getDatabaseDumpPassword());
-        $zip->setCompressionName($innerFile, ZipArchive::CM_DEFLATE, 9);
-        $zip->close();
+        // The dump goes to a temporary file, and not to a string, as it can have hundreds of megabytes. The file
+        // holds the unencrypted dump, but tempnam creates it with the 0600 mode, and it is deleted right after.
+        $sqlPath = tempnam(dirname($zipPath), 'dump-');
+        if ($sqlPath === false) {
+            FatalExceptionFactory::unexpected()->throw();
+        }
+        try {
+            $sqlFile = fopen($sqlPath, 'w');
+            try {
+                $this->executeDump(isFromRc: $isFromRc, output: $sqlFile);
+            } finally {
+                fclose($sqlFile);
+            }
+
+            $zip = new ZipArchive();
+            $zip->open($zipPath, ZipArchive::CREATE);
+            // The dump is read from the file while the archive is being closed, so it is not kept in memory either.
+            $zip->addFile($sqlPath, $innerFile);
+            $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
+            $zip->setPassword(DatabaseDumpHelper::getDatabaseDumpPassword());
+            $zip->setCompressionName($innerFile, ZipArchive::CM_DEFLATE, 9);
+            $zip->close();
+        } finally {
+            unlink($sqlPath);
+        }
         chmod($zipPath, 0400);
 
         $this->dbDump->name = $newDumpName;
@@ -46,13 +61,19 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
         $this->dbDump->status = DatabaseDumpStatus::created;
 
         if (!$isFromRc && ($backupAuth = Config::get('app.db.backup_auth'))) {
-            $response = Http::asMultipart()
-                ->withHeaders([
-                    'x-memo-auth' => $backupAuth,
-                    'x-memo-name' => Config::string('app.name'),
-                ])
-                ->attach('backup', file_get_contents($zipPath), 'backup.zip')
-                ->post(Config::string('app.db.backup_url'));
+            // The archive is attached as a stream, so that it is sent without reading it into memory.
+            $zipFile = fopen($zipPath, 'r');
+            try {
+                $response = Http::asMultipart()
+                    ->withHeaders([
+                        'x-memo-auth' => $backupAuth,
+                        'x-memo-name' => Config::string('app.name'),
+                    ])
+                    ->attach('backup', $zipFile, 'backup.zip')
+                    ->post(Config::string('app.db.backup_url'));
+            } finally {
+                fclose($zipFile);
+            }
             if (
                 $response->successful() && str_ends_with($response->body(), ' OK')
             ) {
