@@ -11,13 +11,11 @@ import {z} from "zod";
 import * as userMembersFormPart from "./UserMembersFormPart";
 
 const getSchema = () =>
-  getUserBaseInfoSchema().merge(
-    z.object({
-      members: userMembersFormPart.getSchema(),
-      managedByFacilityId: z.string(),
-      hasGlobalAdmin: z.boolean(),
-    }),
-  );
+  getUserBaseInfoSchema().extend({
+    members: userMembersFormPart.getSchema(),
+    managedByFacilityId: z.string(),
+    hasGlobalAdmin: z.boolean(),
+  });
 
 export type UserFormType = z.infer<ReturnType<typeof getSchema>>;
 

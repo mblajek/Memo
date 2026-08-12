@@ -58,31 +58,29 @@ export function useMultiField(name: string, {primitiveType = false} = {}): Multi
     form.addField(name, primitiveType ? {[WRAPPED_FIELD_KEY]: value} : value, index);
   }
   const items = createMemo(() =>
-    data().map(
-      (_value, index): ItemData => ({
-        index,
-        name: `${name}.${index}${primitiveType ? `.${WRAPPED_FIELD_KEY}` : ""}`,
-        isLast: () => index === data().length - 1,
-        remove() {
-          form.moveField(name, index, data().length - 1);
-          form.setFields(name, data().slice(0, -1));
-        },
-        addAfter(value) {
-          formAddField(value, index + 1);
-        },
-        moveUp() {
-          this.moveTo(index - 1);
-        },
-        moveDown() {
-          this.moveTo(index + 1);
-        },
-        moveTo(newIndex) {
-          if (newIndex >= 0 && newIndex < data().length) {
-            form.moveField(name, index, newIndex);
-          }
-        },
-      }),
-    ),
+    data().map((_value, index): ItemData => ({
+      index,
+      name: `${name}.${index}${primitiveType ? `.${WRAPPED_FIELD_KEY}` : ""}`,
+      isLast: () => index === data().length - 1,
+      remove() {
+        form.moveField(name, index, data().length - 1);
+        form.setFields(name, data().slice(0, -1));
+      },
+      addAfter(value) {
+        formAddField(value, index + 1);
+      },
+      moveUp() {
+        this.moveTo(index - 1);
+      },
+      moveDown() {
+        this.moveTo(index + 1);
+      },
+      moveTo(newIndex) {
+        if (newIndex >= 0 && newIndex < data().length) {
+          form.moveField(name, index, newIndex);
+        }
+      },
+    })),
   );
   return {
     name,

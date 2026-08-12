@@ -177,11 +177,7 @@ export type BoolColumnFilter = EqColumnFilter<boolean>;
 export type DateColumnFilter = EqColumnFilter<DateString> | InColumnFilter<DateString> | CmpColumnFilter<DateString>;
 export type DateTimeColumnFilter = CmpColumnFilter<DateString>;
 export type IntColumnFilter =
-  | EqColumnFilter<number>
-  | InColumnFilter<number>
-  | CmpColumnFilter<number>
-  | ContainsColumnFilter
-  | LikeColumnFilter;
+  EqColumnFilter<number> | InColumnFilter<number> | CmpColumnFilter<number> | ContainsColumnFilter | LikeColumnFilter;
 export type ListColumnFilter = never;
 export type ObjectColumnFilter = never;
 export type StringColumnFilter =
@@ -195,14 +191,10 @@ export type StringColumnFilter =
 export type TextColumnFilter = ContainsColumnFilter | LikeColumnFilter | RegexpColumnFilter;
 export type UuidColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
 export type UuidListColumnFilter =
-  | EqColumnFilter<readonly string[]>
-  | HasColumnFilter<string>
-  | SetsOpColumnFilter<string>;
+  EqColumnFilter<readonly string[]> | HasColumnFilter<string> | SetsOpColumnFilter<string>;
 export type DictColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
 export type DictListColumnFilter =
-  | EqColumnFilter<readonly string[]>
-  | HasColumnFilter<string>
-  | SetsOpColumnFilter<string>;
+  EqColumnFilter<readonly string[]> | HasColumnFilter<string> | SetsOpColumnFilter<string>;
 
 export interface CustomFilter extends FilterBase {
   readonly type: "custom";

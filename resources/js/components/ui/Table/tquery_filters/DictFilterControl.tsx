@@ -1,4 +1,4 @@
-import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
+import {DeprecatedPositionItem, usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {Select, SelectItem} from "components/ui/form/Select";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {cx} from "components/utils/classnames";
@@ -35,7 +35,7 @@ export const DictFilterControl: VoidComponent<DictFilterControlProps> = (props) 
     initial: {value: [] satisfies readonly string[]},
     filter: () => props.filter,
   });
-  const positionItemsFunc = () => props.positionItemsFunc || ((dict, defItem) => dict.activePositions.map(defItem));
+  const positionItemsFunc = () => props.positionItemsFunc || ((dict, defItem) => dict.allPositions.map(defItem));
   const items = createMemo(() => {
     const dict = dictionaries()?.get(schema().dictionaryId);
     if (!dict) {
@@ -46,6 +46,7 @@ export const DictFilterControl: VoidComponent<DictFilterControlProps> = (props) 
       ...positionItemsFunc()(dict, (pos) => ({
         value: pos.id,
         text: pos.label,
+        label: pos.disabled ? () => <DeprecatedPositionItem position={pos} /> : undefined,
         groupName: getGroupName({dictId: dict.id, pos}),
       })),
     ];

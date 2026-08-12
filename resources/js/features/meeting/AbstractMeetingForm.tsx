@@ -3,7 +3,7 @@ import {isAxiosError} from "axios";
 import {FelteForm, FormProps} from "components/felte-form/FelteForm";
 import {Api} from "data-access/memo-api/types";
 import {splitProps} from "solid-js";
-import {ZodSchema} from "zod";
+import {z} from "zod";
 import {MeetingWithExtraInfo} from "./meeting_api";
 
 export interface AbstractMeetingFormProps<
@@ -22,7 +22,7 @@ export interface AbstractMeetingFormProps<
 }
 
 interface Props<MeetingFormType extends Obj> extends AbstractMeetingFormProps<MeetingFormType> {
-  readonly schema: ZodSchema<MeetingFormType>;
+  readonly schema: z.ZodType<MeetingFormType>;
   readonly children: FormProps<MeetingFormType>["children"];
 }
 

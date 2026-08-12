@@ -124,7 +124,7 @@ export type TitleDirectiveType = JSX.Element | readonly [JSX.Element, Partial<Ex
  *   The easiest workaround is to wrap the (potentially) disabled element in a div or span and put
  *   the title on that element.
  */
-export function title(element: HTMLElement, accessor: Accessor<TitleDirectiveType>) {
+export function title(element: Element, accessor: Accessor<TitleDirectiveType>) {
   let thisTippy: Instance | undefined;
   createEffect(
     on(accessor, (value) => {

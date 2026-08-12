@@ -200,3 +200,5 @@ byte_size:
   megabytes: "{{count, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}} MB"
   gigabytes: "{{count, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}} GB"
   terabytes: "{{count, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}} TB"
+
+position_disabled_suffix: "(nieakt.)"
