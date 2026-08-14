@@ -11,6 +11,14 @@ class ExceptionFactory
         return new ApiValidationException(400, 'exception.validation');
     }
 
+    /** A validation exception carrying a single field error. */
+    public static function fieldValidation(string $field, string $rule): ApiValidationException
+    {
+        $exception = self::validation();
+        $exception->addValidation($field, $rule);
+        return $exception;
+    }
+
     public static function unauthorised(): ApiException
     {
         return new ApiException(401, 'exception.unauthorised');

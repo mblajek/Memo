@@ -18,7 +18,7 @@ class MemberTqueryTest extends TqueryTestCase
         parent::setUp();
         $this->prepareAdminUser();
         $this->facility = Facility::factory()->create(['name' => 'MemberTQ Facility']);
-        $this->prepareFacilityAdmin($this->facility);
+        $this->prepareFacilityAdmin($this->facility, globalAdmin: true, facilityStaff: true);
         $this->url = "/api/v1/facility/{$this->facility->id}/user/tquery";
     }
 

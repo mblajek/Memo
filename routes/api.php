@@ -1,9 +1,12 @@
 <?php
 
 use App\Exceptions\ExceptionFactory;
+use App\Http\Controllers\Admin\AdminAttributeController;
 use App\Http\Controllers\Admin\AdminDatabaseController;
+use App\Http\Controllers\Admin\AdminDictionaryController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
+use App\Http\Controllers\Admin\AdminPositionController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\AuthController;
@@ -12,6 +15,9 @@ use App\Http\Controllers\Facility\ClientGroupController;
 use App\Http\Controllers\Facility\ClientNotificationController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\FacilityAdminController;
+use App\Http\Controllers\Facility\FacilityAttributeController;
+use App\Http\Controllers\Facility\FacilityDictionaryController;
+use App\Http\Controllers\Facility\FacilityPositionController;
 use App\Http\Controllers\Facility\MemberTqueryController;
 use App\Http\Controllers\Facility\NotificationTqueryController;
 use App\Http\Controllers\Facility\StaffController;
@@ -103,6 +109,21 @@ Route::prefix('/v1')->group(function () {
             Route::patch('/{member}', [AdminMemberController::class, 'patch']);
             Route::delete('/{member}', [AdminMemberController::class, 'delete']);
         });
+        Route::prefix('/attribute')->group(function () {
+            Route::post('/', [AdminAttributeController::class, 'post']);
+            Route::patch('/{attribute}', [AdminAttributeController::class, 'patch']);
+            Route::delete('/{attribute}', [AdminAttributeController::class, 'delete']);
+        });
+        Route::prefix('/dictionary')->group(function () {
+            Route::post('/', [AdminDictionaryController::class, 'post']);
+            Route::patch('/{dictionary}', [AdminDictionaryController::class, 'patch']);
+            Route::delete('/{dictionary}', [AdminDictionaryController::class, 'delete']);
+        });
+        Route::prefix('/position')->group(function () {
+            Route::post('/', [AdminPositionController::class, 'post']);
+            Route::patch('/{position}', [AdminPositionController::class, 'patch']);
+            Route::delete('/{position}', [AdminPositionController::class, 'delete']);
+        });
     });
     Route::prefix('/facility/{facility}')->group(function () {
         Route::prefix('/user')->group(function () {
@@ -154,13 +175,19 @@ Route::prefix('/v1')->group(function () {
         });
         Route::prefix('/admin')->group(function () {
             Route::prefix('/attribute')->group(function () {
-                Route::post('/', [FacilityAdminController::class, 'postAttribute']);
+                Route::post('/', [FacilityAttributeController::class, 'post']);
+                Route::patch('/{attribute}', [FacilityAttributeController::class, 'patch']);
+                Route::delete('/{attribute}', [FacilityAttributeController::class, 'delete']);
             });
             Route::prefix('/dictionary')->group(function () {
-                Route::post('/', [FacilityAdminController::class, 'postDictionary']);
+                Route::post('/', [FacilityDictionaryController::class, 'post']);
+                Route::patch('/{dictionary}', [FacilityDictionaryController::class, 'patch']);
+                Route::delete('/{dictionary}', [FacilityDictionaryController::class, 'delete']);
             });
             Route::prefix('/position')->group(function () {
-                Route::post('/', [FacilityAdminController::class, 'postPosition']);
+                Route::post('/', [FacilityPositionController::class, 'post']);
+                Route::patch('/{position}', [FacilityPositionController::class, 'patch']);
+                Route::delete('/{position}', [FacilityPositionController::class, 'delete']);
             });
         });
     });

@@ -26,6 +26,15 @@ trait HasValues
 
     private ?array $attrValues = null;
 
+    public static function bootHasValues(): void
+    {
+        // values.object_id has no foreign key, so the owner must remove its value rows itself
+        static::deleted(function (Model $model) {
+            /** @var static $model */
+            $model->values()->delete();
+        });
+    }
+
     public function values(): HasMany
     {
         return $this->hasMany(Value::class, 'object_id')->orderBy('default_order');
@@ -63,6 +72,20 @@ trait HasValues
         $attrMap = []; // todo: can be moved to static variable facility_id => list<Attribute>
         foreach (Attribute::getBy(facility: $facility, table: self::attrTable()) as $attribute) {
             $attrMap[$attribute->api_name] = $attribute;
+        }
+        return $attrMap;
+    }
+
+    /** @return array<non-falsy-string, Attribute> only the global (facility-less) attributes of the table */
+    public static function attrMapGlobal(): array
+    {
+        // filtered before keying by api_name, so a same-named facility attribute
+        // can never displace the global one from the map
+        $attrMap = [];
+        foreach (Attribute::getBy(table: self::attrTable()) as $attribute) {
+            if ($attribute->facility_id === null) {
+                $attrMap[$attribute->api_name] = $attribute;
+            }
         }
         return $attrMap;
     }
@@ -127,7 +150,9 @@ trait HasValues
 
     public function attrSave(null|Facility|string|true $facility, array $data): void
     {
-        $attrMap = self::attrMap($facility);
+        // a null facility means a global row: only global attributes may apply, and a
+        // facility attribute sharing an api_name must not shadow the global one in the map
+        $attrMap = ($facility === null) ? self::attrMapGlobal() : self::attrMap($facility);
         $currentAllValues = $this->attrValuesObjects();
         $changed = false;
         foreach ([true, false] as $attributeIsMultiNull) {

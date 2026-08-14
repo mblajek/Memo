@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Http\Permissions\PermissionMiddleware;
-use App\Http\Permissions\PermissionObjectCreator;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Facility;
@@ -93,14 +91,7 @@ class FacilityClientAttributeTest extends TestCase
     private function createClient(array $client): TestResponse
     {
         Attribute::clearCacheAll();
-        $creator = new PermissionObjectCreator();
-        $creator->user = $this->admin;
-        $creator->facility = $this->facility;
-        $creator->loggedIn = true;
-        $creator->verified = true;
-        $creator->facilityMember = true;
-        $creator->facilityAdmin = true;
-        PermissionMiddleware::setPermissions($creator->getPermissionObject());
+        $this->prepareFacilityAdmin($this->facility, user: $this->admin);
 
         return $this->post(sprintf('/api/v1/facility/%s/user/client', $this->facility->id), [
             'name' => 'Test Client',

@@ -370,6 +370,6 @@ class SystemController extends ApiController
             message: $data['message'] ?? null,
             context: $data['context'] ?? null,
         );
-        return new JsonResponse(['data' => ['id' => $logEntryIsd]], status: 201);
+        return $this->createdIdResponse($logEntryIsd);
     }
 }

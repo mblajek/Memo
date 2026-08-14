@@ -116,6 +116,10 @@ trait BaseModel
                 /** @var $model HasCache */
                 $model::clearCacheAll();
             });
+            static::deleted(function (Model $model) {
+                /** @var $model HasCache */
+                $model::clearCacheAll();
+            });
         }
     }
 }

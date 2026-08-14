@@ -78,7 +78,7 @@ class AdminMemberController extends ApiController
 
         $result = $service->create($data);
 
-        return new JsonResponse(data: ['data' => ['id' => $result]], status: 201);
+        return $this->createdIdResponse($result);
     }
 
     #[OA\Patch(
@@ -155,8 +155,9 @@ class AdminMemberController extends ApiController
     public function delete(Member $member): JsonResponse
     {
         DB::transaction(function () use ($member) {
-            $member->client()?->delete();
-            $member->staffMember()?->delete();
+            // delete through the models (not the relations' query builders) so model events fire
+            $member->client?->delete();
+            $member->staffMember?->delete();
             $member->delete();
         });
 

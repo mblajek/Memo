@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use App\Exceptions\ApiException;
-use App\Exceptions\ExceptionFactory;
-use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\ClientGroup\GroupClientResource;
 use App\Models\Enums\AttendanceType;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\BelongsToFacility;
 use App\Models\Traits\HasValidator;
 use App\Rules\MemberExistsRule;
 use App\Rules\UniqueWithMemoryRule;
@@ -28,6 +26,7 @@ class ClientGroup extends Model
 {
     use HasValidator;
     use BaseModel;
+    use BelongsToFacility;
 
     protected $table = 'client_groups';
 
@@ -58,13 +57,4 @@ class ClientGroup extends Model
         return $this->hasMany(GroupClient::class);
     }
 
-    /** @throws ApiException */
-    public function belongsToFacilityOrFail(
-        Facility|null $facility = null,
-    ): void {
-        $facility ??= PermissionMiddleware::facility();
-        if ($this->facility_id !== $facility->id) {
-            ExceptionFactory::notFound()->throw();
-        }
-    }
 }

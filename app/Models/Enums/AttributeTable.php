@@ -4,6 +4,12 @@ namespace App\Models\Enums;
 
 enum AttributeTable: string
 {
+    /** @return list<self> the tables whose rows can hold attribute values */
+    public static function valueCapable(): array
+    {
+        return [self::Client, self::Dictionary, self::Position];
+    }
+
     case Attribute = 'attributes';
     case Client = 'clients';
     case ClientGroup = 'client_groups';

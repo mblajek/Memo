@@ -73,7 +73,6 @@ class DeleteClientService
                 $member->client_id = null;
                 $member->save();
             }
-            $client->values()->delete();
             $client->delete();
             if ($deleteUser) {
                 $user->delete();

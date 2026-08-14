@@ -128,6 +128,17 @@ uppercase: "Pole {{attribute}} musi być pisane wielkimi literami."
 url: "Format pola {{attribute}} jest nieprawidłowy."
 ulid: "Pole {{attribute}} musi być prawidłowym identyfikatorem ULID."
 uuid: "Pole {{attribute}} musi być poprawnym identyfikatorem UUID."
+
+# codes reported by domain services (not Laravel rules)
+different_facility: "Pole {{attribute}} musi wskazywać element globalny lub z tej samej placówki."
+in_use: "Ten element jest w użyciu i nie może zostać zmieniony ani usunięty."
+missing_on_positions: "Niektóre pozycje słownika nie mają wartości wszystkich wymaganych atrybutów."
+not_editable: "Ten element nie może być modyfikowany."
+not_extendable: "Ten słownik nie może być rozszerzany."
+only_on_create: "Tę wartość pola {{attribute}} można ustawić tylko przy tworzeniu."
+required_for_dict_type: "Pole {{attribute}} jest wymagane dla atrybutu słownikowego, a niedozwolone dla innych."
+reserved: "Ta wartość pola {{attribute}} jest zarezerwowana."
+
 custom:
   data_type: "Pole {{attribute}} musi być typu „{{type}}”."
   unique_items: "Wartość {{attribute}} nie może się powtarzać."
