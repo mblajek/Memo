@@ -8,6 +8,7 @@ use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use ZipArchive;
 
 final readonly class DatabaseDumpJob extends AbstractDatabaseJob
@@ -39,18 +40,34 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
             $sqlFile = fopen($sqlPath, 'w');
             try {
                 $this->executeDump(isFromRc: $isFromRc, output: $sqlFile);
+                // The size is taken from the open descriptor, as the child process wrote to the file, and the size
+                // cached by php for its path can be the zero from tempnam.
+                $sqlStat = fstat($sqlFile);
             } finally {
                 fclose($sqlFile);
             }
+            // A program can exit with a success and produce nothing, e.g. when the disk is full. Such a dump must
+            // not be stored, marked as created and sent to the backup endpoint, as it restores an empty database.
+            if (!$sqlStat || !$sqlStat['size']) {
+                Log::error("The dump of the database is empty");
+                FatalExceptionFactory::unexpected()->throw();
+            }
 
             $zip = new ZipArchive();
-            $zip->open($zipPath, ZipArchive::CREATE);
+            if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+                Log::error("Cannot create the archive '$zipPath'");
+                FatalExceptionFactory::unexpected()->throw();
+            }
             // The dump is read from the file while the archive is being closed, so it is not kept in memory either.
             $zip->addFile($sqlPath, $innerFile);
             $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
             $zip->setPassword(DatabaseDumpHelper::getDatabaseDumpPassword());
             $zip->setCompressionName($innerFile, ZipArchive::CM_DEFLATE, 9);
-            $zip->close();
+            // The whole archive is written on close, so this is where running out of disk space shows up.
+            if (!$zip->close()) {
+                Log::error("Cannot write the archive '$zipPath': {$zip->getStatusString()}");
+                FatalExceptionFactory::unexpected()->throw();
+            }
         } finally {
             unlink($sqlPath);
         }

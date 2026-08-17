@@ -30,11 +30,19 @@ class DatabaseEchoCommand extends Command
 
         $zipPath = DbDump::fullPath($dbDump->name);
 
+        $copied = false;
         try {
             // The SQL is copied straight to the output, as a dump can have hundreds of megabytes.
-            DatabaseDumpHelper::readDumpSql($dbDump, fn(mixed $sql) => stream_copy_to_stream($sql, STDOUT));
+            DatabaseDumpHelper::readDumpSql($dbDump, function (mixed $sql) use (&$copied): void {
+                $copied = stream_copy_to_stream($sql, STDOUT);
+            });
         } catch (Throwable $e) {
             Log::error("Cannot read the dump inside '{$zipPath}': {$e->getMessage()}");
+            return self::FAILURE;
+        }
+        // Whoever reads the output cannot tell an empty dump from a database with nothing in it, so it is an error.
+        if (!$copied) {
+            Log::error("The dump inside '{$zipPath}' is empty");
             return self::FAILURE;
         }
 
