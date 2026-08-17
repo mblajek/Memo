@@ -23,11 +23,14 @@ const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.p
 const AdminDB = lazyAutoPreload(() => import("features/root/pages/AdminDB.page"));
 const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazyAutoPreload(() => import("features/root/pages/AdminUsersList.page"));
+const AttributesPage = lazyAutoPreload(() => import("features/technicals/AttributesPage"));
 const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.page"));
 const ClientCreatePage = lazyAutoPreload(() => import("features/root/pages/ClientCreate.page"));
 const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
 const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
 const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHelp.page"));
+const DictionariesPage = lazyAutoPreload(() => import("features/technicals/DictionariesPage"));
+const DictionaryPage = lazyAutoPreload(() => import("features/technicals/DictionaryPage"));
 const FacilityAdminsListPage = lazyAutoPreload(() => import("features/root/pages/FacilityAdminsList.page"));
 const FacilityHomePage = lazyAutoPreload(() => import("features/root/pages/FacilityHome.page"));
 const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
@@ -114,6 +117,14 @@ const App: VoidComponent = () => {
               <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
               <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
               <LeafRoute routeKey="admin.db_dumps" path="/db-dumps" component={AdminDB} />
+              <Route path="/technicals">
+                <Route path="/" component={() => <Navigate href="attributes" />} />
+                <LeafRoute routeKey="admin.attributes" path="/attributes" component={AttributesPage} />
+                <Route path="/dictionaries">
+                  <LeafRoute routeKey="admin.dictionaries" path="/" component={DictionariesPage} />
+                  <LeafRoute routeKey="admin.dictionary" path="/:dictionaryId" component={DictionaryPage} />
+                </Route>
+              </Route>
             </Route>
             <Route path="/__facility/*facilityPath" component={RedirectFacilityPlaceholderToFacility} />
             <Route
@@ -183,6 +194,26 @@ const App: VoidComponent = () => {
                   path="/notifications"
                   component={NotificationsListPage}
                 />
+                <Route path="/technicals">
+                  <Route path="/" component={() => <Navigate href="attributes" />} />
+                  <LeafRoute
+                    routeKey="facility.facility_admin.attributes"
+                    path="/attributes"
+                    component={AttributesPage}
+                  />
+                  <Route path="/dictionaries">
+                    <LeafRoute
+                      routeKey="facility.facility_admin.dictionaries"
+                      path="/"
+                      component={DictionariesPage}
+                    />
+                    <LeafRoute
+                      routeKey="facility.facility_admin.dictionary"
+                      path="/:dictionaryId"
+                      component={DictionaryPage}
+                    />
+                  </Route>
+                </Route>
               </Route>
             </Route>
           </Route>

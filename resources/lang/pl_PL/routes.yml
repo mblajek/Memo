@@ -10,6 +10,10 @@ admin:
   facilities: "$t(models.facility._name_plural)"
   users: "$t(models.user._name_plural)"
   db_dumps: "zrzuty bazy"
+  technicals: "techniczne"
+  attributes: "$t(tables.tables.attribute.table_name)"
+  dictionaries: "$t(models.dictionary._name_plural)"
+  dictionary: "$t(models.dictionary._name)"
 
 facility:
   home: "placówka"
@@ -32,6 +36,10 @@ facility:
     time_tables_weekly: "grafiki tygodniowe"
     reports: "raporty"
     notifications: "powiadomienia"
+    technicals: "$t(routes.admin.technicals)"
+    attributes: "$t(routes.admin.attributes)"
+    dictionaries: "$t(routes.admin.dictionaries)"
+    dictionary: "$t(routes.admin.dictionary)"
 
 help: "pomoc"
 help_pages:
