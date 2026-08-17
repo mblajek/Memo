@@ -30,10 +30,7 @@ abstract readonly class AbstractDatabaseJob
     {
         /** @var HttpHandler|ConsoleHandler $exceptionHandler */
         $exceptionHandler = App::make(ExceptionHandler::class);
-        $exceptionHandler->registerFatalErrorHandler(function () {
-            $this->dbDump->status = $this->errorStatus;
-            $this->dbDump->saveOrFail();
-        });
+        $exceptionHandler->registerFatalErrorHandler($this->onFatalError(...));
 
         try {
             $this->run();
@@ -46,6 +43,19 @@ abstract readonly class AbstractDatabaseJob
     }
 
     abstract protected function run();
+
+    /**
+     * Called when the process is dying on a fatal error, e.g. after exhausting the memory limit, where the finally
+     * blocks of run() no longer run. It does not help when the process is killed by a signal, which nothing catches.
+     *
+     * A class that overrides it has to call the parent, and to do it in a finally, so that the status is saved
+     * even when its own cleaning fails.
+     */
+    protected function onFatalError(): void
+    {
+        $this->dbDump->status = $this->errorStatus;
+        $this->dbDump->saveOrFail();
+    }
 
     /** The beginning of the standard error is enough to tell what went wrong, and does not flood the log. */
     private const int ERROR_LOG_LENGTH = 10_000;
