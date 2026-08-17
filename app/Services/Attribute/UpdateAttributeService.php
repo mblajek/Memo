@@ -6,7 +6,6 @@ use App\Exceptions\ApiException;
 use App\Models\Attribute;
 use App\Services\DefaultOrderManager;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Throwable;
 
 class UpdateAttributeService
@@ -26,7 +25,7 @@ class UpdateAttributeService
         $this->assertRequirementLevelChangeAllowed($attribute, $data['requirement_level'] ?? null);
 
         if (array_key_exists('api_name', $data)) {
-            $data['api_name'] = Str::snake($data['api_name']);
+            $data['api_name'] = $this->snakeApiName($data['api_name']);
             $this->assertApiNameUnique($attribute->table->value, $data['api_name'], $attribute->id);
         }
 

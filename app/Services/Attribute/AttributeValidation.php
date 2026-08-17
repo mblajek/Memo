@@ -10,13 +10,41 @@ use App\Models\Enums\AttributeRequirementLevel;
 use App\Models\Enums\AttributeType;
 use App\Models\Value;
 use App\Services\Dictionary\DictionaryReference;
+use App\Utils\Transformer\StringTransformer;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use ValueError;
 
 /** Domain validations shared by the attribute create/update/delete services. */
 trait AttributeValidation
 {
     /** @var array<string, list<string>> */
     private static array $tableColumns = [];
+
+    /**
+     * Converts the camelCase input api_name to its stored snake_case form, asserting that the
+     * name survives the round trip under both converters used in the system (Str for the
+     * attribute services and resources, StringTransformer for request/response keys). A name
+     * failing this (e.g. producing a digit-initial snake segment) would silently lose values
+     * or crash key conversion.
+     *
+     * @throws ApiException
+     */
+    protected function snakeApiName(string $apiName): string
+    {
+        $snake = Str::snake($apiName);
+        try {
+            $valid = Str::camel($snake) === $apiName
+                && StringTransformer::snake($apiName) === $snake
+                && StringTransformer::camel($snake) === $apiName;
+        } catch (ValueError) {
+            $valid = false;
+        }
+        if (!$valid) {
+            throw ExceptionFactory::fieldValidation('apiName', 'regex');
+        }
+        return $snake;
+    }
 
     /** @throws ApiException */
     protected function assertDictionaryTypeMatch(string $type, ?string $dictionaryId): void

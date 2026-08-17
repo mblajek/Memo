@@ -7,7 +7,6 @@ use App\Models\Attribute;
 use App\Models\Enums\AttributeTable;
 use App\Services\DefaultOrderManager;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Throwable;
 
 class CreateAttributeService
@@ -26,7 +25,7 @@ class CreateAttributeService
         $this->assertDictionaryFacilityMatch($data['dictionary_id'] ?? null, $data['facility_id'] ?? null);
 
         $data['is_fixed'] ??= false;
-        $data['api_name'] = Str::snake($data['api_name']);
+        $data['api_name'] = $this->snakeApiName($data['api_name']);
         $data['table'] = AttributeTable::{ucfirst($data['model'])}->value;
 
         $this->assertApiNameUnique($data['table'], $data['api_name']);
