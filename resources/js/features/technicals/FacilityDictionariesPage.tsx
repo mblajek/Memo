@@ -1,3 +1,5 @@
+import {Button} from "components/ui/Button";
+import {actionIcons} from "components/ui/icons";
 import {createTableTranslations} from "components/ui/Table/Table";
 import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
@@ -9,6 +11,7 @@ import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {facilityIdMatches} from "data-access/memo-api/utils";
 import {createMemo, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
+import {createDictionaryCreateModal} from "./dictionary_create_modal";
 import {useTechnicalsTableColumns} from "./technicals_tables";
 import {facilityScopeFilter} from "./util";
 
@@ -18,6 +21,7 @@ export default (() => {
   const t = useLangFunc();
   const {getCreatedUpdatedColumns} = useTableColumns();
   const technicalsCols = useTechnicalsTableColumns();
+  const dictionaryCreateModal = createDictionaryCreateModal();
   const allDictionaries = useAllDictionaries();
   const matchingPositionsCount = createMemo(() => {
     const dictionaries = allDictionaries();
@@ -42,6 +46,7 @@ export default (() => {
       columns={[
         {name: "id", initialVisible: false},
         technicalsCols.dictionaryColumns.name,
+        technicalsCols.dictionaryActionsColumn({facilityMode: true}),
         {name: "facility.id", initialVisible: false, columnGroups: "facility.name"},
         {name: "facility.name", columnGroups: true},
         {name: "isFixed"},
@@ -79,6 +84,13 @@ export default (() => {
         ...getCreatedUpdatedColumns(),
       ]}
       initialSort={[{id: "name", desc: false}]}
+      customSectionBelowTable={
+        <div class="ml-2 flex gap-1">
+          <Button class="secondary small" onClick={() => dictionaryCreateModal.show({facilityMode: true})}>
+            <actionIcons.Add class="inlineIcon" /> {t("actions.dictionary.add")}
+          </Button>
+        </div>
+      }
       intrinsicFilter={facilityScopeFilter()}
       savedViews
     />

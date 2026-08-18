@@ -30,8 +30,11 @@ dictionary:
   _name: "słownik"
   _name_plural: "słowniki"
   facility: "placówka, właściciel słownika"
+  facilityId: "placówka"
   isFixed: "nieusuwalny / systemowy"
+  isExtendable: "rozszerzalny"
   positions: "pozycje"
+  positionRequiredAttributeIds: "wymagane atrybuty pozycji"
 
 position:
   _name: "pozycja słownika"
@@ -39,7 +42,8 @@ position:
   dictionary: "słownik"
   facility: "placówka, właściciel pozycji"
   isFixed: "nieusuwalna / systemowa"
-  defaultOrder: "domyślna kolejność"
+  isDisabled: "wył."
+  defaultOrder: "kolejność"
 
 facility:
   _name: "placówka"

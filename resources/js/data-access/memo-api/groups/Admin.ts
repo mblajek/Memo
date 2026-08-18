@@ -7,7 +7,11 @@ import {
   AdminUserResourceForPatch,
 } from "../resources/adminUser.resource";
 import {AttributeResourceForCreate, AttributeResourceForPatch} from "../resources/attribute.resource";
-import {PositionResourceForPatch} from "../resources/dictionary.resource";
+import {
+  DictionaryResourceForCreate,
+  DictionaryResourceForPatch,
+  PositionResourceForPatch,
+} from "../resources/dictionary.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
@@ -51,6 +55,14 @@ export namespace Admin {
   export const updateAttribute = (attribute: Api.Request.Patch<AttributeResourceForPatch>) =>
     V1.patch(`/admin/attribute/${attribute.id}`, attribute);
   export const deleteAttribute = (attributeId: Api.Id) => V1.delete(`/admin/attribute/${attributeId}`);
+
+  export const createDictionary = (
+    dictionary: DictionaryResourceForCreate & {readonly facilityId: string | null; readonly isExtendable: boolean},
+  ) => V1.post<Api.Response.Post>("/admin/dictionary", dictionary);
+  export const updateDictionary = (
+    dictionary: Api.Request.Patch<DictionaryResourceForPatch & {readonly isExtendable: boolean}>,
+  ) => V1.patch(`/admin/dictionary/${dictionary.id}`, dictionary);
+  export const deleteDictionary = (dictionaryId: Api.Id) => V1.delete(`/admin/dictionary/${dictionaryId}`);
 
   export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch>) =>
     V1.patch(`/admin/position/${position.id}`, position);

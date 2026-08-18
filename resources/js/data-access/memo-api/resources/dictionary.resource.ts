@@ -46,6 +46,16 @@ export interface PositionResource {
   readonly positionGroupDictId: string | null;
 }
 
+/** The dictionary fields accepted by the dictionary create endpoints. The owning facility is contextual. */
+export interface DictionaryResourceForCreate extends Pick<DictionaryResource, "name"> {
+  readonly positionRequiredAttributeIds: readonly string[] | null;
+}
+
+/** The dictionary fields accepted by the dictionary patch endpoints. */
+export interface DictionaryResourceForPatch extends Pick<DictionaryResource, "id" | "name"> {
+  readonly positionRequiredAttributeIds: readonly string[] | null;
+}
+
 /** The position fields accepted by the position patch endpoints. */
 export interface PositionResourceForPatch
   extends Pick<PositionResource, "id" | "name" | "isDisabled" | "defaultOrder"> {}

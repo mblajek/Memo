@@ -39,6 +39,8 @@ user:
   add: "Dodaj osobę"
 attribute:
   add: "Dodaj atrybut"
+dictionary:
+  add: "Dodaj słownik"
 facility:
   add: "Dodaj placówkę"
 client:

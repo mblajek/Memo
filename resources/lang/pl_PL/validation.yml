@@ -131,6 +131,7 @@ uuid: "Pole {{attribute}} musi być poprawnym identyfikatorem UUID."
 
 # codes reported by domain services (not Laravel rules)
 different_facility: "Pole {{attribute}} musi wskazywać element globalny lub z tej samej placówki."
+is_extended: "Słownik zawiera już pozycje dodane przez placówki."
 in_use: "Ten element jest w użyciu i nie może zostać zmieniony ani usunięty."
 missing_on_positions: "Niektóre pozycje słownika nie mają wartości wszystkich wymaganych atrybutów."
 not_editable: "Ten element nie może być modyfikowany."

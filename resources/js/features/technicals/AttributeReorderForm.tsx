@@ -10,7 +10,7 @@ import {facilityIdMatches} from "data-access/memo-api/utils";
 import {Show, VoidComponent} from "solid-js";
 import {OrderEditForm} from "./OrderEditForm";
 import {reorderMoves} from "./reorder";
-import {SYSTEM_ORDER_OFFSET} from "./util";
+import {NON_FORM_MUTATION_META, SYSTEM_ORDER_OFFSET} from "./util";
 
 interface Props {
   /**
@@ -70,7 +70,7 @@ export const AttributeReorderForm: VoidComponent<Props> = (props) => {
         });
       }
     },
-    meta: {isFormSubmit: true},
+    meta: NON_FORM_MUTATION_META,
   }));
   async function confirm(finalIds: readonly string[]) {
     try {

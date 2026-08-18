@@ -10,7 +10,7 @@ import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {OrderEditForm} from "./OrderEditForm";
 import {reorderMoves} from "./reorder";
-import {isPositionMovable, reorderablePositions} from "./util";
+import {NON_FORM_MUTATION_META, isPositionMovable, reorderablePositions} from "./util";
 
 interface Props {
   /** The dictionary whose positions are reordered. */
@@ -66,7 +66,7 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
         });
       }
     },
-    meta: {isFormSubmit: true},
+    meta: NON_FORM_MUTATION_META,
   }));
   async function confirm(finalIds: readonly string[]) {
     try {
@@ -110,7 +110,7 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
                 {position.label}
                 <Show when={position.resource.isDisabled}>
                   {" "}
-                  ({t("tables.tables.position.column_names.isDisabled")})
+                  ({t("models.position.isDisabled")})
                 </Show>
               </>
             ),

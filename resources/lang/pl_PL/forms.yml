@@ -1,5 +1,6 @@
 generic:
   submit: "$t(actions.save)"
+  advanced_view: "widok zaawansowany"
 
 login:
   form_name: "Logowanie"
@@ -68,7 +69,6 @@ facility_edit:
 attribute_form:
   name_info: "Nazwa wyświetlana atrybutu. Zostanie zapisana z wiodącym znakiem „+” (nazwa dosłowna, nietłumaczona) — wpisz ją bez tego znaku."
   is_multi_value_info: "Pole atrybutu przechowuje wiele wartości podanego typu."
-  advanced_view: "widok zaawansowany"
   allow_required_only_on_create: "Nie można zmienić atrybutu w na „wymagany” po jego utworzeniu."
 
 attribute_create:
@@ -85,6 +85,24 @@ attribute_delete:
   form_name: "Usunięcie atrybutu"
   confirmation_text: "Czy na pewno usunąć atrybut „{{name}}”?"
   success: "Usunięto atrybut"
+
+dictionary_form:
+  name_info: "Nazwa wyświetlana słownika. Zostanie zapisana z wiodącym znakiem „+” (nazwa dosłowna, nietłumaczona) — wpisz ją bez tego znaku."
+
+dictionary_create:
+  form_name: "Nowy słownik"
+  submit: "$t(actions.create)"
+  success: "Utworzono słownik"
+  global_dictionary: "słownik globalny"
+
+dictionary_edit:
+  form_name: "Edycja słownika"
+  success: "Zmodyfikowano słownik"
+
+dictionary_delete:
+  form_name: "Usunięcie słownika"
+  confirmation_text: "Czy na pewno usunąć słownik „{{name}}”?"
+  success: "Usunięto słownik"
 
 attribute_reorder:
   form_name: "Kolejność atrybutów"

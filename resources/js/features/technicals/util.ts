@@ -1,7 +1,21 @@
+import {MutationMeta} from "components/utils/InitializeTanstackQuery";
 import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {Api} from "data-access/memo-api/types";
 import {facilityIdMatches} from "data-access/memo-api/utils";
 import {activeFacilityId} from "state/activeFacilityId.state";
+
+/**
+ * The meta for mutations run outside of any form, e.g. deletes. With no form to present the
+ * field validation errors on, the specific errors are toasted instead of the generic
+ * validation message.
+ */
+export const NON_FORM_MUTATION_META = {
+  getErrorsToShow: (errorsToShow) => {
+    const validationErrors = errorsToShow.filter(Api.isValidationError);
+    return validationErrors.length ? validationErrors : errorsToShow;
+  },
+} satisfies MutationMeta;
 
 /** Orders at or above this offset belong to system rows, kept out of the managed order sequence. */
 export const SYSTEM_ORDER_OFFSET = 1_000_000;

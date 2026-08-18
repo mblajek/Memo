@@ -18,7 +18,9 @@ import {Accessor, createMemo, Show} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {createAttributeEditModal} from "./attribute_edit_modal";
 import {createAttributeReorderModal} from "./attribute_reorder_modal";
+import {createDictionaryEditModal} from "./dictionary_edit_modal";
 import {createPositionReorderModal} from "./position_reorder_modal";
+import {NON_FORM_MUTATION_META} from "./util";
 
 const BASE_HEIGHT = "6rem";
 
@@ -48,7 +50,7 @@ export function useTechnicalsTableColumns() {
     const confirmation = createConfirmation();
     const deleteMutation = useMutation(() => ({
       mutationFn: facilityMode ? FacilityAdmin.deleteAttribute : Admin.deleteAttribute,
-      meta: {isFormSubmit: true},
+      meta: NON_FORM_MUTATION_META,
     }));
     async function deleteAttribute(attributeId: string) {
       await deleteMutation.mutateAsync(attributeId);
@@ -94,6 +96,67 @@ export function useTechnicalsTableColumns() {
                       })
                     }
                     delete={() => deleteAttribute(row().id as string)}
+                  />
+                </div>
+              </Show>
+            </PaddedCell>
+          );
+        },
+        enableSorting: false,
+        enableHiding: false,
+        ...AUTO_SIZE_COLUMN_DEFS,
+      },
+    };
+  };
+
+  /**
+   * The edit/delete actions column of the dictionaries tables. In the facility variant the
+   * mutations go through the facility endpoints and only the facility's own rows are mutable.
+   */
+  const dictionaryActionsColumn = ({facilityMode}: {facilityMode: boolean}): PartialColumnConfig => {
+    const dictionaryEditModal = createDictionaryEditModal();
+    const confirmation = createConfirmation();
+    const deleteMutation = useMutation(() => ({
+      mutationFn: facilityMode ? FacilityAdmin.deleteDictionary : Admin.deleteDictionary,
+      meta: NON_FORM_MUTATION_META,
+    }));
+    async function deleteDictionary(dictionaryId: string) {
+      await deleteMutation.mutateAsync(dictionaryId);
+      toastSuccess(t("forms.dictionary_delete.success"));
+      invalidate.dictionaries();
+    }
+    return {
+      name: "actions",
+      isDataColumn: false,
+      extraDataColumns: ["id", "name", "isFixed", "facility.id"],
+      columnDef: {
+        cell: (c) => {
+          const row = () => c.row.original;
+          const canMutate = () => !row().isFixed && (!facilityMode || row()["facility.id"] === activeFacilityId());
+          return (
+            <PaddedCell>
+              <Show when={canMutate()}>
+                <div class="flex gap-1">
+                  <EditButton
+                    class="minimal -my-px"
+                    label=""
+                    title={t("actions.edit")}
+                    onClick={() => dictionaryEditModal.show({dictionaryId: row().id as string, facilityMode})}
+                  />
+                  <DeleteButton
+                    class="minimal -my-px"
+                    label=""
+                    title={t("actions.delete")}
+                    confirm={() =>
+                      confirmation.confirm({
+                        title: t("forms.dictionary_delete.form_name"),
+                        body: t("forms.dictionary_delete.confirmation_text", {
+                          name: (row().name as string).replace(/^\+/, ""),
+                        }),
+                        confirmText: t("actions.delete"),
+                      })
+                    }
+                    delete={() => deleteDictionary(row().id as string)}
                   />
                 </div>
               </Show>
@@ -305,6 +368,7 @@ export function useTechnicalsTableColumns() {
     attributeColumns,
     attributeActionsColumn,
     dictionaryColumns,
+    dictionaryActionsColumn,
     dictionaryAttributeColumns,
     dictionaryPositionColumns,
     positionActionsColumn,

@@ -123,7 +123,7 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
                   <CheckboxInput
                     checked={advancedViewChecked()}
                     onChecked={setAdvancedViewChecked}
-                    labelBefore={<span class="font-normal">{t("forms.attribute_form.advanced_view")} </span>}
+                    labelBefore={<span class="font-normal">{t("forms.generic.advanced_view")} </span>}
                   />
                 </div>
               </Show>
