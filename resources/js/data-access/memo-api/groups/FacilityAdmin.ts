@@ -1,5 +1,6 @@
 import {V1} from "data-access/memo-api/config/v1.instance";
 import {AttributeResourceForCreate, AttributeResourceForPatch} from "data-access/memo-api/resources/attribute.resource";
+import {PositionResourceForPatch} from "data-access/memo-api/resources/dictionary.resource";
 import {FacilityAdminResourceForPatch} from "data-access/memo-api/resources/facilityAdmin.resource";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {Api} from "../types";
@@ -17,4 +18,7 @@ export namespace FacilityAdmin {
     V1.patch(`/facility/${activeFacilityId()}/admin/attribute/${attribute.id}`, attribute);
   export const deleteAttribute = (attributeId: Api.Id) =>
     V1.delete(`/facility/${activeFacilityId()}/admin/attribute/${attributeId}`);
+
+  export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch>) =>
+    V1.patch(`/facility/${activeFacilityId()}/admin/position/${position.id}`, position);
 }

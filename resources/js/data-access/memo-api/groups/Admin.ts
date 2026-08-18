@@ -7,6 +7,7 @@ import {
   AdminUserResourceForPatch,
 } from "../resources/adminUser.resource";
 import {AttributeResourceForCreate, AttributeResourceForPatch} from "../resources/attribute.resource";
+import {PositionResourceForPatch} from "../resources/dictionary.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
@@ -50,6 +51,9 @@ export namespace Admin {
   export const updateAttribute = (attribute: Api.Request.Patch<AttributeResourceForPatch>) =>
     V1.patch(`/admin/attribute/${attribute.id}`, attribute);
   export const deleteAttribute = (attributeId: Api.Id) => V1.delete(`/admin/attribute/${attributeId}`);
+
+  export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch>) =>
+    V1.patch(`/admin/position/${position.id}`, position);
 
   export const createDbDump = (dump: {isFromRc: boolean}) => V1.post("/admin/db-dump", dump);
   export const restoreDbDump = (dump: {id: Api.Id; isToRc: boolean}) =>

@@ -18,6 +18,7 @@ import {Accessor, createMemo, Show} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {createAttributeEditModal} from "./attribute_edit_modal";
 import {createAttributeReorderModal} from "./attribute_reorder_modal";
+import {createPositionReorderModal} from "./position_reorder_modal";
 
 const BASE_HEIGHT = "6rem";
 
@@ -95,6 +96,49 @@ export function useTechnicalsTableColumns() {
                     delete={() => deleteAttribute(row().id as string)}
                   />
                 </div>
+              </Show>
+            </PaddedCell>
+          );
+        },
+        enableSorting: false,
+        enableHiding: false,
+        ...AUTO_SIZE_COLUMN_DEFS,
+      },
+    };
+  };
+
+  /**
+   * The actions column of the positions tables, for now holding only the reorder button. The
+   * button appears on the facility rows and launches reordering scoped to the row's facility
+   * (like the facility variant), even in the global admin variant.
+   */
+  const positionActionsColumn = ({facilityMode}: {facilityMode: boolean}): PartialColumnConfig => {
+    const positionReorderModal = createPositionReorderModal();
+    return {
+      name: "actions",
+      isDataColumn: false,
+      extraDataColumns: ["id", "dictionary.id", "isFixed", "facility.id"],
+      columnDef: {
+        cell: (c) => {
+          const row = () => c.row.original;
+          const canReorder = () => !row().isFixed && row()["facility.id"] != null;
+          return (
+            <PaddedCell>
+              <Show when={canReorder()}>
+                <Button
+                  class="minimal -my-px"
+                  title={t("actions.reorder")}
+                  onClick={() =>
+                    positionReorderModal.show({
+                      dictionaryId: row()["dictionary.id"] as string,
+                      facilityMode,
+                      scopeFacilityId: facilityMode ? undefined : (row()["facility.id"] as string),
+                      highlightPositionId: row().id as string,
+                    })
+                  }
+                >
+                  <actionIcons.Reorder class="inlineIcon" />
+                </Button>
               </Show>
             </PaddedCell>
           );
@@ -263,5 +307,6 @@ export function useTechnicalsTableColumns() {
     dictionaryColumns,
     dictionaryAttributeColumns,
     dictionaryPositionColumns,
+    positionActionsColumn,
   };
 }

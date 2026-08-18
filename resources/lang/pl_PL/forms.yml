@@ -90,8 +90,13 @@ attribute_reorder:
   form_name: "Kolejność atrybutów"
   success: "Zmieniono kolejność atrybutów"
 
+position_reorder:
+  form_name: "Kolejność pozycji"
+  success: "Zmieniono kolejność pozycji"
+
 reorder:
   reset: "Przywróć pierwotną kolejność"
+  nothing_movable: "Żaden z elementów nie może być przenoszony"
 
 meeting:
   default_duration: "Sugerowane:"

@@ -10,9 +10,7 @@ import {facilityIdMatches} from "data-access/memo-api/utils";
 import {Show, VoidComponent} from "solid-js";
 import {OrderEditForm} from "./OrderEditForm";
 import {reorderMoves} from "./reorder";
-
-/** Orders at or above this offset belong to system rows, kept out of the managed order sequence. */
-const SYSTEM_ORDER_OFFSET = 1_000_000;
+import {SYSTEM_ORDER_OFFSET} from "./util";
 
 interface Props {
   /**

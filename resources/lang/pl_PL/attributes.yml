@@ -40,5 +40,6 @@ attribs_and_dicts:
   dictionary_not_in_facility: "Ten słownik nie należy do placówki"
   global_dictionary: "Globalny"
   global_attributes: "Atrybuty globalne"
+  all_facilities: "Wszystkie placówki"
   positions_count_all_facilities: "Łączna liczba pozycji (wszystkie placówki)"
   positions_count_this_facility: "Liczba pozycji w wybranej placówce"

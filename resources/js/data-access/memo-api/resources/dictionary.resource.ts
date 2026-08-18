@@ -45,3 +45,7 @@ export interface PositionResource {
   readonly isDisabled: boolean;
   readonly positionGroupDictId: string | null;
 }
+
+/** The position fields accepted by the position patch endpoints. */
+export interface PositionResourceForPatch
+  extends Pick<PositionResource, "id" | "name" | "isDisabled" | "defaultOrder"> {}
