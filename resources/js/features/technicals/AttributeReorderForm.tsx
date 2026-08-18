@@ -31,10 +31,10 @@ export const AttributeReorderForm: VoidComponent<Props> = (props) => {
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const scopeAttribute = () => allAttributes()?.byId.get(props.attributeId);
   const scopeFacilityId = () => scopeAttribute()?.resource.facilityId || undefined;
-  const scopeFacilityName = () => {
-    const facilityId = scopeFacilityId();
+  function facilityName(facilityId: string | undefined) {
     return facilityId ? facilitiesQuery.data?.find((facility) => facility.id === facilityId)?.name : undefined;
-  };
+  }
+  const scopeFacilityName = () => facilityName(scopeFacilityId());
   const attributes = () => {
     const attribute = scopeAttribute();
     if (!attribute) {
@@ -100,8 +100,17 @@ export const AttributeReorderForm: VoidComponent<Props> = (props) => {
           }
           items={attributes().map((attribute) => ({
             id: attribute.id,
-            label: attribute.label,
-            details: String(attribute.type),
+            label: (
+              <>
+                {attribute.label}
+                <span class="text-grey-text">
+                  {attribute.label ? ": " : ""}
+                  {String(attribute.type)}
+                </span>
+              </>
+            ),
+            // In a facility-scoped set, tell the facility's rows apart from the global ones.
+            details: facilityName(attribute.resource.facilityId || undefined),
             movable: isMovable(attribute),
           }))}
           highlightId={props.attributeId}

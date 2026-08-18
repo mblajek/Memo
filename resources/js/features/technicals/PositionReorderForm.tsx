@@ -1,6 +1,7 @@
 import {useMutation, useQuery} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
+import {Position} from "data-access/memo-api/dictionaries";
 import {useAllDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityAdmin} from "data-access/memo-api/groups/FacilityAdmin";
@@ -10,7 +11,8 @@ import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {OrderEditForm} from "./OrderEditForm";
 import {reorderMoves} from "./reorder";
-import {NON_FORM_MUTATION_META, isPositionMovable, reorderablePositions} from "./util";
+import {NON_FORM_MUTATION_META, isPositionMovable, positionReorderMixesFacilities, reorderablePositions} from "./util";
+import {cx} from "resources/js/components/utils/classnames";
 
 interface Props {
   /** The dictionary whose positions are reordered. */
@@ -19,10 +21,12 @@ interface Props {
   readonly facilityMode: boolean;
   /**
    * The facility scope of the reordered set in the global admin variant: the given facility's
-   * rows (movable) plus the global ones. Without it the set spans all the facilities.
-   * Ignored in the facility variant, which is always scoped to the active facility.
+   * rows (plus the global ones). Without it the set spans all the facilities. Ignored in the
+   * facility variant, which is always scoped to the active facility.
    */
   readonly scopeFacilityId?: string;
+  /** Limits the reordered set to the global rows. Only in the global admin variant. */
+  readonly globalOnly?: boolean;
   /** The position initially scrolled to and highlighted. */
   readonly highlightPositionId?: string;
   readonly onSuccess?: () => void;
@@ -39,14 +43,15 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
   // variant is scoped to the requested facility, or spans all the facilities (even though the
   // cross-facility relative order is not visible in any facility's view).
   const scopeFacilityId = () => (props.facilityMode ? activeFacilityId() : props.scopeFacilityId);
-  // A facility-scoped set follows the facility variant semantics: only the facility's own
-  // rows are movable, even for the global admin.
-  const facilityScoped = () => props.facilityMode || props.scopeFacilityId !== undefined;
+  const globalOnly = () => !props.facilityMode && !!props.globalOnly;
+  // Movability follows the endpoint, regardless of the displayed scope: the facility endpoint
+  // can only move the facility's own rows, the admin endpoint any non-fixed row.
+  const movable = (position: Position) => isPositionMovable(position, {facilityMode: props.facilityMode});
   const facilityName = (facilityId: string | null | undefined) =>
     facilityId ? facilitiesQuery.data?.find((facility) => facility.id === facilityId)?.name : undefined;
   const positions = () => {
     const dict = dictionary();
-    return dict && reorderablePositions(dict, {scopeFacilityId: scopeFacilityId()});
+    return dict && reorderablePositions(dict, {scopeFacilityId: scopeFacilityId(), globalOnly: globalOnly()});
   };
   const reorderMutation = useMutation(() => ({
     mutationFn: async (finalIds: readonly string[]) => {
@@ -54,7 +59,7 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
         positions()!.map((position) => ({
           id: position.id,
           order: position.resource.defaultOrder,
-          movable: isPositionMovable(position, {facilityMode: facilityScoped()}),
+          movable: movable(position),
         })),
         finalIds,
       );
@@ -91,7 +96,13 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
               <div>
                 <Show
                   when={facilityName(scopeFacilityId())}
-                  fallback={<>{t("attributes.attribs_and_dicts.all_facilities")}</>}
+                  fallback={
+                    <>
+                      {globalOnly()
+                        ? t("attributes.attribs_and_dicts.global_positions")
+                        : t("attributes.attribs_and_dicts.all_facilities")}
+                    </>
+                  }
                 >
                   {(facilityName) => (
                     <>
@@ -106,17 +117,21 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
           items={positions().map((position) => ({
             id: position.id,
             label: (
-              <>
+              <div class={cx(position.resource.isDisabled ? "text-grey-text" : undefined)}>
                 {position.label}
                 <Show when={position.resource.isDisabled}>
                   {" "}
-                  ({t("models.position.isDisabled")})
+                  {t("parenthesised", {text: t("models.position.isDisabled")})}
                 </Show>
-              </>
+              </div>
             ),
-            // In the multi-facility variant, tell the facilities' rows apart.
-            details: facilityScoped() ? undefined : facilityName(position.resource.facilityId),
-            movable: isPositionMovable(position, {facilityMode: facilityScoped()}),
+            details: positionReorderMixesFacilities(dictionary(), {
+              facilityMode: props.facilityMode,
+              globalOnly: globalOnly(),
+            })
+              ? facilityName(position.resource.facilityId)
+              : undefined,
+            movable: movable(position),
           }))}
           highlightId={props.highlightPositionId}
           onConfirm={confirm}

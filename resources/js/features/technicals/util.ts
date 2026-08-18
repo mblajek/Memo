@@ -23,17 +23,20 @@ export const SYSTEM_ORDER_OFFSET = 1_000_000;
 /**
  * The dictionary's positions reorderable in the given facility scope: the global rows plus
  * the scope facility's rows, or the rows of all the facilities when no scope facility is
- * given. Without the system rows, sorted by order.
+ * given; only the global rows in the globalOnly variant. Without the system rows, sorted
+ * by order.
  */
 export function reorderablePositions(
   dictionary: Dictionary,
-  {scopeFacilityId}: {scopeFacilityId: string | undefined},
+  {scopeFacilityId, globalOnly}: {scopeFacilityId: string | undefined; globalOnly?: boolean},
 ): Position[] {
   return dictionary.allPositions
     .filter(
       (position) =>
         position.resource.defaultOrder < SYSTEM_ORDER_OFFSET &&
-        (scopeFacilityId === undefined || facilityIdMatches(position.resource.facilityId, scopeFacilityId)),
+        (globalOnly
+          ? position.resource.facilityId === null
+          : scopeFacilityId === undefined || facilityIdMatches(position.resource.facilityId, scopeFacilityId)),
     )
     .toSorted((a, b) => a.resource.defaultOrder - b.resource.defaultOrder);
 }
@@ -44,6 +47,17 @@ export function reorderablePositions(
  */
 export function isPositionMovable(position: Position, {facilityMode}: {facilityMode: boolean}): boolean {
   return !position.resource.isFixed && (!facilityMode || position.resource.facilityId !== null);
+}
+
+/**
+ * Whether a reorder of the dictionary's positions in the given scope can mix rows of
+ * different facilities. The rows are then told apart by their facility names.
+ */
+export function positionReorderMixesFacilities(
+  dictionary: Dictionary | undefined,
+  {facilityMode, globalOnly}: {facilityMode: boolean; globalOnly: boolean},
+): boolean {
+  return !facilityMode && !globalOnly && !dictionary?.resource.facilityId;
 }
 
 /** Whether any of the dictionary's positions in the given scope can be moved. */

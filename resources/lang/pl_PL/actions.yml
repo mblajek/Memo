@@ -41,6 +41,8 @@ attribute:
   add: "Dodaj atrybut"
 dictionary:
   add: "Dodaj słownik"
+position:
+  add: "Dodaj pozycję"
 facility:
   add: "Dodaj placówkę"
 client:

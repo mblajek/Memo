@@ -11,6 +11,7 @@ import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {createMemo, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {DictionaryHeader} from "./DictionaryHeader";
+import {createPositionCreateModal} from "./position_create_modal";
 import {createPositionReorderModal} from "./position_reorder_modal";
 import {useTechnicalsTableColumns} from "./technicals_tables";
 import {anyPositionMovable, facilityScopeFilter} from "./util";
@@ -20,7 +21,9 @@ export default (() => {
   const params = useParams();
   const {getCreatedUpdatedColumns} = useTableColumns();
   const allDictionaries = useAllDictionaries();
+  const positionCreateModal = createPositionCreateModal();
   const positionReorderModal = createPositionReorderModal();
+  const extendable = () => allDictionaries()?.byId.get(params.dictionaryId!)?.resource.isExtendable ?? false;
   const reorderPossible = () =>
     anyPositionMovable(allDictionaries()?.get(params.dictionaryId!), {
       scopeFacilityId: activeFacilityId(),
@@ -60,6 +63,14 @@ export default (() => {
       initialSort={[{id: "defaultOrder", desc: false}]}
       customSectionBelowTable={
         <div class="ml-2 flex gap-1">
+          <Button
+            class="secondary small"
+            disabled={!extendable()}
+            title={extendable() ? undefined : t("validation.not_extendable")}
+            onClick={() => positionCreateModal.show({dictionaryId: params.dictionaryId!, facilityMode: true})}
+          >
+            <actionIcons.Add class="inlineIcon" /> {t("actions.position.add")}
+          </Button>
           <Button
             class="secondary small"
             disabled={!reorderPossible()}

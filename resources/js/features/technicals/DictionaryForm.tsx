@@ -102,6 +102,9 @@ export const DictionaryForm: VoidComponent<Props> = (allProps) => {
                 <HideableSection show={!props.facilityMode && !form.data("facilityId")}>
                   <CheckboxField name="isExtendable" />
                 </HideableSection>
+                {/* TODO: Adding a required attribute to a dictionary that already has positions fails
+                until every position has a value, but the UI has no way to set values of an attribute
+                that is not yet required. Consider some flow for this. */}
                 <HideableSection show={advancedView()}>
                   <Select name="positionRequiredAttributeIds" items={requirableAttributeItems()} multiple />
                 </HideableSection>

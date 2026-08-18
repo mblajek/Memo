@@ -19,6 +19,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {createAttributeEditModal} from "./attribute_edit_modal";
 import {createAttributeReorderModal} from "./attribute_reorder_modal";
 import {createDictionaryEditModal} from "./dictionary_edit_modal";
+import {createPositionEditModal} from "./position_edit_modal";
 import {createPositionReorderModal} from "./position_reorder_modal";
 import {NON_FORM_MUTATION_META} from "./util";
 
@@ -171,37 +172,75 @@ export function useTechnicalsTableColumns() {
   };
 
   /**
-   * The actions column of the positions tables, for now holding only the reorder button. The
-   * button appears on the facility rows and launches reordering scoped to the row's facility
-   * (like the facility variant), even in the global admin variant.
+   * The edit/reorder/delete actions column of the positions tables. In the facility variant
+   * the mutations go through the facility endpoints and only the facility's own rows are
+   * mutable. The reorder button launches reordering scoped to the row's facility (or to the
+   * global rows for a global row), even in the global admin variant.
    */
   const positionActionsColumn = ({facilityMode}: {facilityMode: boolean}): PartialColumnConfig => {
+    const positionEditModal = createPositionEditModal();
     const positionReorderModal = createPositionReorderModal();
+    const confirmation = createConfirmation();
+    const deleteMutation = useMutation(() => ({
+      mutationFn: facilityMode ? FacilityAdmin.deletePosition : Admin.deletePosition,
+      meta: NON_FORM_MUTATION_META,
+    }));
+    async function deletePosition(positionId: string) {
+      await deleteMutation.mutateAsync(positionId);
+      toastSuccess(t("forms.position_delete.success"));
+      invalidate.dictionaries();
+    }
     return {
       name: "actions",
       isDataColumn: false,
-      extraDataColumns: ["id", "dictionary.id", "isFixed", "facility.id"],
+      extraDataColumns: ["id", "dictionary.id", "name", "isFixed", "facility.id"],
       columnDef: {
         cell: (c) => {
           const row = () => c.row.original;
-          const canReorder = () => !row().isFixed && row()["facility.id"] != null;
+          const canMutate = () => !row().isFixed && (!facilityMode || row()["facility.id"] === activeFacilityId());
           return (
             <PaddedCell>
-              <Show when={canReorder()}>
-                <Button
-                  class="minimal -my-px"
-                  title={t("actions.reorder")}
-                  onClick={() =>
-                    positionReorderModal.show({
-                      dictionaryId: row()["dictionary.id"] as string,
-                      facilityMode,
-                      scopeFacilityId: facilityMode ? undefined : (row()["facility.id"] as string),
-                      highlightPositionId: row().id as string,
-                    })
-                  }
-                >
-                  <actionIcons.Reorder class="inlineIcon" />
-                </Button>
+              <Show when={canMutate()}>
+                <div class="flex gap-1">
+                  <EditButton
+                    class="minimal -my-px"
+                    label=""
+                    title={t("actions.edit")}
+                    onClick={() => positionEditModal.show({positionId: row().id as string, facilityMode})}
+                  />
+                  <Button
+                    class="minimal -my-px"
+                    title={t("actions.reorder")}
+                    onClick={() =>
+                      positionReorderModal.show({
+                        dictionaryId: row()["dictionary.id"] as string,
+                        facilityMode,
+                        scopeFacilityId: facilityMode
+                          ? undefined
+                          : ((row()["facility.id"] as string | null) ?? undefined),
+                        globalOnly: !facilityMode && !row()["facility.id"],
+                        highlightPositionId: row().id as string,
+                      })
+                    }
+                  >
+                    <actionIcons.Reorder class="inlineIcon" />
+                  </Button>
+                  <DeleteButton
+                    class="minimal -my-px"
+                    label=""
+                    title={t("actions.delete")}
+                    confirm={() =>
+                      confirmation.confirm({
+                        title: t("forms.position_delete.form_name"),
+                        body: t("forms.position_delete.confirmation_text", {
+                          name: (row().name as string).replace(/^\+/, ""),
+                        }),
+                        confirmText: t("actions.delete"),
+                      })
+                    }
+                    delete={() => deletePosition(row().id as string)}
+                  />
+                </div>
               </Show>
             </PaddedCell>
           );

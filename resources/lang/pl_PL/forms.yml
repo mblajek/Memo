@@ -104,6 +104,27 @@ dictionary_delete:
   confirmation_text: "Czy na pewno usunąć słownik „{{name}}”?"
   success: "Usunięto słownik"
 
+position_form:
+  name_info: "Nazwa wyświetlana pozycji. Zostanie zapisana z wiodącym znakiem „+” (nazwa dosłowna, nietłumaczona) — wpisz ją bez tego znaku."
+  attributes_editable_in_facility_info: "Wartości atrybutów pozycji należącej do placówki mogą odwoływać się do danych tej placówki, dlatego można je edytować tylko w widoku tej placówki."
+  field_names:
+    isDisabled: "pozycja wyłączona (niedostępna)"
+
+position_create:
+  form_name: "Nowa pozycja"
+  submit: "$t(actions.create)"
+  success: "Utworzono pozycję"
+  global_position: "pozycja globalna"
+
+position_edit:
+  form_name: "Edycja pozycji"
+  success: "Zmodyfikowano pozycję"
+
+position_delete:
+  form_name: "Usunięcie pozycji"
+  confirmation_text: "Czy na pewno usunąć pozycję „{{name}}”?"
+  success: "Usunięto pozycję"
+
 attribute_reorder:
   form_name: "Kolejność atrybutów"
   success: "Zmieniono kolejność atrybutów"
@@ -114,7 +135,7 @@ position_reorder:
 
 reorder:
   reset: "Przywróć pierwotną kolejność"
-  nothing_movable: "Żaden z elementów nie może być przenoszony"
+  nothing_movable: "Nie ma elementów, których kolejność można by zmienić."
 
 meeting:
   default_duration: "Sugerowane:"

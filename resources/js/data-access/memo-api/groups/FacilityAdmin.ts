@@ -3,6 +3,8 @@ import {AttributeResourceForCreate, AttributeResourceForPatch} from "data-access
 import {
   DictionaryResourceForCreate,
   DictionaryResourceForPatch,
+  PositionAttributeValues,
+  PositionResourceForCreate,
   PositionResourceForPatch,
 } from "data-access/memo-api/resources/dictionary.resource";
 import {FacilityAdminResourceForPatch} from "data-access/memo-api/resources/facilityAdmin.resource";
@@ -30,6 +32,10 @@ export namespace FacilityAdmin {
   export const deleteDictionary = (dictionaryId: Api.Id) =>
     V1.delete(`/facility/${activeFacilityId()}/admin/dictionary/${dictionaryId}`);
 
-  export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch>) =>
+  export const createPosition = (position: PositionResourceForCreate & PositionAttributeValues) =>
+    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/admin/position`, position);
+  export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch> & PositionAttributeValues) =>
     V1.patch(`/facility/${activeFacilityId()}/admin/position/${position.id}`, position);
+  export const deletePosition = (positionId: Api.Id) =>
+    V1.delete(`/facility/${activeFacilityId()}/admin/position/${positionId}`);
 }

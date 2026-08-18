@@ -10,6 +10,8 @@ import {AttributeResourceForCreate, AttributeResourceForPatch} from "../resource
 import {
   DictionaryResourceForCreate,
   DictionaryResourceForPatch,
+  PositionAttributeValues,
+  PositionResourceForCreate,
   PositionResourceForPatch,
 } from "../resources/dictionary.resource";
 import {MemberResource} from "../resources/member.resource";
@@ -64,8 +66,12 @@ export namespace Admin {
   ) => V1.patch(`/admin/dictionary/${dictionary.id}`, dictionary);
   export const deleteDictionary = (dictionaryId: Api.Id) => V1.delete(`/admin/dictionary/${dictionaryId}`);
 
-  export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch>) =>
+  export const createPosition = (
+    position: PositionResourceForCreate & {readonly facilityId: string | null} & PositionAttributeValues,
+  ) => V1.post<Api.Response.Post>("/admin/position", position);
+  export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch> & PositionAttributeValues) =>
     V1.patch(`/admin/position/${position.id}`, position);
+  export const deletePosition = (positionId: Api.Id) => V1.delete(`/admin/position/${positionId}`);
 
   export const createDbDump = (dump: {isFromRc: boolean}) => V1.post("/admin/db-dump", dump);
   export const restoreDbDump = (dump: {id: Api.Id; isToRc: boolean}) =>

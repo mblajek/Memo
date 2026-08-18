@@ -29,7 +29,6 @@ attribute:
 dictionary:
   _name: "słownik"
   _name_plural: "słowniki"
-  facility: "placówka, właściciel słownika"
   facilityId: "placówka"
   isFixed: "nieusuwalny / systemowy"
   isExtendable: "rozszerzalny"
@@ -40,7 +39,7 @@ position:
   _name: "pozycja słownika"
   _name_plural: "pozycje słownika"
   dictionary: "słownik"
-  facility: "placówka, właściciel pozycji"
+  facilityId: "placówka"
   isFixed: "nieusuwalna / systemowa"
   isDisabled: "wył."
   defaultOrder: "kolejność"

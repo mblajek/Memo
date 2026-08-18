@@ -10,6 +10,7 @@ import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {VoidComponent} from "solid-js";
 import {DictionaryHeader} from "./DictionaryHeader";
+import {createPositionCreateModal} from "./position_create_modal";
 import {createPositionReorderModal} from "./position_reorder_modal";
 import {useTechnicalsTableColumns} from "./technicals_tables";
 import {anyPositionMovable} from "./util";
@@ -19,7 +20,10 @@ export default (() => {
   const params = useParams();
   const {getCreatedUpdatedColumns} = useTableColumns();
   const allDictionaries = useAllDictionaries();
+  const positionCreateModal = createPositionCreateModal();
   const positionReorderModal = createPositionReorderModal();
+  const dictionary = () => allDictionaries()?.byId.get(params.dictionaryId!);
+  const extendable = () => dictionary()?.resource.isExtendable ?? false;
   const reorderPossible = () =>
     anyPositionMovable(allDictionaries()?.get(params.dictionaryId!), {scopeFacilityId: undefined, facilityMode: false});
   const technicalsCols = useTechnicalsTableColumns();
@@ -59,9 +63,24 @@ export default (() => {
         <div class="ml-2 flex gap-1">
           <Button
             class="secondary small"
+            disabled={!extendable()}
+            title={extendable() ? undefined : t("validation.not_extendable")}
+            onClick={() => positionCreateModal.show({dictionaryId: params.dictionaryId!, facilityMode: false})}
+          >
+            <actionIcons.Add class="inlineIcon" /> {t("actions.position.add")}
+          </Button>
+          <Button
+            class="secondary small"
             disabled={!reorderPossible()}
             title={reorderPossible() ? undefined : t("forms.reorder.nothing_movable")}
-            onClick={() => positionReorderModal.show({dictionaryId: params.dictionaryId!, facilityMode: false})}
+            onClick={() =>
+              positionReorderModal.show({
+                dictionaryId: params.dictionaryId!,
+                facilityMode: false,
+                // A facility dictionary's rows all belong to its facility; scope the view to it.
+                scopeFacilityId: dictionary()?.resource.facilityId ?? undefined,
+              })
+            }
           >
             <actionIcons.Reorder class="inlineIcon" /> {t("actions.reorder")}
           </Button>
