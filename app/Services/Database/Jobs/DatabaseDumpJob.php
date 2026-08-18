@@ -9,6 +9,7 @@ use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
 use Closure;
 use ErrorException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -160,8 +161,14 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
         $this->dbDump->status = DatabaseDumpStatus::created;
 
         if (!$isFromRc && ($backupAuth = Config::get('app.db.backup_auth'))) {
+            // The dump is made and stored by now, and whether it also reached the backup endpoint is said by
+            // is_backuped, so nothing below may throw: that would turn a good dump into a failed one.
             // The archive is attached as a stream, so that it is sent without reading it into memory.
             $zipFile = fopen($zipPath, 'r');
+            if ($zipFile === false) {
+                Log::error("Cannot open the archive '$zipPath', it is not sent to the backup endpoint");
+                return;
+            }
             try {
                 $response = Http::asMultipart()
                     ->withHeaders([
@@ -170,6 +177,10 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
                     ])
                     ->attach('backup', $zipFile, 'backup.zip')
                     ->post(Config::string('app.db.backup_url'));
+            } catch (ConnectionException $exception) {
+                // A refused or timed out connection is the endpoint being down, and not a broken dump.
+                Log::error("Cannot reach the backup endpoint: {$exception->getMessage()}");
+                return;
             } finally {
                 fclose($zipFile);
             }
