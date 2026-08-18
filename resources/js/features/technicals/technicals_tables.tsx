@@ -1,7 +1,8 @@
 import {A} from "@solidjs/router";
 import {useMutation} from "@tanstack/solid-query";
-import {DeleteButton, EditButton} from "components/ui/Button";
+import {Button, DeleteButton, EditButton} from "components/ui/Button";
 import {createConfirmation} from "components/ui/confirmation";
+import {actionIcons} from "components/ui/icons";
 import {AUTO_SIZE_COLUMN_DEFS} from "components/ui/Table/Table";
 import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
 import {AttributeColumnsConfig, PartialColumnConfig} from "components/ui/Table/TQueryTable";
@@ -16,6 +17,7 @@ import {createTableColumnsSet, ScrollableCell} from "data-access/memo-api/tquery
 import {Accessor, createMemo, Show} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {createAttributeEditModal} from "./attribute_edit_modal";
+import {createAttributeReorderModal} from "./attribute_reorder_modal";
 
 const BASE_HEIGHT = "6rem";
 
@@ -41,6 +43,7 @@ export function useTechnicalsTableColumns() {
    */
   const attributeActionsColumn = ({facilityMode}: {facilityMode: boolean}): PartialColumnConfig => {
     const attributeEditModal = createAttributeEditModal();
+    const attributeReorderModal = createAttributeReorderModal();
     const confirmation = createConfirmation();
     const deleteMutation = useMutation(() => ({
       mutationFn: facilityMode ? FacilityAdmin.deleteAttribute : Admin.deleteAttribute,
@@ -69,6 +72,13 @@ export function useTechnicalsTableColumns() {
                     title={t("actions.edit")}
                     onClick={() => attributeEditModal.show({attributeId: row().id as string, facilityMode})}
                   />
+                  <Button
+                    class="minimal -my-px"
+                    title={t("actions.reorder")}
+                    onClick={() => attributeReorderModal.show({attributeId: row().id as string, facilityMode})}
+                  >
+                    <actionIcons.Reorder class="inlineIcon" />
+                  </Button>
                   <DeleteButton
                     class="minimal -my-px"
                     label=""

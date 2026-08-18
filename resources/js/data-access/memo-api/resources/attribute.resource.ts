@@ -70,7 +70,10 @@ export interface AttributeResourceForCreate
 
 /** The attribute fields accepted by the attribute patch endpoints. */
 export interface AttributeResourceForPatch
-  extends Pick<AttributeResource, "id" | "name" | "apiName" | "description" | "requirementLevel" | "metadata"> {}
+  extends Pick<
+    AttributeResource,
+    "id" | "name" | "apiName" | "description" | "requirementLevel" | "metadata" | "defaultOrder"
+  > {}
 
 export interface AttributeMetadataResource {
   // For string and text:

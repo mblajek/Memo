@@ -86,6 +86,13 @@ attribute_delete:
   confirmation_text: "Czy na pewno usunąć atrybut „{{name}}”?"
   success: "Usunięto atrybut"
 
+attribute_reorder:
+  form_name: "Kolejność atrybutów"
+  success: "Zmieniono kolejność atrybutów"
+
+reorder:
+  reset: "Przywróć pierwotną kolejność"
+
 meeting:
   default_duration: "Sugerowane:"
   default_duration_first_set_start_time: "Najpierw wybierz godzinę rozpoczęcia"
