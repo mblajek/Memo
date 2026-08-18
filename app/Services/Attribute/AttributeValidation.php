@@ -97,6 +97,19 @@ trait AttributeValidation
         }
     }
 
+    /**
+     * A bare "+" name (the literal-name marker with no content) means an empty display name,
+     * which only a separator can have.
+     *
+     * @throws ApiException
+     */
+    protected function assertNameNotEmpty(?string $name, string $type): void
+    {
+        if ($name === '+' && $type !== AttributeType::Separator->value) {
+            throw ExceptionFactory::fieldValidation('name', 'not_in');
+        }
+    }
+
     /** @throws ApiException */
     protected function assertApiNameUnique(string $table, string $apiName, ?string $ignoreId = null): void
     {

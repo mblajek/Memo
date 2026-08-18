@@ -24,6 +24,7 @@ class CreateAttributeService
         $this->assertDictionaryTypeMatch($data['type'], $data['dictionary_id'] ?? null);
         $this->assertDictionaryFacilityMatch($data['dictionary_id'] ?? null, $data['facility_id'] ?? null);
         $this->assertRequirementLevelMatchesType($data['type'], $data['requirement_level'] ?? null);
+        $this->assertNameNotEmpty($data['name'] ?? null, $data['type']);
 
         $data['is_fixed'] ??= false;
         $data['api_name'] = $this->snakeApiName($data['api_name']);

@@ -338,6 +338,22 @@ class AttributeEndpointTest extends TestCase
         self::assertContains('validation.declined', $this->fieldCodes($result, 'isFixed'));
     }
 
+    public function testBarePlusNameOnlyAllowedForSeparator(): void
+    {
+        $result = $this->createAttribute(['name' => '+']);
+        $result->assertBadRequest();
+        self::assertContains('validation.not_in', $this->fieldCodes($result, 'name'));
+
+        $this->createAttribute(['name' => '+', 'type' => 'separator', 'requirementLevel' => 'empty'])
+            ->assertCreated();
+
+        $id = $this->createAttribute([])->assertCreated()->json('data.id');
+        $this->prepareAdminUser();
+        $result = $this->patch(self::GLOBAL_URL . "/$id", ['name' => '+']);
+        $result->assertBadRequest();
+        self::assertContains('validation.not_in', $this->fieldCodes($result, 'name'));
+    }
+
     public function testSeparatorRequiresEmptyRequirementLevel(): void
     {
         $result = $this->createAttribute(['type' => 'separator', 'requirementLevel' => 'optional']);

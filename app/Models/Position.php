@@ -54,7 +54,7 @@ class Position extends Model
         return match ($field) {
             'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')]),
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
-            'name' => Valid::trimmed(),
+            'name' => Valid::trimmed(['not_in:+']),
             // fixed (system) rows are created only by DB migrations
             'is_fixed' => Valid::bool(['declined'], sometimes: true),
             'is_disabled' => Valid::bool(),

@@ -328,6 +328,21 @@ class PositionEndpointTest extends TestCase
         $this->patch(self::GLOBAL_URL . "/$positionId", ['name' => 'renamed'])->assertOk();
     }
 
+    public function testBarePlusNameIsRejected(): void
+    {
+        $dictionary = $this->makeDictionary();
+        $this->prepareAdminUser();
+        $result = $this->post(self::GLOBAL_URL, [
+            'facilityId' => null,
+            'dictionaryId' => $dictionary->id,
+            'name' => '+',
+            'isFixed' => false,
+            'isDisabled' => false,
+        ]);
+        $result->assertBadRequest();
+        self::assertContains('validation.not_in', $this->fieldCodes($result, 'name'));
+    }
+
     public function testIsFixedCannotBeSetViaApi(): void
     {
         $dictionary = $this->makeDictionary();

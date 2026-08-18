@@ -123,6 +123,13 @@ class DictionaryEndpointTest extends TestCase
         self::assertContains('validation.declined', $this->fieldCodes($result, 'isFixed'));
     }
 
+    public function testBarePlusNameIsRejected(): void
+    {
+        $result = $this->createDictionary(['name' => '+']);
+        $result->assertBadRequest();
+        self::assertContains('validation.not_in', $this->fieldCodes($result, 'name'));
+    }
+
     public function testPatchAcceptsUnchangedIsFixedButRejectsTrue(): void
     {
         $id = $this->createDictionary()->assertCreated()->json('data.id');

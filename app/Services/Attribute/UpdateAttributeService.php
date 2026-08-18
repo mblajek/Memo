@@ -24,6 +24,7 @@ class UpdateAttributeService
         $this->assertNotFixed($attribute);
         $this->assertRequirementLevelChangeAllowed($attribute, $data['requirement_level'] ?? null);
         $this->assertRequirementLevelMatchesType($attribute->type->value, $data['requirement_level'] ?? null);
+        $this->assertNameNotEmpty($data['name'] ?? null, $attribute->type->value);
 
         if (array_key_exists('api_name', $data)) {
             $data['api_name'] = $this->snakeApiName($data['api_name']);

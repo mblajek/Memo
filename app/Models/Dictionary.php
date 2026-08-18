@@ -48,7 +48,7 @@ class Dictionary extends Model
     {
         return match ($field) {
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
-            'name' => Valid::trimmed(),
+            'name' => Valid::trimmed(['not_in:+']),
             // fixed (system) rows are created only by DB migrations
             'is_fixed' => Valid::bool(['declined'], sometimes: true),
             'is_extendable' => Valid::bool(),
