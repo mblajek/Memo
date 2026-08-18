@@ -123,6 +123,37 @@ class DictionaryEndpointTest extends TestCase
         self::assertContains('validation.declined', $this->fieldCodes($result, 'isFixed'));
     }
 
+    public function testFacilityDictionaryMustBeExtendable(): void
+    {
+        $facility = Facility::factory()->create();
+        $result = $this->createDictionary(['facilityId' => $facility->id, 'isExtendable' => false]);
+        $result->assertBadRequest();
+        self::assertContains('validation.accepted', $this->fieldCodes($result, 'isExtendable'));
+
+        $id = $this->createDictionary(['facilityId' => $facility->id])->assertCreated()->json('data.id');
+        $this->prepareAdminUser();
+        $patch = $this->patch(self::GLOBAL_URL . "/$id", ['isExtendable' => false]);
+        $patch->assertBadRequest();
+        self::assertContains('validation.accepted', $this->fieldCodes($patch, 'isExtendable'));
+    }
+
+    public function testCannotBecomeNonExtendableWithFacilityPositions(): void
+    {
+        $facility = Facility::factory()->create();
+        $id = $this->createDictionary()->assertCreated()->json('data.id');
+        Position::factory()->create(['dictionary_id' => $id, 'facility_id' => $facility->id, 'default_order' => 1]);
+        $this->prepareAdminUser();
+        $result = $this->patch(self::GLOBAL_URL . "/$id", ['isExtendable' => false]);
+        $result->assertBadRequest();
+        self::assertContains('validation.is_extended', $this->fieldCodes($result, 'isExtendable'));
+
+        // Global positions are not extensions.
+        $id = $this->createDictionary()->assertCreated()->json('data.id');
+        Position::factory()->create(['dictionary_id' => $id, 'default_order' => 1]);
+        $this->prepareAdminUser();
+        $this->patch(self::GLOBAL_URL . "/$id", ['isExtendable' => false])->assertOk();
+    }
+
     public function testBarePlusNameIsRejected(): void
     {
         $result = $this->createDictionary(['name' => '+']);

@@ -22,6 +22,9 @@ class CreateDictionaryService
     public function handle(?Facility $facility, array $data): string
     {
         $this->assertNameAvailable($data['name'], $data['facility_id'] ?? null);
+        if (!$data['is_extendable']) {
+            $this->assertCanBeNonExtendable($data['facility_id'] ?? null);
+        }
         if (array_key_exists(PositionRequiredAttributes::API_NAME, $data)) {
             PositionRequiredAttributes::assertAreForPositions(
                 $data[PositionRequiredAttributes::API_NAME],

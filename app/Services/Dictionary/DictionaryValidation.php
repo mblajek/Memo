@@ -32,6 +32,36 @@ trait DictionaryValidation
         }
     }
 
+    /**
+     * Only a global dictionary can be non-extendable: a facility dictionary must stay
+     * extendable for the owning facility to be able to manage its positions.
+     *
+     * @throws ApiException
+     */
+    protected function assertCanBeNonExtendable(?string $facilityId): void
+    {
+        if ($facilityId !== null) {
+            throw ExceptionFactory::fieldValidation('isExtendable', 'accepted');
+        }
+    }
+
+    /**
+     * A dictionary cannot become non-extendable while it has extensions: positions owned by
+     * a facility other than the dictionary's own.
+     *
+     * @throws ApiException
+     */
+    protected function assertNoFacilityExtensions(Dictionary $dictionary): void
+    {
+        $query = $dictionary->positions()->whereNotNull('facility_id');
+        if ($dictionary->facility_id !== null) {
+            $query->where('facility_id', '!=', $dictionary->facility_id);
+        }
+        if ($query->exists()) {
+            throw ExceptionFactory::fieldValidation('isExtendable', 'is_extended');
+        }
+    }
+
     /** @throws ApiException */
     protected function assertNotFixed(Dictionary $dictionary): void
     {

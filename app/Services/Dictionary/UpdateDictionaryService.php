@@ -19,6 +19,10 @@ class UpdateDictionaryService
         if (array_key_exists('name', $data)) {
             $this->assertNameAvailable($data['name'], $dictionary->facility_id, $dictionary->id);
         }
+        if (array_key_exists('is_extendable', $data) && !$data['is_extendable']) {
+            $this->assertCanBeNonExtendable($dictionary->facility_id);
+            $this->assertNoFacilityExtensions($dictionary);
+        }
         $requiredTouched = array_key_exists(PositionRequiredAttributes::API_NAME, $data);
         if ($requiredTouched) {
             PositionRequiredAttributes::assertAreForPositions(
