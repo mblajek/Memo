@@ -65,6 +65,27 @@ facility_edit:
   form_name: "Edycja placówki"
   success: "Zmodyfikowano dane placówki"
 
+attribute_form:
+  name_info: "Nazwa wyświetlana atrybutu. Zostanie zapisana z wiodącym znakiem „+” (nazwa dosłowna, nietłumaczona) — wpisz ją bez tego znaku."
+  is_multi_value_info: "Pole atrybutu przechowuje wiele wartości podanego typu."
+  advanced_view: "widok zaawansowany"
+  allow_required_only_on_create: "Nie można zmienić atrybutu w na „wymagany” po jego utworzeniu."
+
+attribute_create:
+  form_name: "Nowy atrybut"
+  submit: "$t(actions.create)"
+  success: "Utworzono atrybut"
+  global_attribute: "atrybut globalny"
+
+attribute_edit:
+  form_name: "Edycja atrybutu"
+  success: "Zmodyfikowano atrybut"
+
+attribute_delete:
+  form_name: "Usunięcie atrybutu"
+  confirmation_text: "Czy na pewno usunąć atrybut „{{name}}”?"
+  success: "Usunięto atrybut"
+
 meeting:
   default_duration: "Sugerowane:"
   default_duration_first_set_start_time: "Najpierw wybierz godzinę rozpoczęcia"

@@ -79,6 +79,24 @@ trait AttributeValidation
         }
     }
 
+    /**
+     * A separator can never hold a value, so any requirement level other than empty would
+     * demand the impossible.
+     *
+     * @throws ApiException
+     */
+    protected function assertRequirementLevelMatchesType(?string $type, ?string $target): void
+    {
+        if ($target !== null && $target !== AttributeRequirementLevel::Empty->value
+            && $type === AttributeType::Separator->value) {
+            throw ExceptionFactory::fieldValidation(
+                'requirementLevel',
+                'in',
+                ['values' => [AttributeRequirementLevel::Empty->value]],
+            );
+        }
+    }
+
     /** @throws ApiException */
     protected function assertApiNameUnique(string $table, string $apiName, ?string $ignoreId = null): void
     {

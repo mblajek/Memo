@@ -12,10 +12,10 @@ class ExceptionFactory
     }
 
     /** A validation exception carrying a single field error. */
-    public static function fieldValidation(string $field, string $rule): ApiValidationException
+    public static function fieldValidation(string $field, string $rule, array $data = []): ApiValidationException
     {
         $exception = self::validation();
-        $exception->addValidation($field, $rule);
+        $exception->addValidation($field, $rule, $data);
         return $exception;
     }
 

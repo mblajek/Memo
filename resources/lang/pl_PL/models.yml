@@ -11,6 +11,21 @@ generic:
   notes: "opis"
   count_suffix: "$t(thin_n_thin)liczba"
 
+attribute:
+  _name: "atrybut"
+  _name_plural: "atrybuty"
+  facilityId: "placówka"
+  model: "model"
+  apiName: "nazwa API"
+  type: "typ"
+  dictionaryId: "słownik"
+  isFixed: "fixed"
+  isMultiValue: "multi"
+  requirementLevel: "wymagalność"
+  defaultOrder: "kolejność"
+  metadata: "metadane"
+  description: "opis"
+
 dictionary:
   _name: "słownik"
   _name_plural: "słowniki"

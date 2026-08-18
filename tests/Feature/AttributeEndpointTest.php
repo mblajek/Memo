@@ -338,6 +338,21 @@ class AttributeEndpointTest extends TestCase
         self::assertContains('validation.declined', $this->fieldCodes($result, 'isFixed'));
     }
 
+    public function testSeparatorRequiresEmptyRequirementLevel(): void
+    {
+        $result = $this->createAttribute(['type' => 'separator', 'requirementLevel' => 'optional']);
+        $result->assertBadRequest();
+        self::assertContains('validation.in', $this->fieldCodes($result, 'requirementLevel'));
+
+        $id = $this->createAttribute(['type' => 'separator', 'requirementLevel' => 'empty'])
+            ->assertCreated()->json('data.id');
+        $this->prepareAdminUser();
+        $this->patch(self::GLOBAL_URL . "/$id", ['requirementLevel' => 'empty'])->assertOk();
+        $result = $this->patch(self::GLOBAL_URL . "/$id", ['requirementLevel' => 'recommended']);
+        $result->assertBadRequest();
+        self::assertContains('validation.in', $this->fieldCodes($result, 'requirementLevel'));
+    }
+
     public function testPatchAcceptsUnchangedIsFixedButRejectsTrue(): void
     {
         $id = $this->createAttribute()->assertCreated()->json('data.id');
