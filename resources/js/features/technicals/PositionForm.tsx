@@ -3,7 +3,7 @@ import {useQuery} from "@tanstack/solid-query";
 import {FelteForm, FormType} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {capitalizeString} from "components/ui/Capitalize";
-import {ATTRIBUTES_SCHEMA, AttributeFields} from "components/ui/form/AttributeFields";
+import {AttributeFields, ATTRIBUTES_SCHEMA} from "components/ui/form/AttributeFields";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {Select} from "components/ui/form/Select";
 import {TextField} from "components/ui/form/TextField";
@@ -25,15 +25,6 @@ const getSchema = () =>
   });
 
 export type PositionFormType = z.infer<ReturnType<typeof getSchema>>;
-
-/**
- * The predicate selecting the attributes editable on a position of the given dictionary:
- * the dictionary's required position attributes plus the position group attribute.
- */
-export function positionFormAttributeFilter(dictionary: Dictionary | undefined) {
-  const requiredIds = new Set(dictionary?.resource.positionRequiredAttributeIds ?? []);
-  return (attribute: Attribute) => attribute.apiName === "positionGroupDictId" || requiredIds.has(attribute.id);
-}
 
 /**
  * The requirement level override for the attributes on a position form: the dictionary's
@@ -125,9 +116,9 @@ export const PositionForm: VoidComponent<Props> = (allProps) => {
               </Show>
               <AttributeFields
                 model="position"
+                minRequirementLevel={attributesEditable() ? "optional" : "recommended"}
                 nestFieldsUnder="position"
                 selection={{model: "position", includeFixed: true}}
-                attributeFilter={positionFormAttributeFilter(dictionary())}
                 requirementLevelOverride={positionFormRequirementLevel(dictionary())}
                 editMode={attributesEditable()}
               />

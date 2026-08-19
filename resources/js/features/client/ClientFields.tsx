@@ -38,7 +38,6 @@ type _Directives = typeof title;
 
 interface Props {
   readonly editMode: boolean;
-  readonly showAllAttributes?: boolean;
   readonly client?: ClientResource;
 }
 
@@ -50,7 +49,7 @@ export const ClientFields: VoidComponent<Props> = (props) => {
     <>
       <AttributeFields
         model="client"
-        minRequirementLevel={props.showAllAttributes ? undefined : props.editMode ? "optional" : "recommended"}
+        minRequirementLevel={props.editMode ? "optional" : "recommended"}
         nestFieldsUnder="client"
         selection={{
           model: "client",

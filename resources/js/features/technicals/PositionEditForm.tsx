@@ -8,12 +8,7 @@ import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityAdmin} from "data-access/memo-api/groups/FacilityAdmin";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Show, VoidComponent} from "solid-js";
-import {
-  positionAttributesEditable,
-  PositionForm,
-  positionFormAttributeFilter,
-  PositionFormType,
-} from "./PositionForm";
+import {positionAttributesEditable, PositionForm, PositionFormType} from "./PositionForm";
 
 interface Props {
   readonly id: string;
@@ -61,14 +56,17 @@ export const PositionEditForm: VoidComponent<Props> = (props) => {
     };
   }
 
-  /** The current values of the attributes editable on the form, keyed by the attribute api names. */
+  /**
+   * The position's attribute values, keyed by the attribute api names. All the attributes are
+   * loaded, as all of them are submitted back by the form.
+   */
   function attributeValues() {
     const resource = position()!.resource;
-    const attributeFilter = positionFormAttributeFilter(allDictionaries()?.byId.get(resource.dictionaryId));
     const values: Record<string, unknown> = {};
     for (const attribute of attributes()?.getForModel("position") || []) {
-      if (attributeFilter(attribute)) {
-        values[attribute.apiName] = readAttribute(resource, attribute.apiName);
+      const value = readAttribute(resource, attribute.apiName);
+      if (value !== undefined) {
+        values[attribute.apiName] = value;
       }
     }
     return values;

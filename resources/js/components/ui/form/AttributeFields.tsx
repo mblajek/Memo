@@ -16,7 +16,7 @@ import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
-import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {useAllDictionaries, useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {
   DictAttributeType,
   RequirementLevel,
@@ -67,8 +67,6 @@ interface Props {
   // The override type must match the attribute type.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly selection: PartialAttributesSelection<AttributeParams<any>>;
-  /** An additional predicate limiting the displayed attributes, applied on top of the selection. */
-  readonly attributeFilter?: (attribute: Attribute) => boolean;
   /**
    * Overrides the requirement level of an attribute, for contexts that make an attribute more
    * (or less) required than its own declared level. Undefined keeps the attribute's own level.
@@ -92,7 +90,7 @@ export interface AttributeParams<V> {
  */
 export const AttributeFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
+  const allDictionaries = useAllDictionaries();
   const attributes = useAttributes();
   const modelQuerySpecs = useModelQuerySpecs();
   const {form} = useFormContext();
@@ -256,10 +254,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
           case "datetime":
             return DateTime.fromISO(val as string).toLocaleString({...DATE_TIME_FORMAT, weekday: "long"});
           case "dict":
-            // The value may reference a position from outside the current facility scope
-            // (e.g. when viewing an object of another facility); show the raw id then.
+            // The value may reference a position from outside the current facility scope.
             return (
-              dictionaries()?.positionsById.get(val as string)?.label ?? (
+              allDictionaries()?.positionsById.get(val as string)?.label ?? (
                 <span class="font-mono text-xs">{String(val)}</span>
               )
             );
@@ -344,7 +341,6 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       new Map<string, AttributeInfo>(
         attributes()
           ?.getForModel(props.model)
-          .filter((attribute) => props.attributeFilter?.(attribute) ?? true)
           .map((attribute) => {
             const selected =
               attribute.type === "separator"

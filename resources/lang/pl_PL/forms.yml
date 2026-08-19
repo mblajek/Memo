@@ -106,7 +106,7 @@ dictionary_delete:
 
 position_form:
   name_info: "Nazwa wyświetlana pozycji. Zostanie zapisana z wiodącym znakiem „+” (nazwa dosłowna, nietłumaczona) — wpisz ją bez tego znaku."
-  attributes_editable_in_facility_info: "Wartości atrybutów pozycji należącej do placówki mogą odwoływać się do danych tej placówki, dlatego można je edytować tylko w widoku tej placówki."
+  attributes_editable_in_facility_info: "Atrybuty pozycji mogą odwoływać się do danych placówki, dlatego można je edytować tylko w widoku tej placówki."
   field_names:
     isDisabled: "pozycja wyłączona (niedostępna)"
 
