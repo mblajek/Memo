@@ -8,9 +8,9 @@ import {facilityIdMatches} from "data-access/memo-api/utils";
 import {createSignal, Signal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
-interface AdvancedViewPersistentState {
+type AdvancedViewPersistentState = {
   readonly advancedView: boolean;
-}
+};
 
 /**
  * The state of the advanced view switch, shared by the forms and remembered for the session,
@@ -22,9 +22,9 @@ interface AdvancedViewPersistentState {
 export function createAdvancedViewSignal(): Signal<boolean> {
   const [advancedView, setAdvancedView] = createSignal(false);
   createPersistence<AdvancedViewPersistentState>({
-    storage: sessionStorageStorage("technicals.advancedView"),
     value: () => ({advancedView: advancedView()}),
     onLoad: (state) => setAdvancedView(state.advancedView),
+    storage: sessionStorageStorage("technicals.advancedView"),
   });
   return [advancedView, setAdvancedView];
 }
