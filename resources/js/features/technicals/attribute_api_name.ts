@@ -16,9 +16,7 @@ export function getApiNameBase(name: string): string {
 
 /** The random hex suffix distinguishing generated api names, as used by the data migrations. */
 export function randomApiNameSuffix(): string {
-  return Array.from(crypto.getRandomValues(new Uint8Array(4)), (byte) => byte.toString(16).padStart(2, "0")).join(
-    "",
-  );
+  return Array.from(crypto.getRandomValues(new Uint8Array(4)), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 /**

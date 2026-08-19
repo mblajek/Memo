@@ -84,8 +84,7 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
   const dictionaryItems = () =>
     [...(allDictionaries() || [])]
       .filter(
-        (dictionary) =>
-          !props.facilityMode || facilityIdMatches(dictionary.resource.facilityId, activeFacilityId()),
+        (dictionary) => !props.facilityMode || facilityIdMatches(dictionary.resource.facilityId, activeFacilityId()),
       )
       .map((dictionary) => ({value: dictionary.id, text: dictionary.name}));
   function initForm(form: FormType<AttributeFormType>) {
@@ -164,12 +163,7 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
                   disabled={props.editMode}
                 />
                 <HideableSection show={form.data("type") === "dict"}>
-                  <Select
-                    name="dictionaryId"
-                    items={dictionaryItems()}
-                    nullable={false}
-                    disabled={props.editMode}
-                  />
+                  <Select name="dictionaryId" items={dictionaryItems()} nullable={false} disabled={props.editMode} />
                 </HideableSection>
                 <CheckboxField
                   name="isMultiValue"

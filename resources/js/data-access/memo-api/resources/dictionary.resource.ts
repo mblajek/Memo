@@ -60,8 +60,10 @@ export interface DictionaryResourceForPatch extends Pick<DictionaryResource, "id
 export interface PositionResourceForCreate extends Pick<PositionResource, "dictionaryId" | "name" | "isDisabled"> {}
 
 /** The position fields accepted by the position patch endpoints. */
-export interface PositionResourceForPatch
-  extends Pick<PositionResource, "id" | "name" | "isDisabled" | "defaultOrder"> {}
+export interface PositionResourceForPatch extends Pick<
+  PositionResource,
+  "id" | "name" | "isDisabled" | "defaultOrder"
+> {}
 
 /** The position attribute values sent alongside the plain position fields, keyed by the attribute api names. */
 export type PositionAttributeValues = Readonly<Record<string, unknown>>;

@@ -83,10 +83,7 @@ export const Navbar: VoidComponent = () => {
   });
 
   const DevOrGlobalAdminBarrier: ParentComponent = (props) => (
-    <Show
-      when={isDEV()}
-      fallback={<SilentAccessBarrier roles={["globalAdmin"]}>{props.children}</SilentAccessBarrier>}
-    >
+    <Show when={isDEV()} fallback={<SilentAccessBarrier roles={["globalAdmin"]}>{props.children}</SilentAccessBarrier>}>
       {props.children}
     </Show>
   );

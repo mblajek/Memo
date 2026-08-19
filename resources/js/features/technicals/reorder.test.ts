@@ -33,9 +33,7 @@ test("non-contiguous orders are preserved in the computation", () => {
 });
 
 test("consecutive moves account for the shifts of the earlier ones", () => {
-  expect(
-    reorderMoves(items(["a", 1], ["b", 2], ["c", 3], ["d", 4], ["e", 5]), ["b", "d", "a", "c", "e"]),
-  ).toEqual([
+  expect(reorderMoves(items(["a", 1], ["b", 2], ["c", 3], ["d", 4], ["e", 5]), ["b", "d", "a", "c", "e"])).toEqual([
     {id: "a", order: 4},
     {id: "c", order: 4},
   ]);
@@ -93,7 +91,10 @@ function simulate(trialItems: readonly ReorderItem[], moves: readonly {id: strin
   for (const {id, order: target} of moves) {
     const from = orders.get(id)!;
     for (const [otherId, otherOrder] of orders) {
-      if (otherId !== id && (target > from ? otherOrder > from && otherOrder <= target : otherOrder >= target && otherOrder < from)) {
+      if (
+        otherId !== id &&
+        (target > from ? otherOrder > from && otherOrder <= target : otherOrder >= target && otherOrder < from)
+      ) {
         orders.set(otherId, otherOrder + (target > from ? -1 : 1));
       }
     }
