@@ -328,6 +328,80 @@ class PositionEndpointTest extends TestCase
         $this->patch(self::GLOBAL_URL . "/$positionId", ['name' => 'renamed'])->assertOk();
     }
 
+    /** Creates a dict-type position attribute referencing the given dictionary. */
+    private function makeDictAttribute(Dictionary $valuesDictionary): Attribute
+    {
+        return Attribute::factory()->create([
+            'table' => 'positions',
+            'api_name' => 'dictattr' . fake()->unique()->numberBetween(1, 999_999),
+            'type' => 'dict',
+            'dictionary_id' => $valuesDictionary->id,
+        ]);
+    }
+
+    public function testDictAttributeValueMustBelongToTheAttributesDictionary(): void
+    {
+        $valuesDictionary = $this->makeDictionary();
+        $attribute = $this->makeDictAttribute($valuesDictionary);
+        $foreignPosition = Position::factory()->create(['dictionary_id' => $this->makeDictionary()->id]);
+        $dictionary = $this->makeDictionary();
+
+        $this->prepareAdminUser();
+        $result = $this->post(self::GLOBAL_URL, [
+            'facilityId' => null,
+            'dictionaryId' => $dictionary->id,
+            'name' => 'pos',
+            'isFixed' => false,
+            'isDisabled' => false,
+            $attribute->api_name => $foreignPosition->id,
+        ]);
+        $result->assertBadRequest();
+        self::assertContains(
+            'validation.custom.position_in_dictionary',
+            $this->fieldCodes($result, $attribute->api_name),
+        );
+
+        $ownPosition = Position::factory()->create(['dictionary_id' => $valuesDictionary->id]);
+        $this->createPosition($dictionary->id, extra: [$attribute->api_name => $ownPosition->id]);
+    }
+
+    public function testGlobalRowCannotReferenceAFacilitysPosition(): void
+    {
+        $facility = Facility::factory()->create();
+        $valuesDictionary = $this->makeDictionary();
+        $attribute = $this->makeDictAttribute($valuesDictionary);
+        $facilityPosition = Position::factory()->create([
+            'dictionary_id' => $valuesDictionary->id,
+            'facility_id' => $facility->id,
+            'default_order' => 2,
+        ]);
+        $dictionary = $this->makeDictionary();
+
+        $this->prepareAdminUser();
+        $result = $this->post(self::GLOBAL_URL, [
+            'facilityId' => null,
+            'dictionaryId' => $dictionary->id,
+            'name' => 'pos',
+            'isFixed' => false,
+            'isDisabled' => false,
+            $attribute->api_name => $facilityPosition->id,
+        ]);
+        $result->assertBadRequest();
+        self::assertContains(
+            'validation.custom.position_in_dictionary',
+            $this->fieldCodes($result, $attribute->api_name),
+        );
+
+        // The facility may use its own position.
+        $this->prepareFacilityAdmin($facility);
+        $this->post("/api/v1/facility/{$facility->id}/admin/position", [
+            'dictionaryId' => $dictionary->id,
+            'name' => 'facility pos',
+            'isDisabled' => false,
+            $attribute->api_name => $facilityPosition->id,
+        ])->assertCreated();
+    }
+
     public function testBarePlusNameIsRejected(): void
     {
         $dictionary = $this->makeDictionary();
