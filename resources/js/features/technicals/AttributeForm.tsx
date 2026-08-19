@@ -15,10 +15,11 @@ import {useAllDictionaries} from "data-access/memo-api/dictionaries_and_attribut
 import {System} from "data-access/memo-api/groups/System";
 import {AttributeMetadataResource, REQUIREMENT_LEVELS} from "data-access/memo-api/resources/attribute.resource";
 import {facilityIdMatches} from "data-access/memo-api/utils";
-import {createComputed, createSignal, Show, splitProps, VoidComponent} from "solid-js";
+import {createComputed, Show, splitProps, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {apiNameMatchesName, getApiNameSuggestion} from "./attribute_api_name";
+import {createAdvancedViewSignal} from "./util";
 
 // The backend whitelist of models supporting attribute values.
 const GLOBAL_MODELS = ["client", "dictionary", "position"];
@@ -78,7 +79,7 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
   const t = useLangFunc();
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const allDictionaries = useAllDictionaries();
-  const [advancedViewChecked, setAdvancedViewChecked] = createSignal(false);
+  const [advancedViewChecked, setAdvancedViewChecked] = createAdvancedViewSignal();
   // The switch exists only in the facility variant; the global admin forms are always advanced.
   const advancedView = () => !props.facilityMode || advancedViewChecked();
   const dictionaryItems = () =>

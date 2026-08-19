@@ -1,9 +1,33 @@
+import {createPersistence} from "components/persistence/persistence";
+import {sessionStorageStorage} from "components/persistence/storage";
 import {MutationMeta} from "components/utils/InitializeTanstackQuery";
 import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {Api} from "data-access/memo-api/types";
 import {facilityIdMatches} from "data-access/memo-api/utils";
+import {createSignal, Signal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
+
+interface AdvancedViewPersistentState {
+  readonly advancedView: boolean;
+}
+
+/**
+ * The state of the advanced view switch, shared by the forms and remembered for the session,
+ * so that it does not need to be set again on every form.
+ *
+ * This is the state of the switch itself, not the effective advanced view, so that the forms
+ * displaying the advanced view unconditionally (and thus having no switch) leave it alone.
+ */
+export function createAdvancedViewSignal(): Signal<boolean> {
+  const [advancedView, setAdvancedView] = createSignal(false);
+  createPersistence<AdvancedViewPersistentState>({
+    storage: sessionStorageStorage("technicals.advancedView"),
+    value: () => ({advancedView: advancedView()}),
+    onLoad: (state) => setAdvancedView(state.advancedView),
+  });
+  return [advancedView, setAdvancedView];
+}
 
 /**
  * The meta for mutations run outside of any form, e.g. deletes. With no form to present the

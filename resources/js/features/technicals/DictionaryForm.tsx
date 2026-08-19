@@ -13,9 +13,10 @@ import {useAllAttributes} from "data-access/memo-api/dictionaries_and_attributes
 import {System} from "data-access/memo-api/groups/System";
 import {facilityIdMatches} from "data-access/memo-api/utils";
 import {HideableSection} from "components/ui/HideableSection";
-import {createSignal, Show, splitProps, VoidComponent} from "solid-js";
+import {Show, splitProps, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
+import {createAdvancedViewSignal} from "./util";
 
 const getSchema = () =>
   z.object({
@@ -44,7 +45,7 @@ export const DictionaryForm: VoidComponent<Props> = (allProps) => {
   const t = useLangFunc();
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const allAttributes = useAllAttributes();
-  const [advancedViewChecked, setAdvancedViewChecked] = createSignal(false);
+  const [advancedViewChecked, setAdvancedViewChecked] = createAdvancedViewSignal();
   // The switch exists only in the facility variant; the global admin forms are always advanced.
   const advancedView = () => !props.facilityMode || advancedViewChecked();
   return (
