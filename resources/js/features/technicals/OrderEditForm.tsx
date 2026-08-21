@@ -10,6 +10,10 @@ import {OrderItemRow} from "./order_items";
 
 type _Directives = typeof scrollIntoView;
 
+// A transparent 1x1 GIF, hiding the native drag ghost.
+const EMPTY_DRAG_IMAGE = new Image();
+EMPTY_DRAG_IMAGE.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
 export interface OrderEditItem {
   readonly id: string;
   readonly label: JSX.Element;
@@ -41,8 +45,13 @@ export const OrderEditForm: VoidComponent<Props> = (props) => {
   });
   const byId = createMemo(() => new Map(props.items.map((item) => [item.id, item])));
   const [ids, setIds] = createSignal<readonly string[]>([]);
+  // The items ever dropped at a different spot than where their drag started, marked on the list.
+  const [movedIds, setMovedIds] = createSignal<ReadonlySet<string>>(new Set());
   // Start over whenever the underlying set changes.
-  createComputed(() => setIds(originalIds()));
+  createComputed(() => {
+    setIds(originalIds());
+    setMovedIds(new Set<string>());
+  });
   const [isSaving, setIsSaving] = createSignal(false);
   const isChanged = () => ids().some((id, index) => id !== originalIds()[index]);
   // Dropped after the blink has played (or on the first move): moving a row reinserts its
@@ -50,19 +59,57 @@ export const OrderEditForm: VoidComponent<Props> = (props) => {
   const [highlightPending, setHighlightPending] = createSignal(true);
   const highlightClass = (id: string) =>
     id === props.highlightId && highlightPending() ? "blinkBg rounded" : undefined;
-  function move(id: string, delta: -1 | 1) {
+  // Drag & drop: while dragging, the dragged row keeps moving to the hovered row's spot,
+  // so the list always previews the resulting order. The native drag ghost (which would
+  // follow the pointer sideways too) is hidden; the row moving inside the list is the only
+  // visible motion, so the drag reads as purely vertical.
+  const [draggedId, setDraggedId] = createSignal<string>();
+  let dragStartIds: readonly string[] | undefined;
+  function dragStart(e: DragEvent, id: string) {
     setHighlightPending(false);
+    setDraggedId(id);
+    dragStartIds = ids();
+    // Firefox does not start the drag without data.
+    e.dataTransfer?.setData("text/plain", "");
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setDragImage(EMPTY_DRAG_IMAGE, 0, 0);
+    }
+  }
+  function dragOver(e: DragEvent) {
+    const dragged = draggedId();
+    if (dragged === undefined) {
+      return;
+    }
+    // Accept the drop anywhere on the list.
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = "move";
+    }
+    const overId = (e.target as Element).closest("[data-order-item]")?.getAttribute("data-order-item");
+    if (!overId || overId === dragged) {
+      return;
+    }
     setIds((ids) => {
-      const index = ids.indexOf(id);
-      const otherIndex = index + delta;
-      if (otherIndex < 0 || otherIndex >= ids.length) {
-        return ids;
-      }
       const result = [...ids];
-      result[index] = result[otherIndex]!;
-      result[otherIndex] = id;
+      result.splice(ids.indexOf(dragged), 1);
+      result.splice(ids.indexOf(overId), 0, dragged);
       return result;
     });
+  }
+  function dragEnd(e: DragEvent) {
+    if (e.dataTransfer?.dropEffect === "none" && dragStartIds) {
+      // A cancelled drag reverts the preview. This is primarily for the Escape key, but a
+      // drop outside the list is indistinguishable from it, so it cancels as well.
+      setIds(dragStartIds);
+    } else {
+      const dragged = draggedId();
+      if (dragged !== undefined && dragStartIds && ids().indexOf(dragged) !== dragStartIds.indexOf(dragged)) {
+        setMovedIds((moved) => new Set(moved).add(dragged));
+      }
+    }
+    dragStartIds = undefined;
+    setDraggedId(undefined);
   }
   async function confirm() {
     setIsSaving(true);
@@ -75,46 +122,62 @@ export const OrderEditForm: VoidComponent<Props> = (props) => {
   return (
     <div class="flex flex-col gap-4">
       {props.header}
-      <div class="grid grid-cols-[auto_1fr] items-center gap-1">
-        <For each={ids()}>
-          {(id) => {
-            const item = byId().get(id)!;
-            return (
-              <>
-                <div class="flex">
-                  <Show when={item.movable} fallback={<div />}>
-                    <Button
-                      class="minimal"
-                      title={t("actions.move_up")}
-                      disabled={ids().indexOf(id) === 0}
-                      onClick={() => move(id, -1)}
-                    >
-                      <actionIcons.MoveUp class="inlineIcon" />
-                    </Button>
-                    <Button
-                      class="minimal -ms-px"
-                      title={t("actions.move_down")}
-                      disabled={ids().indexOf(id) === ids().length - 1}
-                      onClick={() => move(id, 1)}
-                    >
-                      <actionIcons.MoveDown class="inlineIcon" />
-                    </Button>
-                  </Show>
-                </div>
+      <div
+        class="max-h-[60vh] overflow-y-auto"
+        onDragEnter={(e) => draggedId() !== undefined && e.preventDefault()}
+        onDragOver={dragOver}
+        onDrop={(e) => draggedId() !== undefined && e.preventDefault()}
+      >
+        <div class="grid grid-cols-[auto_auto_1fr] items-center gap-0.5">
+          <For each={ids()}>
+            {(id) => {
+              const item = byId().get(id)!;
+              return (
                 <div
-                  class={cx("px-1", highlightClass(id))}
-                  use:scrollIntoView={[id === props.highlightId, {block: "center"}]}
-                  on:animationend={() => setHighlightPending(false)}
+                  class={cx(
+                    "col-span-3 grid grid-cols-subgrid items-center",
+                    item.movable ? "cursor-grab select-none" : undefined,
+                    draggedId() === id ? "bg-select rounded" : undefined,
+                  )}
+                  data-order-item={id}
+                  draggable={item.movable && !isSaving()}
+                  onDragStart={(e) => dragStart(e, id)}
+                  onDragEnd={dragEnd}
                 >
-                  <OrderItemRow label={item.label} details={item.details} />
+                  <div class="flex items-center">
+                    <Show when={item.movable}>
+                      <span title={t("actions.reorder")}>
+                        <actionIcons.Drag class="inlineIcon text-grey-text" />
+                      </span>
+                    </Show>
+                  </div>
+                  <div class="w-2 flex items-center justify-center">
+                    <Show when={movedIds().has(id)}>
+                      <div class="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    </Show>
+                  </div>
+                  <div
+                    class={cx("px-1", highlightClass(id))}
+                    use:scrollIntoView={[id === props.highlightId, {block: "center"}]}
+                    on:animationend={() => setHighlightPending(false)}
+                  >
+                    <OrderItemRow label={item.label} details={item.details} />
+                  </div>
                 </div>
-              </>
-            );
-          }}
-        </For>
+              );
+            }}
+          </For>
+        </div>
       </div>
       <div class="flex flex-col items-stretch gap-1">
-        <Button class="secondary small" disabled={!isChanged() || isSaving()} onClick={() => setIds(originalIds())}>
+        <Button
+          class="secondary small"
+          disabled={!isChanged() || isSaving()}
+          onClick={() => {
+            setIds(originalIds());
+            setMovedIds(new Set<string>());
+          }}
+        >
           <actionIcons.Reset class="inlineIcon" /> {t("forms.reorder.reset")}
         </Button>
         <div class="grid auto-cols-fr grid-flow-col gap-1">

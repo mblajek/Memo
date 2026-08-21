@@ -31,9 +31,8 @@ import {ImCircleRight, ImInfo} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {
-  TbOutlineArrowDown,
   TbOutlineArrowsSort,
-  TbOutlineArrowUp,
+  TbOutlineGripVertical,
   TbOutlineFilter,
   TbOutlineFilterOff,
   TbOutlineLockCheck,
@@ -119,11 +118,8 @@ export namespace actionIcons {
   export const Reorder: IconTypes = (props) => (
     <TbOutlineArrowsSort {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
   );
-  export const MoveUp: IconTypes = (props) => (
-    <TbOutlineArrowUp {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
-  );
-  export const MoveDown: IconTypes = (props) => (
-    <TbOutlineArrowDown {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
+  export const Drag: IconTypes = (props) => (
+    <TbOutlineGripVertical {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
   );
   export const Notify = FiBell;
   export const NotifyOff = FiBellOff;
