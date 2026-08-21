@@ -12,7 +12,7 @@ jobs:
     name: Generate badges
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: DeathSy/GHA-LoC-Badge@1.0.3
         with:
           directory: ./
@@ -27,7 +27,7 @@ jobs:
           badge: ./badges/badge-ts.svg
           badge_label: TypeScript
           badge_color: 3178c6
-      - uses: peaceiris/actions-gh-pages@v3
+      - uses: peaceiris/actions-gh-pages@v4
         with:
           publish_dir: ./badges
           publish_branch: badges
