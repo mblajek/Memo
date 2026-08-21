@@ -45,8 +45,9 @@ export default (() => {
       staticTranslations={createTableTranslations("dictionary")}
       columns={[
         {name: "id", initialVisible: false},
-        technicalsCols.dictionaryColumns.name,
+        technicalsCols.dictionaryNameColumn(),
         technicalsCols.dictionaryActionsColumn({facilityMode: true}),
+        technicalsCols.rawNameColumn({initialVisible: false}),
         {name: "facility.id", initialVisible: false, columnGroups: "facility.name"},
         {name: "facility.name", columnGroups: true},
         {name: "isFixed"},

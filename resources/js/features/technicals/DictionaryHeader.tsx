@@ -1,5 +1,7 @@
 import {useQuery} from "@tanstack/solid-query";
+import {capitalizeString} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
+import {NameStringView} from "components/ui/NameStringView";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
 import {useLangFunc} from "components/utils/lang";
@@ -33,7 +35,11 @@ export const DictionaryHeader: VoidComponent<Props> = (props) => {
         <div class="mb-0.5 flex flex-wrap items-baseline gap-x-4">
           <span>
             <span class="capitalize">{t("with_colon", {text: t("models.dictionary._name")})}</span>{" "}
-            <b>{dictionary().name}</b>
+            <b
+              use:title={`${capitalizeString(t("with_colon", {text: t("models.dictionary.rawName")}))} ${dictionary().name}`}
+            >
+              <NameStringView name={dictionary().name} label={dictionary().label} />
+            </b>
             <Show
               when={props.warnNotInFacility && !facilityIdMatches(dictionary().resource.facilityId, activeFacilityId())}
             >

@@ -34,9 +34,7 @@ export const PositionEditForm: VoidComponent<Props> = (props) => {
     }
     return reorderablePositions(
       dict,
-      resource.facilityId
-        ? {scopeFacilityId: resource.facilityId}
-        : {scopeFacilityId: undefined, globalOnly: true},
+      resource.facilityId ? {scopeFacilityId: resource.facilityId} : {scopeFacilityId: undefined, globalOnly: true},
     );
   };
   const positionAttributesProcessor = createAttributesProcessor("position");

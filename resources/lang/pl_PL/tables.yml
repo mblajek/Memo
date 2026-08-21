@@ -209,6 +209,7 @@ tables:
 
   attribute:
     column_names:
+      name: "$t(models.attribute.rawName)"
       facility.id: "id placówki"
       facility.name: "placówka"
       table: "$t(models.attribute.model)"
@@ -221,6 +222,7 @@ tables:
 
   dictionary:
     column_names:
+      name: "$t(models.dictionary.rawName)"
       facility.id: "id placówki"
       facility.name: "placówka"
       isFixed: "fixed"
@@ -233,6 +235,7 @@ tables:
   position:
     table_name: "pozycje słownikowe"
     column_names:
+      name: "$t(models.position.rawName)"
       facility.id: "id placówki"
       facility.name: "placówka"
       isFixed: "fixed"

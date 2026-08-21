@@ -2,6 +2,7 @@ import {A} from "@solidjs/router";
 import {useMutation} from "@tanstack/solid-query";
 import {Button, DeleteButton, EditButton} from "components/ui/Button";
 import {createConfirmation} from "components/ui/confirmation";
+import {NameStringView} from "components/ui/NameStringView";
 import {actionIcons} from "components/ui/icons";
 import {AUTO_SIZE_COLUMN_DEFS} from "components/ui/Table/Table";
 import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
@@ -252,6 +253,68 @@ export function useTechnicalsTableColumns() {
     };
   };
 
+  /**
+   * Returns the column displaying the translated (or literal) name. A presentation column: the
+   * translations only exist client-side, so it cannot be sorted or filtered; that is the
+   * role of rawNameColumn, which holds the actual stored value.
+   */
+  function createNameColumn(
+    getLabel: (rowId: string) => string | undefined,
+    {href}: {href?: (rowId: string) => string} = {},
+  ): PartialColumnConfig {
+    return {
+      name: "displayName",
+      isDataColumn: false,
+      extraDataColumns: ["name", "id"],
+      columnDef: {
+        cell: (c) => {
+          // The data can be missing for a moment before the extra data columns are fetched.
+          const name = () => c.row.original.name as string | undefined;
+          const rowId = () => c.row.original.id as string | undefined;
+          const content = () => {
+            const nameValue = name();
+            if (nameValue === undefined) {
+              return undefined;
+            }
+            const id = rowId();
+            return <NameStringView name={nameValue} label={id === undefined ? undefined : getLabel(id)} />;
+          };
+          return (
+            <PaddedCell>
+              <Show when={href && rowId() !== undefined} fallback={content()}>
+                <A href={href!(rowId()!)}>{content()}</A>
+              </Show>
+            </PaddedCell>
+          );
+        },
+        enableSorting: false,
+        enableHiding: false,
+      },
+    };
+  }
+  const attributeNameColumn = () => createNameColumn((rowId) => allAttributes()?.byId.get(rowId)?.label);
+  const positionNameColumn = () => createNameColumn((rowId) => allDictionaries()?.positionsById.get(rowId)?.label);
+  const dictionaryNameColumn = () =>
+    createNameColumn((rowId) => allDictionaries()?.byId.get(rowId)?.label, {href: (rowId) => `./${rowId}`});
+
+  /**
+   * The column with the name as stored in the API: a translation key, or a "+"-prefixed
+   * literal name. This is the actual name data column, so it carries the sorting and
+   * filtering (both act on the stored value).
+   */
+  const rawNameColumn = ({initialVisible = true}: {initialVisible?: boolean} = {}): PartialColumnConfig => ({
+    name: "name",
+    initialVisible,
+    columnDef: {
+      cell: cellFunc<string>((props) => (
+        <PaddedCell class="font-mono text-sm">
+          <ShowCellVal v={props.v}>{(v) => <>{v()}</>}</ShowCellVal>
+        </PaddedCell>
+      )),
+      size: 250,
+    },
+  });
+
   /** @param dictionaryHref creates the link target for the dictionary of a dict-type attribute. */
   const attributeColumns = (dictionaryHref: (dictionaryId: string) => string) =>
     createTableColumnsSet({
@@ -315,21 +378,6 @@ export function useTechnicalsTableColumns() {
         },
       },
     });
-
-  const dictionaryColumns = createTableColumnsSet({
-    name: {
-      name: "name",
-      extraDataColumns: ["id"],
-      columnDef: {
-        cell: cellFunc<string, {id: string}>((props) => (
-          <PaddedCell>
-            <ShowCellVal v={props.v}>{(v) => <A href={`./${props.row.id}`}>{v()}</A>}</ShowCellVal>
-          </PaddedCell>
-        )),
-        enableHiding: false,
-      },
-    },
-  });
 
   /** Cell displaying a position id value as the position's label. */
   const positionLabelCell = cellFunc<string>((props) => (
@@ -404,9 +452,12 @@ export function useTechnicalsTableColumns() {
   };
 
   return {
+    attributeNameColumn,
+    dictionaryNameColumn,
+    positionNameColumn,
+    rawNameColumn,
     attributeColumns,
     attributeActionsColumn,
-    dictionaryColumns,
     dictionaryActionsColumn,
     dictionaryAttributeColumns,
     dictionaryPositionColumns,

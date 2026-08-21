@@ -51,8 +51,9 @@ export default (() => {
       columns={[
         {name: "id", initialVisible: false},
         {name: "defaultOrder", columnDef: {enableColumnFilter: false, sortDescFirst: false, size: 100}},
-        {name: "name", columnDef: {enableHiding: false}},
+        technicalsCols.positionNameColumn(),
         technicalsCols.positionActionsColumn({facilityMode: true}),
+        technicalsCols.rawNameColumn({initialVisible: false}),
         {name: "facility.id", initialVisible: false, columnGroups: "facility.name"},
         {name: "facility.name", columnGroups: true},
         {name: "isFixed", columnDef: {size: 100}},

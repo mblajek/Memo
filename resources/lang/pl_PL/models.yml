@@ -6,6 +6,7 @@ generic:
   updatedBy.name: "zmodyfikowano przez"
   updatedBy.id: "$t(models.generic.updatedBy.name)"
   name: "nazwa"
+  displayName: "$t(models.generic.name)"
   email: "adres e-mail"
   status: "status"
   notes: "opis"
@@ -14,6 +15,7 @@ generic:
 attribute:
   _name: "atrybut"
   _name_plural: "atrybuty"
+  rawName: "nazwa w API"
   facilityId: "placówka"
   model: "model"
   apiName: "nazwa API"
@@ -29,6 +31,7 @@ attribute:
 dictionary:
   _name: "słownik"
   _name_plural: "słowniki"
+  rawName: "nazwa w API"
   facilityId: "placówka"
   isFixed: "nieusuwalny / systemowy"
   isExtendable: "rozszerzalny"
@@ -38,6 +41,7 @@ dictionary:
 position:
   _name: "pozycja słownika"
   _name_plural: "pozycje słownika"
+  rawName: "nazwa w API"
   dictionary: "słownik"
   facilityId: "placówka"
   isFixed: "nieusuwalna / systemowa"
