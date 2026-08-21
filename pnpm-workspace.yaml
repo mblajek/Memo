@@ -1,7 +1,6 @@
+engineStrict: true
+# 4 days (in minutes)
+minimumReleaseAge: 5760
 allowBuilds:
+  "@parcel/watcher": true
   esbuild: true
-minimumReleaseAgeExclude:
-  - '@testing-library/jest-dom@7.0.1'
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - esbuild

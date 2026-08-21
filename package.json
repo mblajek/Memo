@@ -2,10 +2,11 @@
   "name": "fdds-memo",
   "type": "module",
   "license": "MIT",
+  "packageManager": "pnpm@11.22.0",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "pnpm install && vite",
-    "build": "pnpm install --prod && vite build --sourcemap",
+    "build": "pnpm clean-install --prod && vite build --sourcemap",
     "build-debug": "pnpm install --prod && vite build --no-minify --sourcemap=inline",
     "clean": "rm -rf public/build",
     "format": "pnpm install && prettier resources/js --write",
@@ -79,8 +80,8 @@
     "zod": "^4.4.3"
   },
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=10",
+    "node": ">=22",
+    "pnpm": ">=11",
     "npm": "use-pnpm-instead"
   }
 }
