@@ -11,7 +11,7 @@ import {TextField} from "components/ui/form/TextField";
 import {HideableSection} from "components/ui/HideableSection";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {useLangFunc} from "components/utils/lang";
-import {useAllDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {useAllAttributes, useAllDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {System} from "data-access/memo-api/groups/System";
 import {AttributeMetadataResource, REQUIREMENT_LEVELS} from "data-access/memo-api/resources/attribute.resource";
 import {facilityIdMatches} from "data-access/memo-api/utils";
@@ -19,7 +19,8 @@ import {createComputed, Show, splitProps, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {apiNameMatchesName, getApiNameSuggestion} from "./attribute_api_name";
-import {createAdvancedViewSignal} from "./util";
+import {AttributeOrderLabel, OrderItemRow} from "./order_items";
+import {createAdvancedViewSignal, reorderableAttributes, useFacilityName} from "./util";
 
 // The backend whitelist of models supporting attribute values.
 const GLOBAL_MODELS = ["client", "dictionary", "position"];
@@ -41,6 +42,8 @@ const getSchema = () =>
     requirementLevel: z.string(),
     description: z.string(),
     metadata: z.string(),
+    // The id of the attribute to insert this one directly before (empty: at the end).
+    defaultOrder: z.string(),
   });
 
 export type AttributeFormType = z.infer<ReturnType<typeof getSchema>>;
@@ -72,13 +75,24 @@ interface Props extends FormConfigWithoutTransformFn<AttributeFormType> {
   readonly facilityMode: boolean;
   /** Whether the required level can be selected. Editing can never escalate the level to required. */
   readonly allowRequired: boolean;
+  /** The id of the edited attribute, disabled as the "insert before" anchor of itself. */
+  readonly editedId?: string;
 }
 
 export const AttributeForm: VoidComponent<Props> = (allProps) => {
-  const [props, formProps] = splitProps(allProps, ["id", "onCancel", "editMode", "facilityMode", "allowRequired"]);
+  const [props, formProps] = splitProps(allProps, [
+    "id",
+    "onCancel",
+    "editMode",
+    "facilityMode",
+    "allowRequired",
+    "editedId",
+  ]);
   const t = useLangFunc();
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
+  const allAttributes = useAllAttributes();
   const allDictionaries = useAllDictionaries();
+  const facilityName = useFacilityName();
   const [advancedViewChecked, setAdvancedViewChecked] = createAdvancedViewSignal();
   // The switch exists only in the facility variant; the global admin forms are always advanced.
   const advancedView = () => !props.facilityMode || advancedViewChecked();
@@ -103,6 +117,7 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
     <FelteForm
       id={props.id}
       schema={getSchema()}
+      translationsFormNames={[props.id, "attribute_form"]}
       translationsModel="attribute"
       {...formProps}
       onFormCreated={initForm}
@@ -115,6 +130,20 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
           const current = form.data(field);
           return !props.editMode || !current || values.includes(current) ? values : [...values, current];
         };
+        // The candidate "insert before" anchors: the attributes ordered together with this one.
+        const orderAnchors = () =>
+          reorderableAttributes(allAttributes(), {
+            model: form.data("model"),
+            scopeFacilityId: (props.facilityMode ? activeFacilityId() : form.data("facilityId")) || undefined,
+          });
+        // Deselect an anchor that fell out of the set, e.g. after a model or facility change.
+        createComputed(() => {
+          const anchorId = form.data("defaultOrder");
+          const anchors = orderAnchors();
+          if (anchorId && anchors.length && !anchors.some((attribute) => attribute.id === anchorId)) {
+            form.setFields("defaultOrder", "");
+          }
+        });
         return (
           <>
             <div class="flex flex-col">
@@ -198,6 +227,31 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
                 <HideableSection show={advancedView()}>
                   <TextField name="metadata" class="font-mono text-sm" />
                 </HideableSection>
+                <Select
+                  name="defaultOrder"
+                  items={orderAnchors().map((attribute) => {
+                    const edited = attribute.id === props.editedId;
+                    return {
+                      value: attribute.id,
+                      text: [attribute.label, String(attribute.type), facilityName(attribute.resource.facilityId)]
+                        .filter(Boolean)
+                        .join(" "),
+                      label: () => (
+                        <OrderItemRow
+                          label={
+                            <AttributeOrderLabel attribute={attribute}>
+                              {edited ? ` ${t("parenthesised", {text: t("forms.reorder.this_element")})}` : ""}
+                            </AttributeOrderLabel>
+                          }
+                          details={facilityName(attribute.resource.facilityId)}
+                        />
+                      ),
+                      disabled: edited,
+                    };
+                  })}
+                  nullable
+                  placeholder={t("forms.reorder.at_end")}
+                />
               </div>
             </div>
             <FelteSubmit cancel={props.onCancel} />

@@ -37,6 +37,10 @@ export const PositionCreateForm: VoidComponent<Props> = (props) => {
     });
     return {
       dictionaryId: props.dictionaryId,
+      // The form field holds the id of the position to insert directly before.
+      ...(values.defaultOrder
+        ? {defaultOrder: allDictionaries()!.getPositionById(values.defaultOrder).resource.defaultOrder}
+        : undefined),
       // Names without the "+" prefix are treated as translation keys, which never exist for
       // API-created positions. The form field holds the name without the prefix.
       name: `+${values.name}`,
@@ -66,6 +70,7 @@ export const PositionCreateForm: VoidComponent<Props> = (props) => {
         name: "",
         isDisabled: false,
         position: {},
+        defaultOrder: "",
       }}
       onSubmit={createPosition}
       onCancel={props.onCancel}

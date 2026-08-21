@@ -14,7 +14,10 @@ import {Dictionary} from "data-access/memo-api/dictionaries";
 import {useAllDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {System} from "data-access/memo-api/groups/System";
 import {createComputed, Show, splitProps, VoidComponent} from "solid-js";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
+import {OrderItemRow, PositionOrderLabel} from "./order_items";
+import {reorderablePositions, useFacilityName} from "./util";
 
 const getSchema = () =>
   z.object({
@@ -22,6 +25,8 @@ const getSchema = () =>
     name: z.string(),
     isDisabled: z.boolean(),
     position: ATTRIBUTES_SCHEMA,
+    // The id of the position to insert this one directly before (empty: at the end).
+    defaultOrder: z.string(),
   });
 
 export type PositionFormType = z.infer<ReturnType<typeof getSchema>>;
@@ -54,13 +59,23 @@ interface Props extends FormConfigWithoutTransformFn<PositionFormType> {
   readonly editMode: boolean;
   /** Whether the form works in the facility admin variant: no facility selector. */
   readonly facilityMode: boolean;
+  /** The id of the edited position, disabled as the "insert before" anchor of itself. */
+  readonly editedId?: string;
 }
 
 export const PositionForm: VoidComponent<Props> = (allProps) => {
-  const [props, formProps] = splitProps(allProps, ["id", "onCancel", "dictionaryId", "editMode", "facilityMode"]);
+  const [props, formProps] = splitProps(allProps, [
+    "id",
+    "onCancel",
+    "dictionaryId",
+    "editMode",
+    "facilityMode",
+    "editedId",
+  ]);
   const t = useLangFunc();
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const allDictionaries = useAllDictionaries();
+  const facilityName = useFacilityName();
   const dictionary = () => allDictionaries()?.byId.get(props.dictionaryId);
   function initForm(form: FormType<PositionFormType>) {
     // When the created position switches to a facility one, the attribute values become
@@ -86,6 +101,26 @@ export const PositionForm: VoidComponent<Props> = (allProps) => {
       {(form) => {
         const attributesEditable = () =>
           positionAttributesEditable({facilityMode: props.facilityMode, facilityId: form.data("facilityId") || ""});
+        // The candidate "insert before" anchors: the positions ordered together with this one.
+        const orderAnchors = () => {
+          const dict = dictionary();
+          if (!dict) {
+            return [];
+          }
+          const facilityId = (props.facilityMode ? activeFacilityId() : form.data("facilityId")) || undefined;
+          return reorderablePositions(
+            dict,
+            facilityId ? {scopeFacilityId: facilityId} : {scopeFacilityId: undefined, globalOnly: true},
+          );
+        };
+        // Deselect an anchor that fell out of the set, e.g. after a facility change.
+        createComputed(() => {
+          const anchorId = form.data("defaultOrder");
+          const anchors = orderAnchors();
+          if (anchorId && anchors.length && !anchors.some((position) => position.id === anchorId)) {
+            form.setFields("defaultOrder", "");
+          }
+        });
         return (
           <>
             <div class="flex flex-col gap-1">
@@ -121,6 +156,34 @@ export const PositionForm: VoidComponent<Props> = (allProps) => {
                 selection={{model: "position", includeFixed: true}}
                 requirementLevelOverride={positionFormRequirementLevel(dictionary())}
                 editMode={attributesEditable()}
+              />
+              <Select
+                name="defaultOrder"
+                items={orderAnchors().map((position) => {
+                  const edited = position.id === props.editedId;
+                  // The facility rows appear only among a global dictionary's positions; a facility
+                  // dictionary's rows all belong to its facility, so there is nothing to tell apart.
+                  const details = dictionary()?.resource.facilityId
+                    ? undefined
+                    : facilityName(position.resource.facilityId);
+                  return {
+                    value: position.id,
+                    text: [position.label, details].filter(Boolean).join(" "),
+                    label: () => (
+                      <OrderItemRow
+                        label={
+                          <PositionOrderLabel position={position}>
+                            {edited ? ` ${t("parenthesised", {text: t("forms.reorder.this_element")})}` : ""}
+                          </PositionOrderLabel>
+                        }
+                        details={details}
+                      />
+                    ),
+                    disabled: edited,
+                  };
+                })}
+                nullable
+                placeholder={t("forms.reorder.at_end")}
               />
             </div>
             <FelteSubmit cancel={props.onCancel} />

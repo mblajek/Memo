@@ -29,7 +29,6 @@ export const createPositionReorderModal = registerGlobalPageElement<FormParams>(
     return (
       !!params &&
       positionReorderMixesFacilities(allDictionaries()?.byId.get(params.dictionaryId), {
-        facilityMode: params.facilityMode,
         globalOnly: !!params.globalOnly,
       })
     );

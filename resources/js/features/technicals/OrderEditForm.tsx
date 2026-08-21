@@ -5,8 +5,8 @@ import {scrollIntoView} from "components/ui/scroll_into_view";
 import {SmallSpinner} from "components/ui/Spinner";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
-import {EmptyValueSymbol} from "resources/js/components/ui/EmptyValueSymbol";
 import {createComputed, createMemo, createSignal, For, JSX, Show, VoidComponent} from "solid-js";
+import {OrderItemRow} from "./order_items";
 
 type _Directives = typeof scrollIntoView;
 
@@ -102,12 +102,11 @@ export const OrderEditForm: VoidComponent<Props> = (props) => {
                   </Show>
                 </div>
                 <div
-                  class={cx("px-1 flex justify-between gap-2", highlightClass(id))}
+                  class={cx("px-1", highlightClass(id))}
                   use:scrollIntoView={[id === props.highlightId, {block: "center"}]}
                   on:animationend={() => setHighlightPending(false)}
                 >
-                  <div>{item.label || <EmptyValueSymbol />}</div>
-                  <div class="text-grey-text">{item.details}</div>
+                  <OrderItemRow label={item.label} details={item.details} />
                 </div>
               </>
             );

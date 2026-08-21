@@ -9,6 +9,7 @@ import {FacilityAdmin} from "data-access/memo-api/groups/FacilityAdmin";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Show, VoidComponent} from "solid-js";
 import {positionAttributesEditable, PositionForm, PositionFormType} from "./PositionForm";
+import {itemAfter, orderForMoveBefore, reorderablePositions} from "./util";
 
 interface Props {
   readonly id: string;
@@ -24,6 +25,20 @@ export const PositionEditForm: VoidComponent<Props> = (props) => {
   const allDictionaries = useAllDictionaries();
   const attributes = useAttributes();
   const position = () => allDictionaries()?.positionsById.get(props.id);
+  // The candidate "insert before" anchors: the positions ordered together with this one.
+  const orderAnchors = () => {
+    const resource = position()?.resource;
+    const dict = resource && allDictionaries()?.byId.get(resource.dictionaryId);
+    if (!dict) {
+      return [];
+    }
+    return reorderablePositions(
+      dict,
+      resource.facilityId
+        ? {scopeFacilityId: resource.facilityId}
+        : {scopeFacilityId: undefined, globalOnly: true},
+    );
+  };
   const positionAttributesProcessor = createAttributesProcessor("position");
   const positionMutation = useMutation(() => ({
     mutationFn: (values: PositionFormType) => {
@@ -33,11 +48,14 @@ export const PositionEditForm: VoidComponent<Props> = (props) => {
         facilityMode: props.facilityMode,
         facilityId: values.facilityId,
       });
+      // The form field holds the id of the position to insert directly before.
+      const targetOrder = orderForMoveBefore(orderAnchors(), {itemId: props.id, anchorId: values.defaultOrder});
       const patch = {
         id: props.id,
         // Send the name only when changed, not to convert an unchanged translatable name into
         // its literal ("+"-prefixed) form.
         ...(values.name === oldName ? undefined : {name: `+${values.name}`}),
+        ...(targetOrder === undefined ? undefined : {defaultOrder: targetOrder}),
         isDisabled: values.isDisabled,
         ...(attributesEditable ? positionAttributesProcessor.extract(values.position) : undefined),
       };
@@ -80,11 +98,14 @@ export const PositionEditForm: VoidComponent<Props> = (props) => {
           dictionaryId={position().resource.dictionaryId}
           editMode
           facilityMode={props.facilityMode}
+          editedId={props.id}
           initialValues={{
             facilityId: position().resource.facilityId ?? "",
             name: position().resource.name.replace(/^\+/, ""),
             isDisabled: position().resource.isDisabled,
             position: attributeValues(),
+            // The direct successor: the position is already right before it.
+            defaultOrder: itemAfter(orderAnchors(), props.id) ?? "",
           }}
           onSubmit={updatePosition}
           onCancel={props.onCancel}

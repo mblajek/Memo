@@ -1,16 +1,15 @@
-import {useMutation, useQuery} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {useAllAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityAdmin} from "data-access/memo-api/groups/FacilityAdmin";
-import {System} from "data-access/memo-api/groups/System";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {facilityIdMatches} from "data-access/memo-api/utils";
 import {Show, VoidComponent} from "solid-js";
 import {OrderEditForm} from "./OrderEditForm";
+import {AttributeOrderLabel} from "./order_items";
 import {reorderMoves} from "./reorder";
-import {NON_FORM_MUTATION_META, SYSTEM_ORDER_OFFSET} from "./util";
+import {NON_FORM_MUTATION_META, reorderableAttributes, useFacilityName} from "./util";
 
 interface Props {
   /**
@@ -28,26 +27,15 @@ export const AttributeReorderForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
   const allAttributes = useAllAttributes();
-  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const scopeAttribute = () => allAttributes()?.byId.get(props.attributeId);
   const scopeFacilityId = () => scopeAttribute()?.resource.facilityId || undefined;
-  function facilityName(facilityId: string | undefined) {
-    return facilityId ? facilitiesQuery.data?.find((facility) => facility.id === facilityId)?.name : undefined;
-  }
+  const facilityName = useFacilityName();
   const scopeFacilityName = () => facilityName(scopeFacilityId());
   const attributes = () => {
     const attribute = scopeAttribute();
-    if (!attribute) {
-      return undefined;
-    }
-    return allAttributes()
-      ?.getForModel(attribute.model)
-      .filter(
-        (other) =>
-          other.resource.defaultOrder < SYSTEM_ORDER_OFFSET &&
-          facilityIdMatches(other.resource.facilityId, scopeFacilityId()),
-      )
-      .toSorted((a, b) => a.resource.defaultOrder - b.resource.defaultOrder);
+    return attribute
+      ? reorderableAttributes(allAttributes(), {model: attribute.model, scopeFacilityId: scopeFacilityId()})
+      : undefined;
   };
   // The list holds only the global and the scope facility's attributes, so in facility mode
   // (where the scope is the active facility) the movable ones are simply the non-global ones.
@@ -100,17 +88,9 @@ export const AttributeReorderForm: VoidComponent<Props> = (props) => {
           }
           items={attributes().map((attribute) => ({
             id: attribute.id,
-            label: (
-              <>
-                {attribute.label}
-                <span class="text-grey-text">
-                  {attribute.label ? ": " : ""}
-                  {String(attribute.type)}
-                </span>
-              </>
-            ),
+            label: <AttributeOrderLabel attribute={attribute} />,
             // In a facility-scoped set, tell the facility's rows apart from the global ones.
-            details: facilityName(attribute.resource.facilityId || undefined),
+            details: facilityName(attribute.resource.facilityId),
             movable: isMovable(attribute),
           }))}
           highlightId={props.attributeId}

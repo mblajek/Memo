@@ -1,7 +1,10 @@
+import {useQuery} from "@tanstack/solid-query";
 import {createPersistence} from "components/persistence/persistence";
 import {sessionStorageStorage} from "components/persistence/storage";
 import {MutationMeta} from "components/utils/InitializeTanstackQuery";
+import {Attribute, Attributes} from "data-access/memo-api/attributes";
 import {Dictionary, Position} from "data-access/memo-api/dictionaries";
+import {System} from "data-access/memo-api/groups/System";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {Api} from "data-access/memo-api/types";
 import {facilityIdMatches} from "data-access/memo-api/utils";
@@ -42,7 +45,7 @@ export const NON_FORM_MUTATION_META = {
 } satisfies MutationMeta;
 
 /** Orders at or above this offset belong to system rows, kept out of the managed order sequence. */
-export const SYSTEM_ORDER_OFFSET = 1_000_000;
+const SYSTEM_ORDER_OFFSET = 1_000_000;
 
 /**
  * The dictionary's positions reorderable in the given facility scope: the global rows plus
@@ -66,6 +69,65 @@ export function reorderablePositions(
 }
 
 /**
+ * The same-model attributes ordered together in the given facility scope: the global rows
+ * plus the scope facility's rows (only the global rows when no scope facility is given).
+ * Without the system rows, sorted by order.
+ */
+export function reorderableAttributes(
+  attributes: Attributes | undefined,
+  {model, scopeFacilityId}: {model: string; scopeFacilityId: string | undefined},
+): Attribute[] {
+  return (attributes?.getForModel(model) || [])
+    .filter(
+      (attribute) =>
+        attribute.resource.defaultOrder < SYSTEM_ORDER_OFFSET &&
+        facilityIdMatches(attribute.resource.facilityId, scopeFacilityId),
+    )
+    .toSorted((a, b) => a.resource.defaultOrder - b.resource.defaultOrder);
+}
+
+interface OrderableItem {
+  readonly id: string;
+  readonly resource: {readonly defaultOrder: number};
+}
+
+/**
+ * The id of the item directly following the given one, i.e. the "insert before" anchor
+ * describing the item's current place. Undefined for the last (or an unknown) item.
+ */
+export function itemAfter(items: readonly OrderableItem[], itemId: string): string | undefined {
+  const index = items.findIndex((item) => item.id === itemId);
+  return index >= 0 ? items[index + 1]?.id : undefined;
+}
+
+/**
+ * The defaultOrder placing an existing item directly before the anchor item, or at the end of
+ * the list when no anchor is given. Undefined when the item would not move relative to the
+ * listed items (the anchor is already the item's direct successor).
+ */
+export function orderForMoveBefore(
+  items: readonly OrderableItem[],
+  {itemId, anchorId}: {itemId: string; anchorId: string},
+): number | undefined {
+  if (anchorId === itemAfter(items, itemId)) {
+    return undefined;
+  }
+  const current = items.find((item) => item.id === itemId)?.resource.defaultOrder;
+  if (current === undefined) {
+    return undefined;
+  }
+  const anchor = anchorId ? items.find((item) => item.id === anchorId) : items.at(-1);
+  if (!anchor) {
+    return undefined;
+  }
+  const anchorOrder = anchor.resource.defaultOrder;
+  // Moving down vacates the item's slot, shifting the in-between rows (the anchor included
+  // when moving to the end) one up.
+  const target = anchorOrder > current ? (anchorId ? anchorOrder - 1 : anchorOrder) : anchorOrder;
+  return target === current ? undefined : target;
+}
+
+/**
  * Whether the position itself can be moved. In the facility variant only the facility's own
  * (non-global) rows are movable.
  */
@@ -74,14 +136,21 @@ export function isPositionMovable(position: Position, {facilityMode}: {facilityM
 }
 
 /**
- * Whether a reorder of the dictionary's positions in the given scope can mix rows of
+ * Whether an ordered set of the dictionary's positions in the given scope can mix rows of
  * different facilities. The rows are then told apart by their facility names.
  */
 export function positionReorderMixesFacilities(
   dictionary: Dictionary | undefined,
-  {facilityMode, globalOnly}: {facilityMode: boolean; globalOnly: boolean},
+  {globalOnly}: {globalOnly: boolean},
 ): boolean {
-  return !facilityMode && !globalOnly && !dictionary?.resource.facilityId;
+  return !globalOnly && !dictionary?.resource.facilityId;
+}
+
+/** Returns a lookup of facility names by id, for displaying the facilities of listed items. */
+export function useFacilityName() {
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
+  return (facilityId: string | null | undefined) =>
+    facilityId ? facilitiesQuery.data?.find((facility) => facility.id === facilityId)?.name : undefined;
 }
 
 /** Whether any of the dictionary's positions in the given scope can be moved. */

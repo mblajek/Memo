@@ -68,6 +68,8 @@ export interface AttributeResourceForCreate extends Pick<
   readonly type: AttributeType;
   readonly dictionaryId: string | null;
   readonly isMultiValue: boolean;
+  /** The order to insert at, shifting the later rows. Appended at the end when omitted. */
+  readonly defaultOrder?: number;
 }
 
 /** The attribute fields accepted by the attribute patch endpoints. */

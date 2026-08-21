@@ -57,7 +57,10 @@ export interface DictionaryResourceForPatch extends Pick<DictionaryResource, "id
 }
 
 /** The position fields accepted by the position create endpoints. The owning facility is contextual. */
-export interface PositionResourceForCreate extends Pick<PositionResource, "dictionaryId" | "name" | "isDisabled"> {}
+export interface PositionResourceForCreate extends Pick<PositionResource, "dictionaryId" | "name" | "isDisabled"> {
+  /** The order to insert at, shifting the later rows. Appended at the end when omitted. */
+  readonly defaultOrder?: number;
+}
 
 /** The position fields accepted by the position patch endpoints. */
 export interface PositionResourceForPatch extends Pick<

@@ -1,18 +1,23 @@
-import {useMutation, useQuery} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useAllDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityAdmin} from "data-access/memo-api/groups/FacilityAdmin";
-import {System} from "data-access/memo-api/groups/System";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {OrderEditForm} from "./OrderEditForm";
+import {PositionOrderLabel} from "./order_items";
 import {reorderMoves} from "./reorder";
-import {NON_FORM_MUTATION_META, isPositionMovable, positionReorderMixesFacilities, reorderablePositions} from "./util";
-import {cx} from "resources/js/components/utils/classnames";
+import {
+  NON_FORM_MUTATION_META,
+  isPositionMovable,
+  positionReorderMixesFacilities,
+  reorderablePositions,
+  useFacilityName,
+} from "./util";
 
 interface Props {
   /** The dictionary whose positions are reordered. */
@@ -37,7 +42,6 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
   const allDictionaries = useAllDictionaries();
-  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const dictionary = () => allDictionaries()?.get(props.dictionaryId);
   // In the facility variant the positions are scoped to the active facility; the global admin
   // variant is scoped to the requested facility, or spans all the facilities (even though the
@@ -47,8 +51,7 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
   // Movability follows the endpoint, regardless of the displayed scope: the facility endpoint
   // can only move the facility's own rows, the admin endpoint any non-fixed row.
   const movable = (position: Position) => isPositionMovable(position, {facilityMode: props.facilityMode});
-  const facilityName = (facilityId: string | null | undefined) =>
-    facilityId ? facilitiesQuery.data?.find((facility) => facility.id === facilityId)?.name : undefined;
+  const facilityName = useFacilityName();
   const positions = () => {
     const dict = dictionary();
     return dict && reorderablePositions(dict, {scopeFacilityId: scopeFacilityId(), globalOnly: globalOnly()});
@@ -116,19 +119,8 @@ export const PositionReorderForm: VoidComponent<Props> = (props) => {
           }
           items={positions().map((position) => ({
             id: position.id,
-            label: (
-              <div class={cx(position.resource.isDisabled ? "text-grey-text" : undefined)}>
-                {position.label}
-                <Show when={position.resource.isDisabled}>
-                  {" "}
-                  {t("parenthesised", {text: t("models.position.isDisabled")})}
-                </Show>
-              </div>
-            ),
-            details: positionReorderMixesFacilities(dictionary(), {
-              facilityMode: props.facilityMode,
-              globalOnly: globalOnly(),
-            })
+            label: <PositionOrderLabel position={position} />,
+            details: positionReorderMixesFacilities(dictionary(), {globalOnly: globalOnly()})
               ? facilityName(position.resource.facilityId)
               : undefined,
             movable: movable(position),
