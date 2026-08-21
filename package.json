@@ -8,7 +8,7 @@
     "dev": "pnpm install && vite",
     "build": "pnpm clean-install --prod && vite build --sourcemap",
     "build-debug": "pnpm install --prod && vite build --no-minify --sourcemap=inline",
-    "clean": "rm -rf public/build",
+    "clean-build": "rm -rf public/build",
     "format": "pnpm install && prettier resources/js --write",
     "typecheck": "pnpm install && tsc --noEmit",
     "typecheck-watch": "pnpm install && tsc --noEmit --watch",
