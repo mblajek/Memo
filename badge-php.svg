@@ -1,19 +1,23 @@
-<svg width="80.5" height="20" viewBox="0 0 805 200" xmlns="http://www.w3.org/2000/svg">
-  <linearGradient id="a" x2="0" y2="100%">
-    <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="86" height="20" role="img"
+     font-family="Verdana,DejaVu Sans,sans-serif" font-size="11" fill="#fff" text-anchor="middle">
+  <title>Lines of backend code</title>
+  <linearGradient id="shine" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
-  <mask id="m"><rect width="805" height="200" rx="30" fill="#FFF"/></mask>
-  <g mask="url(#m)">
-    <rect width="315" height="200" fill="#555"/>
-    <rect width="490" height="200" fill="#777bb3" x="315"/>
-    <rect width="805" height="200" fill="url(#a)"/>
+  <clipPath id="round"><rect width="100%" height="100%" rx="3"/></clipPath>
+  <g clip-path="url(#round)">
+    <svg width="31" height="100%">
+      <rect width="100%" height="100%" fill="#555"/>
+      <text x="50%" y="14">PHP</text>
+    </svg>
+    <!-- The count box is wide enough for six digits. -->
+    <svg x="31" width="55" height="100%">
+      <rect width="100%" height="100%" fill="#777bb3"/>
+      <text x="50%" y="14">
+        <!-- LINE_COUNT_HERE -->30&#8201;088
+      </text>
+    </svg>
+    <rect width="100%" height="100%" fill="url(#shine)"/>
   </g>
-  <g fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
-    <text x="60" y="148" textLength="215" fill="#000" opacity="0.25">PHP</text>
-    <text x="50" y="138" textLength="215">PHP</text>
-    <text x="370" y="148" textLength="390" fill="#000" opacity="0.25">30,484</text>
-    <text x="360" y="138" textLength="390">30,484</text>
-  </g>
-  
 </svg>
