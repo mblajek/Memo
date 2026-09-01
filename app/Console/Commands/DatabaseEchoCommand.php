@@ -12,14 +12,12 @@ use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
-use ZipArchive;
 
 class DatabaseEchoCommand extends Command
 {
     protected $signature = 'fz:db-echo {id}';
-    protected $description = 'Echo database dump contents for DatabaseRestoreJob';
+    protected $description = 'Echo database dump contents';
 
     public function handle(): int
     {
@@ -30,27 +28,23 @@ class DatabaseEchoCommand extends Command
             ->whereIn('status', DatabaseDumpStatus::CREATE_OK)
             ->findOrFail(Uuid::fromString($this->argument('id')));
 
-        $dumpName = $dbDump->name;
-        $innerFile = DbDump::innerFileName($dumpName);
-        $zipPath = DbDump::fullPath($dumpName);
+        $zipPath = DbDump::fullPath($dbDump->name);
 
+        $copied = false;
         try {
-            $zip = new ZipArchive();
-            $zip->open($zipPath);
-            $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
-            $zip->setPassword(DatabaseDumpHelper::getDatabaseDumpPassword());
-            $sql = $zip->getFromName($innerFile);
-            $zip->close();
-            if (!is_string($sql)) {
-                Log::error("Cannot read item, maybe invalid password");
-                return self::FAILURE;
-            }
+            // The SQL is copied straight to the output, as a dump can have hundreds of megabytes.
+            DatabaseDumpHelper::readDumpSql($dbDump, function (mixed $sql) use (&$copied): void {
+                $copied = stream_copy_to_stream($sql, STDOUT);
+            });
         } catch (Throwable $e) {
-            Log::error("Cannot read file '{$innerFile}' inside '{$zipPath}': {$e->getMessage()}");
+            Log::error("Cannot read the dump inside '{$zipPath}': {$e->getMessage()}");
             return self::FAILURE;
         }
-
-        $this->output->write($sql, false, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
+        // Whoever reads the output cannot tell an empty dump from a database with nothing in it, so it is an error.
+        if (!$copied) {
+            Log::error("The dump inside '{$zipPath}' is empty");
+            return self::FAILURE;
+        }
 
         return self::SUCCESS;
     }
