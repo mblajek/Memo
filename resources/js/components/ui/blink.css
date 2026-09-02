@@ -1,0 +1,16 @@
+/*
+ * Blinking of an element's background to draw the user's attention, e.g. after scrolling
+ * to the element. Only the background blinks, the content is unaffected. The animation
+ * pulses three times and, thanks to the even alternating iteration count, ends smoothly
+ * at the element's original background.
+ */
+
+@keyframes blinkBg {
+  to {
+    background-color: var(--tc-memo-active);
+  }
+}
+
+.blinkBg {
+  animation: blinkBg 230ms ease-in-out 6 alternate;
+}

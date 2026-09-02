@@ -2,10 +2,6 @@
 
 namespace Tests\Feature\Tquery;
 
-use App\Http\Permissions\PermissionMiddleware;
-use App\Http\Permissions\PermissionObjectCreator;
-use App\Models\Facility;
-use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
@@ -15,31 +11,6 @@ abstract class TqueryTestCase extends TestCase
 {
     use DatabaseTransactions;
     use UserTrait;
-
-    protected function prepareFacilityAdmin(Facility $facility): void
-    {
-        $creator = new PermissionObjectCreator();
-        $creator->user = User::query()->findOrFail(User::SYSTEM);
-        $creator->facility = $facility;
-        $creator->loggedIn = true;
-        $creator->verified = true;
-        $creator->globalAdmin = true;
-        $creator->facilityMember = true;
-        $creator->facilityAdmin = true;
-        $creator->facilityStaff = true;
-        PermissionMiddleware::setPermissions($creator->getPermissionObject());
-    }
-
-    protected function prepareDeveloper(): void
-    {
-        $creator = new PermissionObjectCreator();
-        $creator->user = User::query()->findOrFail(User::SYSTEM);
-        $creator->loggedIn = true;
-        $creator->verified = true;
-        $creator->globalAdmin = true;
-        $creator->developer = true;
-        PermissionMiddleware::setPermissions($creator->getPermissionObject());
-    }
 
     protected static function columns(string ...$columns): array
     {

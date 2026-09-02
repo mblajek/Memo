@@ -42,15 +42,13 @@ import {z} from "zod";
 type _Directives = typeof title;
 
 const getSchema = () =>
-  getUserBaseInfoSchema().merge(
-    z.object({
-      staff: z.object({
-        isActive: z.boolean(),
-        deactivatedAt: z.string(),
-        hasFacilityAdmin: z.boolean(),
-      }),
+  getUserBaseInfoSchema().extend({
+    staff: z.object({
+      isActive: z.boolean(),
+      deactivatedAt: z.string(),
+      hasFacilityAdmin: z.boolean(),
     }),
-  );
+  });
 
 type FormType = z.infer<ReturnType<typeof getSchema>>;
 

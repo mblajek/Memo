@@ -6,6 +6,14 @@ import {
   AdminUserResourceForCreate,
   AdminUserResourceForPatch,
 } from "../resources/adminUser.resource";
+import {AttributeResourceForCreate, AttributeResourceForPatch} from "../resources/attribute.resource";
+import {
+  DictionaryResourceForCreate,
+  DictionaryResourceForPatch,
+  PositionAttributeValues,
+  PositionResourceForCreate,
+  PositionResourceForPatch,
+} from "../resources/dictionary.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
@@ -43,6 +51,27 @@ export namespace Admin {
   export const updateMember = (member: Api.Request.Patch<MemberResource>) =>
     V1.patch(`/admin/member/${member.id}`, member);
   export const deleteMember = (memberId: Api.Id) => V1.delete(`/admin/member/${memberId}`);
+
+  export const createAttribute = (attribute: AttributeResourceForCreate & {readonly facilityId: string | null}) =>
+    V1.post<Api.Response.Post>("/admin/attribute", attribute);
+  export const updateAttribute = (attribute: Api.Request.Patch<AttributeResourceForPatch>) =>
+    V1.patch(`/admin/attribute/${attribute.id}`, attribute);
+  export const deleteAttribute = (attributeId: Api.Id) => V1.delete(`/admin/attribute/${attributeId}`);
+
+  export const createDictionary = (
+    dictionary: DictionaryResourceForCreate & {readonly facilityId: string | null; readonly isExtendable: boolean},
+  ) => V1.post<Api.Response.Post>("/admin/dictionary", dictionary);
+  export const updateDictionary = (
+    dictionary: Api.Request.Patch<DictionaryResourceForPatch & {readonly isExtendable: boolean}>,
+  ) => V1.patch(`/admin/dictionary/${dictionary.id}`, dictionary);
+  export const deleteDictionary = (dictionaryId: Api.Id) => V1.delete(`/admin/dictionary/${dictionaryId}`);
+
+  export const createPosition = (
+    position: PositionResourceForCreate & {readonly facilityId: string | null} & PositionAttributeValues,
+  ) => V1.post<Api.Response.Post>("/admin/position", position);
+  export const updatePosition = (position: Api.Request.Patch<PositionResourceForPatch> & PositionAttributeValues) =>
+    V1.patch(`/admin/position/${position.id}`, position);
+  export const deletePosition = (positionId: Api.Id) => V1.delete(`/admin/position/${positionId}`);
 
   export const createDbDump = (dump: {isFromRc: boolean}) => V1.post("/admin/db-dump", dump);
   export const restoreDbDump = (dump: {id: Api.Id; isToRc: boolean}) =>

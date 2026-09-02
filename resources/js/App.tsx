@@ -1,4 +1,4 @@
-import {Navigate, Route, RouteProps, Router, useNavigate, useParams} from "@solidjs/router";
+import {Navigate, Route, RouteProps, Router, RouteSectionProps, useNavigate, useParams} from "@solidjs/router";
 import {useQuery} from "@tanstack/solid-query";
 import {AppContextProvider} from "app_context";
 import {capitalizeString} from "components/ui/Capitalize";
@@ -22,12 +22,18 @@ import {activeFacilityId} from "./state/activeFacilityId.state";
 const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.page"));
 const AdminDB = lazyAutoPreload(() => import("features/root/pages/AdminDB.page"));
 const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
+const AdminAttributesPage = lazyAutoPreload(() => import("features/technicals/AdminAttributesPage"));
+const AdminDictionariesPage = lazyAutoPreload(() => import("features/technicals/AdminDictionariesPage"));
+const AdminDictionaryPage = lazyAutoPreload(() => import("features/technicals/AdminDictionaryPage"));
 const AdminUsersListPage = lazyAutoPreload(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.page"));
 const ClientCreatePage = lazyAutoPreload(() => import("features/root/pages/ClientCreate.page"));
 const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
 const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
 const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHelp.page"));
+const FacilityAttributesPage = lazyAutoPreload(() => import("features/technicals/FacilityAttributesPage"));
+const FacilityDictionariesPage = lazyAutoPreload(() => import("features/technicals/FacilityDictionariesPage"));
+const FacilityDictionaryPage = lazyAutoPreload(() => import("features/technicals/FacilityDictionaryPage"));
 const FacilityAdminsListPage = lazyAutoPreload(() => import("features/root/pages/FacilityAdminsList.page"));
 const FacilityHomePage = lazyAutoPreload(() => import("features/root/pages/FacilityHome.page"));
 const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
@@ -106,12 +112,22 @@ const App: VoidComponent = () => {
             </Route>
             <Route
               path="/admin"
-              component={(props) => <AccessBarrier roles={["globalAdmin"]}>{props.children}</AccessBarrier>}
+              component={(props: RouteSectionProps) => (
+                <AccessBarrier roles={["globalAdmin"]}>{props.children}</AccessBarrier>
+              )}
             >
               <UnknownNotFound />
               <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
               <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
               <LeafRoute routeKey="admin.db_dumps" path="/db-dumps" component={AdminDB} />
+              <Route path="/technicals">
+                <Route path="/" component={() => <Navigate href="attributes" />} />
+                <LeafRoute routeKey="admin.attributes" path="/attributes" component={AdminAttributesPage} />
+                <Route path="/dictionaries">
+                  <LeafRoute routeKey="admin.dictionaries" path="/" component={AdminDictionariesPage} />
+                  <LeafRoute routeKey="admin.dictionary" path="/:dictionaryId" component={AdminDictionaryPage} />
+                </Route>
+              </Route>
             </Route>
             <Route path="/__facility/*facilityPath" component={RedirectFacilityPlaceholderToFacility} />
             <Route
@@ -119,7 +135,7 @@ const App: VoidComponent = () => {
               matchFilters={{
                 facilityUrl: facilitiesQuery.isSuccess ? facilitiesQuery.data?.map(({url}) => url) || [] : undefined,
               }}
-              component={(props) => (
+              component={(props: RouteSectionProps) => (
                 <AccessBarrier roles={["facilityMember"]}>
                   <QueryBarrier queries={[facilitiesQuery]}>{props.children}</QueryBarrier>
                 </AccessBarrier>
@@ -162,7 +178,9 @@ const App: VoidComponent = () => {
               </Route>
               <Route
                 path="/admin"
-                component={(props) => <AccessBarrier roles={["facilityAdmin"]}>{props.children}</AccessBarrier>}
+                component={(props: RouteSectionProps) => (
+                  <AccessBarrier roles={["facilityAdmin"]}>{props.children}</AccessBarrier>
+                )}
               >
                 <UnknownNotFound />
                 <Route path="/time-tables">
@@ -179,6 +197,26 @@ const App: VoidComponent = () => {
                   path="/notifications"
                   component={NotificationsListPage}
                 />
+                <Route path="/technicals">
+                  <Route path="/" component={() => <Navigate href="attributes" />} />
+                  <LeafRoute
+                    routeKey="facility.facility_admin.attributes"
+                    path="/attributes"
+                    component={FacilityAttributesPage}
+                  />
+                  <Route path="/dictionaries">
+                    <LeafRoute
+                      routeKey="facility.facility_admin.dictionaries"
+                      path="/"
+                      component={FacilityDictionariesPage}
+                    />
+                    <LeafRoute
+                      routeKey="facility.facility_admin.dictionary"
+                      path="/:dictionaryId"
+                      component={FacilityDictionaryPage}
+                    />
+                  </Route>
+                </Route>
               </Route>
             </Route>
           </Route>
@@ -211,7 +249,7 @@ const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => 
   return (
     <Route
       {...routeProps}
-      component={(innerProps) => (
+      component={(innerProps: RouteSectionProps) => (
         <>
           <AppTitlePrefix prefix={pageName()} />
           <Dynamic component={props.component} {...innerProps} />

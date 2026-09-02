@@ -77,7 +77,7 @@ class ClientGroupController extends ApiController
         );
         $result = $clientGroupService->create($this->getFacilityOrFail(), $data);
 
-        return new JsonResponse(data: ['data' => ['id' => $result]], status: 201);
+        return $this->createdIdResponse($result);
     }
 
     #[OA\Get(

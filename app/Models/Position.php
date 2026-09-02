@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Attributes\HasValues;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\BelongsToFacility;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,6 +27,7 @@ class Position extends Model
     use BaseModel;
     use HasValues;
     use HasValidator;
+    use BelongsToFacility;
 
     protected $table = 'positions';
 
@@ -50,11 +52,12 @@ class Position extends Model
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
-            //todo: dictionary exists in facility
             'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')]),
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
-            'name' => Valid::trimmed(),
-            'is_fixed', 'is_disabled' => Valid::bool(),
+            'name' => Valid::trimmed(['not_in:+']),
+            // fixed (system) rows are created only by DB migrations
+            'is_fixed' => Valid::bool(['declined'], sometimes: true),
+            'is_disabled' => Valid::bool(),
             'default_order' => Valid::int(['min:1'], sometimes: true),
         };
     }

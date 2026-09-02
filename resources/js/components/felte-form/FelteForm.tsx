@@ -11,7 +11,7 @@ import {useLangFunc} from "components/utils/lang";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
 import {Context, JSX, createContext, createMemo, createSignal, onMount, splitProps, useContext} from "solid-js";
-import {ZodSchema} from "zod";
+import {z} from "zod";
 import {LoadingPane} from "../ui/LoadingPane";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {createFormLeaveConfirmation} from "../ui/form/form_leave_confirmation";
@@ -48,7 +48,7 @@ export type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
     readonly id: string;
-    readonly schema: ZodSchema<T>;
+    readonly schema: z.ZodType<T>;
     /** The form names used to resolve translations. Defaults to the id. */
     readonly translationsFormNames?: readonly string[];
     /** The name of the model of the object edited by this form. It is used for getting field translations. */

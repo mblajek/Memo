@@ -29,7 +29,7 @@ import {BiRegularErrorAlt, BiRegularTable, BiSolidArrowFromRight, BiSolidArrowTo
 import {BsCalendar2X} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
 import {FaRegularNewspaper, FaSolidList} from "solid-icons/fa";
-import {FiLoader} from "solid-icons/fi";
+import {FiLoader, FiTool} from "solid-icons/fi";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {IoReloadSharp} from "solid-icons/io";
 import {OcLog3, OcTable3} from "solid-icons/oc";
@@ -81,6 +81,12 @@ export const Navbar: VoidComponent = () => {
     },
     storage: localStorageStorage("Navbar"),
   });
+
+  const DevOrGlobalAdminBarrier: ParentComponent = (props) => (
+    <Show when={isDEV()} fallback={<SilentAccessBarrier roles={["globalAdmin"]}>{props.children}</SilentAccessBarrier>}>
+      {props.children}
+    </Show>
+  );
 
   const FacilityAdminOrStaffBarrier: ParentComponent = (props) => (
     <SilentAccessBarrier
@@ -224,6 +230,26 @@ export const Navbar: VoidComponent = () => {
                     routeKey="facility.facility_admin.notifications"
                   />
                 </Show>
+                <DevOrGlobalAdminBarrier>
+                  <NavigationItem
+                    icon={FiTool}
+                    href={`/${facilityUrl()}/admin/technicals`}
+                    routeKey="facility.facility_admin.technicals"
+                  >
+                    <NavigationItem
+                      icon={FaSolidList}
+                      href={`/${facilityUrl()}/admin/technicals/attributes`}
+                      routeKey="facility.facility_admin.attributes"
+                      small
+                    />
+                    <NavigationItem
+                      icon={TiSortAlphabetically}
+                      href={`/${facilityUrl()}/admin/technicals/dictionaries`}
+                      routeKey="facility.facility_admin.dictionaries"
+                      small
+                    />
+                  </NavigationItem>
+                </DevOrGlobalAdminBarrier>
               </NavigationSection>
             </SilentAccessBarrier>
           </Show>
@@ -234,6 +260,20 @@ export const Navbar: VoidComponent = () => {
               <Show when={systemStatusMonitor.lastStatus()?.dumpsEnabled}>
                 <NavigationItem icon={actionIcons.DB} href="/admin/db-dumps" routeKey="admin.db_dumps" />
               </Show>
+              <NavigationItem icon={FiTool} href="/admin/technicals" routeKey="admin.technicals">
+                <NavigationItem
+                  icon={FaSolidList}
+                  href="/admin/technicals/attributes"
+                  routeKey="admin.attributes"
+                  small
+                />
+                <NavigationItem
+                  icon={TiSortAlphabetically}
+                  href="/admin/technicals/dictionaries"
+                  routeKey="admin.dictionaries"
+                  small
+                />
+              </NavigationItem>
             </NavigationSection>
           </SilentAccessBarrier>
           <NavigationSection name={t("routes.menu_sections.other")}>
@@ -241,8 +281,6 @@ export const Navbar: VoidComponent = () => {
           </NavigationSection>
           <Show when={isDEV()}>
             <NavigationSection name="DEV" compact>
-              <NavigationItem icon={FaSolidList} href="/dev/attributes" routeKey="Attributes" small />
-              <NavigationItem icon={TiSortAlphabetically} href="/dev/dictionaries" routeKey="Dictionaries" small />
               <Show when={DEV}>
                 <NavigationItem icon={RiDevelopmentCodeBoxLine} href="/dev/test-page" routeKey="Test page" small />
               </Show>

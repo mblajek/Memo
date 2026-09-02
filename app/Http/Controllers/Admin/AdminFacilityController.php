@@ -85,7 +85,7 @@ class AdminFacilityController extends ApiController
 
         $result = $service->handle($data);
 
-        return new JsonResponse(data: ['data' => ['id' => $result]], status: 201);
+        return $this->createdIdResponse($result);
     }
 
     #[OA\Patch(

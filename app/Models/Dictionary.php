@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Attributes\HasValues;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\BelongsToFacility;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,6 +25,7 @@ class Dictionary extends Model
 {
     use BaseModel;
     use HasValidator;
+    use BelongsToFacility;
     use HasValues;
 
     protected $table = 'dictionaries';
@@ -46,8 +48,10 @@ class Dictionary extends Model
     {
         return match ($field) {
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
-            'name' => Valid::trimmed(),
-            'is_fixed', 'is_extendable' => Valid::bool(),
+            'name' => Valid::trimmed(['not_in:+']),
+            // fixed (system) rows are created only by DB migrations
+            'is_fixed' => Valid::bool(['declined'], sometimes: true),
+            'is_extendable' => Valid::bool(),
         };
     }
 

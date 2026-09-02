@@ -208,32 +208,24 @@ tables:
     summary__many: "{{count, number}} zrzutów"
 
   attribute:
-    table_name: "atrybuty"
     column_names:
-      defaultOrder: "kolejność"
+      name: "$t(models.attribute.rawName)"
       facility.id: "id placówki"
       facility.name: "placówka"
-      isFixed: "fixed"
-      table: "model"
-      apiName: "nazwa API"
-      type: "typ"
+      table: "$t(models.attribute.model)"
       dictionary.id: "id słownika"
-      dictionary.name: "słownik"
-      isMultiValue: "multi"
-      requirementLevel: "wymagalność"
-      metadata: "metadane"
+      dictionary.name: "$t(models.attribute.dictionaryId)"
     summary__zero: "Brak atrybutów"
     summary__one: "{{count, number}} atrybut"
     summary__few: "{{count, number}} atrybuty"
     summary__many: "{{count, number}} atrybutów"
 
   dictionary:
-    table_name: "słowniki"
     column_names:
+      name: "$t(models.dictionary.rawName)"
       facility.id: "id placówki"
       facility.name: "placówka"
       isFixed: "fixed"
-      isExtendable: "rozszerzalny"
       positions.count: "liczba pozycji"
     summary__zero: "Brak słowników"
     summary__one: "{{count, number}} słownik"
@@ -243,13 +235,12 @@ tables:
   position:
     table_name: "pozycje słownikowe"
     column_names:
-      defaultOrder: "kolejność"
+      name: "$t(models.position.rawName)"
       facility.id: "id placówki"
       facility.name: "placówka"
       isFixed: "fixed"
-      isDisabled: "wył."
       dictionary.id: "id słownika"
-      dictionary.name: "słownik"
+      dictionary.name: "$t(models.position.dictionary)"
     summary__zero: "Brak pozycji"
     summary__one: "{{count, number}} pozycja"
     summary__few: "{{count, number}} pozycje"

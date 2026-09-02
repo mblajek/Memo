@@ -30,7 +30,14 @@ import {FiBell, FiBellOff, FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight, ImInfo} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {TbOutlineFilter, TbOutlineFilterOff, TbOutlineLockCheck, TbOutlineReload} from "solid-icons/tb";
+import {
+  TbOutlineArrowsSort,
+  TbOutlineGripVertical,
+  TbOutlineFilter,
+  TbOutlineFilterOff,
+  TbOutlineLockCheck,
+  TbOutlineReload,
+} from "solid-icons/tb";
 import {JSX, mergeProps} from "solid-js";
 
 function createCustomIcon(attributes: JSX.SVGElementTags["svg"], contents: string): IconTypes {
@@ -108,6 +115,12 @@ export namespace actionIcons {
   export const Copy = BiRegularCopy;
   export const Paste = BiRegularPaste;
   export const Reset = CgUndo;
+  export const Reorder: IconTypes = (props) => (
+    <TbOutlineArrowsSort {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
+  );
+  export const Drag: IconTypes = (props) => (
+    <TbOutlineGripVertical {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
+  );
   export const Notify = FiBell;
   export const NotifyOff = FiBellOff;
   export const Filter: IconTypes = (props) => (

@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use App\Exceptions\ApiException;
-use App\Exceptions\ExceptionFactory;
-use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Enums\AttendanceType;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\BelongsToFacility;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Rules\MeetingClientGroupRule;
@@ -42,6 +40,7 @@ class Meeting extends Model
 {
     use HasValidator;
     use BaseModel;
+    use BelongsToFacility;
 
     public const string STATUS_COMPLETED = 'f6001030-c061-480e-9a5a-7013cee7ff40';
     public const string STATUS_PLANNED = '86aaead1-bbcc-4af1-a74a-ed2bdff46d0a';
@@ -157,13 +156,4 @@ class Meeting extends Model
         $this->status_dict_id = self::STATUS_PLANNED;
     }
 
-    /** @throws ApiException */
-    public function belongsToFacilityOrFail(
-        Facility|null $facility = null,
-    ): void {
-        $facility ??= PermissionMiddleware::facility();
-        if ($this->facility_id !== $facility->id) {
-            ExceptionFactory::notFound()->throw();
-        }
-    }
 }

@@ -1,5 +1,6 @@
+engineStrict: true
+# 4 days (in minutes)
+minimumReleaseAge: 5760
 allowBuilds:
+  "@parcel/watcher": true
   esbuild: true
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - esbuild

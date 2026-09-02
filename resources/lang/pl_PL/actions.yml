@@ -14,6 +14,7 @@ copy_to_clipboard: "Kopiuj do schowka"
 expand: "Rozwiń"
 collapse: "Zwiń"
 clear: "Wyczyść"
+reorder: "Zmień kolejność"
 restore_default: "Przywróć domyślne"
 search: "Szukaj"
 sort: "Sortuj"
@@ -34,6 +35,12 @@ details: "Szczegóły"
 
 user:
   add: "Dodaj osobę"
+attribute:
+  add: "Dodaj atrybut"
+dictionary:
+  add: "Dodaj słownik"
+position:
+  add: "Dodaj pozycję"
 facility:
   add: "Dodaj placówkę"
 client:

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\ControllerMiddlewareOptions;
@@ -18,19 +19,28 @@ use OpenApi\Attributes as OA;
 #[OA\Info(version: ApiController::VERSION, title: 'Memo API')]
 abstract class ApiController extends Controller
 {
-    final public const string VERSION = '0.22.1';
-    private readonly array $requestIn;
+    final public const string VERSION = '0.22.2';
 
-    public function __construct(private readonly Request $request)
+    public function __construct()
     {
         $this->permissionOneOf(Permission::any);
         $this->initPermissions();
     }
 
+    /**
+     * The current request, resolved lazily. The controller instance is cached on the route and may
+     * outlive a single request (e.g. consecutive in-process test requests), so the request must not
+     * be captured in the constructor.
+     */
+    protected function request(): Request
+    {
+        return request();
+    }
+
     protected function validate(array $rules): array
     {
         Valid::reset();
-        return $this->request->validate($rules + ['dry_run' => Valid::bool(['declined'], sometimes: true)]);
+        return $this->request()->validate($rules + ['dry_run' => Valid::bool(['declined'], sometimes: true)]);
     }
 
     public function getFacilityOrFail(): Facility
@@ -41,6 +51,16 @@ abstract class ApiController extends Controller
     public function getUserOrFail(): User
     {
         return PermissionMiddleware::user();
+    }
+
+    protected function facilityOrNull(?string $facilityId): ?Facility
+    {
+        return ($facilityId === null) ? null : Facility::query()->findOrFail($facilityId);
+    }
+
+    protected function createdIdResponse(string $id): JsonResponse
+    {
+        return new JsonResponse(data: ['data' => ['id' => $id]], status: 201);
     }
 
     /** Require permission in initPermissions() */
@@ -54,24 +74,20 @@ abstract class ApiController extends Controller
 
     protected function getRequestIn(): array
     {
-        if (!isset($this->requestIn)) {
-            // no use of Valid rule generator to keep this fast as possible
-            $in = $this->request->validate(['in' => 'nullable|string|lowercase'])['in'] ?? null;
-            if ($in) {
-                $inArr = explode(',', $in);
-                Validator::validate(['in' => $inArr], ['in.*' => 'bail|required|string|uuid']);
-                $this->requestIn = array_values(array_unique($inArr));
-            } else {
-                $this->requestIn = [];
-            }
+        // no use of Valid rule generator to keep this fast as possible
+        $in = $this->request()->validate(['in' => 'nullable|string|lowercase'])['in'] ?? null;
+        if ($in) {
+            $inArr = explode(',', $in);
+            Validator::validate(['in' => $inArr], ['in.*' => 'bail|required|string|uuid']);
+            return array_values(array_unique($inArr));
         }
-        return $this->requestIn;
+        return [];
     }
 
     protected function applyRequestIn(EloquentBuilder|Builder $query, string $column = 'id', bool $required = false): void
     {
         if ($required) {
-            $this->request->validate(['in' => 'required']);
+            $this->request()->validate(['in' => 'required']);
         }
         if (($in = $this->getRequestIn())) {
             $query->whereIn($column, $in);

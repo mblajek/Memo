@@ -60,6 +60,24 @@ export interface AttributeResource {
   readonly requirementLevel: RequirementLevel;
 }
 
+/** The attribute fields accepted by the attribute create endpoints. The owning facility is contextual. */
+export interface AttributeResourceForCreate extends Pick<
+  AttributeResource,
+  "model" | "name" | "apiName" | "description" | "requirementLevel" | "metadata"
+> {
+  readonly type: AttributeType;
+  readonly dictionaryId: string | null;
+  readonly isMultiValue: boolean;
+  /** The order to insert at, shifting the later rows. Appended at the end when omitted. */
+  readonly defaultOrder?: number;
+}
+
+/** The attribute fields accepted by the attribute patch endpoints. */
+export interface AttributeResourceForPatch extends Pick<
+  AttributeResource,
+  "id" | "name" | "apiName" | "description" | "requirementLevel" | "metadata" | "defaultOrder"
+> {}
+
 export interface AttributeMetadataResource {
   // For string and text:
   readonly isMultiLine?: boolean;

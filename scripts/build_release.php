@@ -27,7 +27,8 @@ ini_set('display_errors', 1);
             return;
         }
         $execStartTime = microtime(true);
-        exec("$command 2>&1", $output, $code);
+        // No stdin — an interactive prompt would hang forever with its question invisible in the pipe.
+        exec("$command </dev/null 2>&1", $output, $code);
         if ($code !== 0) {
             $exit("\n" . implode("\n", $output));
         }

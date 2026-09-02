@@ -7,6 +7,7 @@ use App\Models\Enums\AttributeRequirementLevel;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\BelongsToFacility;
 use App\Models\Traits\HasCache;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
@@ -35,6 +36,7 @@ class Attribute extends Model
 {
     use BaseModel;
     use HasValidator;
+    use BelongsToFacility;
     use HasCache;
 
     protected $table = 'attributes';
@@ -69,16 +71,19 @@ class Attribute extends Model
     {
         return match ($field) {
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
-            'model' => Valid::trimmed(
-                [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))],
-            ),
+            'model' => Valid::trimmed([Rule::in(array_map(
+                fn(AttributeTable $table) => lcfirst($table->name),
+                AttributeTable::valueCapable(),
+            ))]),
             'name' => Valid::trimmed(),
             'api_name' => Valid::trimmed(['regex:/^[a-z][A-Za-z0-9]+$/']),
             'type' => Valid::trimmed([Rule::enum(AttributeType::class)]),
-            //todo: dictionary exists in facility; required (only) for type "dict"
             'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')], nullable: true),
             'default_order' => Valid::int(['min:1'], sometimes: true),
-            'is_multi_value', 'is_fixed' => Valid::bool(nullable: true),
+            // null is_multi_value (column-backed storage) is reserved for system attributes
+            'is_multi_value' => Valid::bool(),
+            // fixed (system) rows are created only by DB migrations
+            'is_fixed' => Valid::bool(['declined'], sometimes: true),
             'requirement_level' => Valid::trimmed([Rule::enum(AttributeRequirementLevel::class)]),
             'description' => Valid::text(nullable: true),
             'metadata' => Valid::array(keys: null, sometimes: true, nullable: true),

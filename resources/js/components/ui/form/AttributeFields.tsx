@@ -16,7 +16,7 @@ import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
-import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {useAllDictionaries, useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {
   DictAttributeType,
   RequirementLevel,
@@ -60,13 +60,18 @@ import {SimpleMultiField} from "./multi_fields";
 type _Directives = typeof title;
 
 export type AttributesType = Record<string, unknown>;
-export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
+export const ATTRIBUTES_SCHEMA = z.record(z.string(), z.unknown());
 
 interface Props {
   readonly model: string;
   // The override type must match the attribute type.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly selection: PartialAttributesSelection<AttributeParams<any>>;
+  /**
+   * Overrides the requirement level of an attribute, for contexts that make an attribute more
+   * (or less) required than its own declared level. Undefined keeps the attribute's own level.
+   */
+  readonly requirementLevelOverride?: (attribute: Attribute) => RequirementLevel | undefined;
   readonly minRequirementLevel?: RequirementLevel;
   readonly nestFieldsUnder?: string;
   readonly editMode: boolean;
@@ -85,7 +90,7 @@ export interface AttributeParams<V> {
  */
 export const AttributeFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
+  const allDictionaries = useAllDictionaries();
   const attributes = useAttributes();
   const modelQuerySpecs = useModelQuerySpecs();
   const {form} = useFormContext();
@@ -94,10 +99,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
     return props.nestFieldsUnder ? `${props.nestFieldsUnder}.${attribute.apiName}` : attribute.apiName;
   }
 
+  function requirementLevel(attribute: Attribute) {
+    return props.requirementLevelOverride?.(attribute) ?? attribute.requirementLevel;
+  }
+
   const AttributeField: VoidComponent<{readonly attribute: Attribute}> = (aProps) => {
     const name = () => fieldName(aProps.attribute);
     const field = () => {
-      const nullable = compareRequirementLevels(aProps.attribute.requirementLevel, "required") < 0;
+      const nullable = compareRequirementLevels(requirementLevel(aProps.attribute), "required") < 0;
 
       function simpleAttributeField(type: SimpleAttributeType, fieldName = name()) {
         switch (type) {
@@ -245,7 +254,12 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
           case "datetime":
             return DateTime.fromISO(val as string).toLocaleString({...DATE_TIME_FORMAT, weekday: "long"});
           case "dict":
-            return dictionaries()?.getPositionById(val as string)?.label;
+            // The value may reference a position from outside the current facility scope.
+            return (
+              allDictionaries()?.positionsById.get(val as string)?.label ?? (
+                <span class="font-mono text-xs">{String(val)}</span>
+              )
+            );
           default:
             return type satisfies never;
         }
@@ -386,7 +400,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                 return (
                   !isAttributeEmpty(attributeInfo) ||
                   !minRequirementLevel() ||
-                  compareRequirementLevels(attributeInfo.attribute.requirementLevel, minRequirementLevel()!) >= 0
+                  compareRequirementLevels(requirementLevel(attributeInfo.attribute), minRequirementLevel()!) >= 0
                 );
               }
 
@@ -467,7 +481,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                             </div>
                             <div class="flex items-center justify-center">
                               <RequirementLevelMarker
-                                level={attribute.requirementLevel}
+                                level={requirementLevel(attribute)}
                                 isEmpty={isAttributeEmpty(attributeInfo)}
                               />
                             </div>

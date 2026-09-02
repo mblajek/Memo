@@ -88,6 +88,7 @@ export namespace System {
     facilityList: () => [...keys.facility(), "list"] as const,
     dictionary: () => ["dictionary"] as const,
     attribute: () => ["attribute"] as const,
+    position: () => ["position"] as const,
     status: () => ["status"] as const,
   };
 }

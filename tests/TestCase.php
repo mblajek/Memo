@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Models\Attribute;
 use App\Utils\Date\DateHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -10,6 +11,13 @@ use Illuminate\Testing\TestResponse;
 abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // the static attribute cache survives DatabaseTransactions rollbacks of earlier tests
+        Attribute::clearCacheAll();
+    }
 
     public function post($uri, array $data = [], array $headers = []): TestResponse
     {

@@ -58,7 +58,11 @@ export function useInvalidator(queryClient = useQueryClient()) {
       },
     },
     // Global:
-    dictionaries: () => void queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),
+    dictionaries: () => {
+      void queryClient.invalidateQueries({queryKey: System.keys.dictionary()});
+      // The positions are part of the dictionaries, but the position tables query them under a separate key.
+      void queryClient.invalidateQueries({queryKey: System.keys.position()});
+    },
     attributes: () => void queryClient.invalidateQueries({queryKey: System.keys.attribute()}),
     // Admin:
     dbDumps: () => void queryClient.invalidateQueries({queryKey: Admin.keys.dbDump()}),

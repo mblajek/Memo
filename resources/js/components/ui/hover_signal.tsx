@@ -44,7 +44,7 @@ function getSetterFunc(input: HoverSignalInput): HoverSetter | undefined {
  *     <element use:hoverSignal={hover} />
  *     <Show when={hover()}>...</Show>
  */
-export function hoverSignal(element: HTMLElement, accessor: Accessor<HoverSignalInput>) {
+export function hoverSignal(element: Element, accessor: Accessor<HoverSignalInput>) {
   createEffect(
     on(accessor, (input) => {
       const setHover = getSetterFunc(input);

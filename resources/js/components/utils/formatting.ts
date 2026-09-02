@@ -6,28 +6,20 @@ export const DATE_TIME_FORMAT = {...DATE_FORMAT, ...TIME_FORMAT} satisfies Intl.
 
 export const NUMBER_FORMAT = new Intl.NumberFormat();
 
-/** Polyfill. */
-interface Locale extends Intl.Locale {
-  readonly getWeekInfo?: () => WeekInfo;
-  readonly weekInfo?: WeekInfo;
-}
-
-interface WeekInfo {
-  readonly firstDay: WeekdayNumbers;
-  readonly weekend: WeekdayNumbers[];
-  // Note that minimalDays was removed.
-}
-
 const DEFAULT_WEEK_SETTINGS = {
   firstDay: 1,
   weekend: [6, 7],
   minimalDays: 4,
 } as const satisfies WeekSettings;
 
-export function getWeekSettings(locale: Locale): WeekSettings {
-  const weekInfo = locale.getWeekInfo?.() || locale.weekInfo;
+export function getWeekSettings(locale: Intl.Locale): WeekSettings {
+  // Some browsers don't have getWeekInfo, and some older ones expose the week info
+  // as the weekInfo property instead.
+  const weekInfo =
+    (locale as Partial<Intl.Locale>).getWeekInfo?.() || (locale as {readonly weekInfo?: Intl.WeekInfo}).weekInfo;
   return {
     ...DEFAULT_WEEK_SETTINGS,
-    ...weekInfo,
+    // The values are really WeekdayNumbers, even though Intl.WeekInfo types them as numbers.
+    ...(weekInfo as {firstDay: WeekdayNumbers; weekend: WeekdayNumbers[]} | undefined),
   };
 }

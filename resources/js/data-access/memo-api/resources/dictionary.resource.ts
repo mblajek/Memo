@@ -45,3 +45,28 @@ export interface PositionResource {
   readonly isDisabled: boolean;
   readonly positionGroupDictId: string | null;
 }
+
+/** The dictionary fields accepted by the dictionary create endpoints. The owning facility is contextual. */
+export interface DictionaryResourceForCreate extends Pick<DictionaryResource, "name"> {
+  readonly positionRequiredAttributeIds: readonly string[] | null;
+}
+
+/** The dictionary fields accepted by the dictionary patch endpoints. */
+export interface DictionaryResourceForPatch extends Pick<DictionaryResource, "id" | "name"> {
+  readonly positionRequiredAttributeIds: readonly string[] | null;
+}
+
+/** The position fields accepted by the position create endpoints. The owning facility is contextual. */
+export interface PositionResourceForCreate extends Pick<PositionResource, "dictionaryId" | "name" | "isDisabled"> {
+  /** The order to insert at, shifting the later rows. Appended at the end when omitted. */
+  readonly defaultOrder?: number;
+}
+
+/** The position fields accepted by the position patch endpoints. */
+export interface PositionResourceForPatch extends Pick<
+  PositionResource,
+  "id" | "name" | "isDisabled" | "defaultOrder"
+> {}
+
+/** The position attribute values sent alongside the plain position fields, keyed by the attribute api names. */
+export type PositionAttributeValues = Readonly<Record<string, unknown>>;

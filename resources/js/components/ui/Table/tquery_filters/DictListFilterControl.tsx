@@ -38,6 +38,7 @@ export const DictListFilterControl: FilterControl<Filter> = (props) => {
       <DictionarySelect
         name={filterFieldNames.get(`val_${schema().name}`)}
         dictionary={schema().dictionaryId}
+        disabledItemsMode="deprecate"
         value={value()}
         onValueChange={setValue}
         multiple

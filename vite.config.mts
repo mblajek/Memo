@@ -4,7 +4,6 @@ import {PluginOption} from "vite";
 import eslint from "vite-plugin-eslint";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
-import tsConfigPaths from "vite-tsconfig-paths";
 import {defineConfig} from "vitest/config";
 
 function betterHotReload(): PluginOption {
@@ -26,7 +25,17 @@ function betterHotReload(): PluginOption {
 
 export default defineConfig({
   build: {
-    target: "ESNext",
+    // Lowercase, as vite's CSS target conversion matches "esnext" case-sensitively.
+    target: "esnext",
+    rollupOptions: {
+      onLog(level, log, handler) {
+        // The tailwind plugin does not generate CSS sourcemaps (https://github.com/tailwindlabs/tailwindcss/issues/17926).
+        if (log.code === "SOURCEMAP_BROKEN" && log.plugin?.startsWith("@tailwindcss/vite")) {
+          return;
+        }
+        handler(level, log);
+      },
+    },
   },
   plugins: [
     tailwindcss(),
@@ -44,11 +53,13 @@ export default defineConfig({
         inlineStyles: false,
       },
     }),
-    tsConfigPaths(),
     eslint({include: ["resources/js"]}),
     solidSvg({defaultAsComponent: true}),
     betterHotReload(),
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
   optimizeDeps: {
     // Based on https://github.com/andi23rosca/solid-markdown/issues/33#issuecomment-2612454745
     include: ["solid-markdown > micromark", "solid-markdown > unified"],
