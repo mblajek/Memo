@@ -16,6 +16,9 @@ import {For, Show, VoidComponent} from "solid-js";
 
 const GITHUB_LINK = "https://github.com/mblajek/Memo";
 
+/** The value at which free disk space is capped by backend. */
+const FREE_DISK_SPACE_MB_CAP = 1999.99;
+
 export default (() => {
   const t = useLangFunc();
   const systemStatusMonitor = useSystemStatusMonitor();
@@ -133,7 +136,10 @@ export default (() => {
                   <label class="font-semibold">{t("about_page.free_disk_space")}</label>
                   <div>
                     <Show when={status().freeDiskSpaceMb != null} fallback={<EmptyValueSymbol />}>
-                      <ByteSize bytes={status().freeDiskSpaceMb! * 2 ** 20} />
+                      <ByteSize bytes={Math.round(status().freeDiskSpaceMb! * 2 ** 20)} />
+                      <Show when={status().freeDiskSpaceMb === FREE_DISK_SPACE_MB_CAP}>
+                        <span class="text-grey-text"> {t("about_page.free_disk_space_capped")}</span>
+                      </Show>
                     </Show>
                   </div>
                   <Show when={isDEV() && status().integrationEvents}>
