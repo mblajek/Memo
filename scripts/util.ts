@@ -8,6 +8,9 @@ export async function run(command: readonly string[], options?: Deno.CommandOpti
   const res = await new Deno.Command(command[0], {
     args: command.slice(1),
     ...options,
+    // A scoped --allow-run refuses to spawn while LD_*/DYLD_* variables are set, as they can
+    // hijack the child binary. An empty value counts as unset.
+    env: {LD_LIBRARY_PATH: "", LD_PRELOAD: "", ...options?.env},
   }).output();
   function readOut(out: "stdout" | "stderr") {
     return options?.[out] === "inherit" || options?.[out] === "null" ? undefined : new TextDecoder().decode(res[out]);
