@@ -46,48 +46,57 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
   const appContext = useAppContext();
   const location = useLocation();
   const serialiser = richJSONSerialiser();
-  const serverLog = useServerLog();
   let setData = featureUseSetters.get(featureId);
   if (!setData) {
-    // Make sure the effect is persistent.
+    // Make sure the effect and the mutation are persistent.
     appContext.runInAppContext(() => {
+      const serverLog = useServerLog();
       const [data, dataSetter] = createSignal<FeatureUseData<D>>({count: 0, breakdown: new Map()});
       setData = dataSetter;
       featureUseSetters.set(featureId, setData);
+      // Data that failed to send, to be included in the next request.
+      let unsentData: FeatureUseData<D> | undefined;
       // eslint-disable-next-line solid/reactivity
       const debouncedData = debouncedAccessor(data, {timeMs: fullOptions.debounce.toMillis(), lazy: true});
       createEffect(
-        on(debouncedData, ({firstTime, lastTime, count, breakdown}) => {
-          if (serverLog.mutation.isPending) {
+        on(debouncedData, (newData) => {
+          // If a request is pending, leave the data in the signal, it will be sent after the next use.
+          if (!newData.count || serverLog.mutation.isPending) {
             return;
           }
-          if (firstTime && lastTime && count) {
-            let contextBreakdown: BreakdownItem<D>[] | undefined = [...breakdown.values()];
-            if (
-              contextBreakdown.length === 1 &&
-              !fullOptions.logAppPath &&
-              contextBreakdown[0]!.key.details === undefined
-            ) {
-              contextBreakdown = undefined;
-            }
-            serverLog(
-              {
-                logLevel: "info",
-                source: System.LogAPIFrontendSource.FEATURE_USE,
-                message: featureId,
-                context: JSON.stringify({
-                  firstTime: count === 1 ? undefined : dateTimeToISO(firstTime),
-                  lastTime: dateTimeToISO(lastTime),
-                  count,
-                  breakdown: contextBreakdown,
-                } satisfies FeatureUseContext<D>),
-              },
-              {
-                // Reset the counts. This might lose some occurrences that happened during the mutation
-                // but let's ignore that for simplicity.
-                onSuccess: () => setData!({count: 0, breakdown: new Map()}),
-              },
-            );
+          setData!({count: 0, breakdown: new Map()});
+          const dataToSend = unsentData ? mergeFeatureUseData(unsentData, newData) : newData;
+          unsentData = undefined;
+          const {firstTime, lastTime, count, breakdown} = dataToSend;
+          let contextBreakdown: BreakdownItem<D>[] | undefined = [...breakdown.values()];
+          if (
+            contextBreakdown.length === 1 &&
+            !fullOptions.logAppPath &&
+            contextBreakdown[0]!.key.details === undefined
+          ) {
+            contextBreakdown = undefined;
+          }
+          // Don't put the data back into the signal on failure, as that would cause retrying
+          // in a loop, even with no further uses.
+          const keepUnsent = () => {
+            unsentData = dataToSend;
+          };
+          const sent = serverLog(
+            {
+              logLevel: "info",
+              source: System.LogAPIFrontendSource.FEATURE_USE,
+              message: featureId,
+              context: JSON.stringify({
+                firstTime: count === 1 ? undefined : dateTimeToISO(firstTime!),
+                lastTime: dateTimeToISO(lastTime!),
+                count,
+                breakdown: contextBreakdown,
+              } satisfies FeatureUseContext<D>),
+            },
+            {onError: keepUnsent},
+          );
+          if (!sent) {
+            keepUnsent();
           }
         }),
       );
@@ -113,6 +122,24 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
     });
   }) as (...params: D extends null ? [] : [D]) => void;
   return {justUsed};
+}
+
+/** Merges the data, where earlier precedes later in time. */
+function mergeFeatureUseData<D extends RichJSONValue>(
+  earlier: FeatureUseData<D>,
+  later: FeatureUseData<D>,
+): FeatureUseData<D> {
+  const breakdown = new Map(earlier.breakdown);
+  for (const [stringKey, item] of later.breakdown) {
+    const earlierItem = breakdown.get(stringKey);
+    breakdown.set(stringKey, earlierItem ? {...earlierItem, count: earlierItem.count + item.count} : item);
+  }
+  return {
+    firstTime: earlier.firstTime ?? later.firstTime,
+    lastTime: later.lastTime ?? earlier.lastTime,
+    count: earlier.count + later.count,
+    breakdown,
+  };
 }
 
 export interface FeatureUseContext<D extends RichJSONValue = RichJSONValue> {
