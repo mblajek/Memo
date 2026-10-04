@@ -5,6 +5,7 @@ import {ColumnName} from "components/ui/Table/ColumnName";
 import {useTable} from "components/ui/Table/TableContext";
 import {cx} from "components/utils/classnames";
 import {debouncedAccessor} from "components/utils/debounce";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {useLangFunc} from "components/utils/lang";
 import {createTextFilter} from "components/utils/text_util";
 import {RiSystemEyeCloseFill} from "solid-icons/ri";
@@ -22,6 +23,7 @@ const DEBOUNCE_TIME_MS = 1500;
 export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
+  const featureVisibilityReset = featureUseTrackers.tableColumnVisibilityReset();
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
   const [search, setSearch] = createSignal("");
   const translations = table.options.meta?.translations;
@@ -179,7 +181,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             {(defaultColumnVisibility) => (
               <Button
                 class="secondary small"
-                onClick={() =>
+                onClick={() => {
                   setVisibility((visibility) => {
                     const vis = {...visibility};
                     for (const [id, defVisible] of Object.entries(defaultColumnVisibility()())) {
@@ -188,8 +190,9 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                       }
                     }
                     return vis;
-                  })
-                }
+                  });
+                  featureVisibilityReset.justUsed();
+                }}
                 disabled={isDefaultVisibility()}
                 // Use inert to make the parent handle onClick also when disabled.
                 inert={isDefaultVisibility()}

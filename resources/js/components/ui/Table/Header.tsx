@@ -24,6 +24,7 @@ interface Props {
  */
 export const Header: VoidComponent<Props> = (props) => {
   const featureSecondarySort = featureUseTrackers.tableSecondarySort();
+  const featureHideByResize = featureUseTrackers.tableColumnHideByResize();
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
 
   const thisColSizingInfo = createMemo(() => {
@@ -47,6 +48,7 @@ export const Header: VoidComponent<Props> = (props) => {
         props.ctx.table.setColumnSizing((old) =>
           prevSizingInfo?.startSize ? {...old, [props.ctx.column.id]: prevSizingInfo.startSize} : old,
         );
+        featureHideByResize.justUsed();
       }
     }),
   );

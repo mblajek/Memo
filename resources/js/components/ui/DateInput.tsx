@@ -17,6 +17,7 @@ export const DateInput: VoidComponent<DateInputProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["outerClass", "showWeekday"]);
   const t = useLangFunc();
   const featureKeyUpDown = featureUseTrackers.dateTimeInputKeyUpDown();
+  const featureKeyDelete = featureUseTrackers.dateTimeInputKeyDelete();
   const type = () => inputProps.type || "date";
   const showWeekday = () => props.showWeekday ?? type() === "date";
   const formContext = useFormContextIfInForm();
@@ -55,6 +56,7 @@ export const DateInput: VoidComponent<DateInputProps> = (allProps) => {
               target.dispatchEvent(new Event("change"));
               formContext?.form.setData(inputProps.name!, "");
               e.preventDefault();
+              featureKeyDelete.justUsed({type: type()});
             } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
               featureKeyUpDown.justUsed({type: type()});
             }

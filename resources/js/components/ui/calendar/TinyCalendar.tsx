@@ -1,4 +1,5 @@
 import {cx} from "components/utils/classnames";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {currentDate} from "components/utils/time";
@@ -70,6 +71,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   ]);
 
   const t = useLangFunc();
+  const featureHeaderClick = featureUseTrackers.calendarTinyCalendarHeaderClick();
   const holidays = useHolidays();
   const monthStart = createMemo(() => props.month.startOf("month"), undefined, {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
@@ -160,7 +162,10 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           <Show when={props.onMonthNameClick} fallback={<div>{props.month.monthLong}</div>}>
             <Button
               class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
-              onClick={() => props.onMonthNameClick?.()}
+              onClick={() => {
+                props.onMonthNameClick?.();
+                featureHeaderClick.justUsed({target: "month"});
+              }}
             >
               {props.month.monthLong}
             </Button>
@@ -192,6 +197,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
                         onClick={() => {
                           popOver.close();
                           props.setMonth(props.month.set({year}));
+                          featureHeaderClick.justUsed({target: "year"});
                         }}
                       >
                         {year}

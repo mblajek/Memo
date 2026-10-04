@@ -151,6 +151,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
   const userHrefs = useUserHrefs();
   const featureWheelWithAlt = featureUseTrackers.calendarWheelWithAlt();
   const featureTinyCalDoubleClick = featureUseTrackers.calendarTinyCalendarDoubleClick();
+  const featureHeaderClick = featureUseTrackers.calendarHeaderClickModeSwitch();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
 
   const PIXELS_PER_HOUR_RANGE = {
@@ -965,6 +966,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
               onDateClick={() => {
                 setMode("day");
                 setDaysSelectionAndMonthFromDay(day);
+                featureHeaderClick.justUsed({target: "day"});
               }}
             />
           ),
@@ -993,6 +995,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
                         setMode("week");
                         setDaysSelectionAndMonthFromDay(day);
                         setSelectedResourceRadio(id);
+                        featureHeaderClick.justUsed({target: "resource"});
                       }}
                       title={`${text}\n${t(`calendar.click_for_resource_calendar.${isStaff ? "staff" : "meeting_resource"}`)}`}
                     >
@@ -1049,6 +1052,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
               ? () => {
                   setMode("week");
                   setDaysSelectionAndMonthFromDay(day);
+                  featureHeaderClick.justUsed({target: "month_day"});
                 }
               : undefined
           }

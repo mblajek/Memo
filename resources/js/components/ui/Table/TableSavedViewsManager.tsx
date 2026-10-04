@@ -38,6 +38,7 @@ import {WarningMark} from "components/ui/WarningMark";
 import {Autofocus} from "components/utils/Autofocus";
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {createTextFilter} from "components/utils/text_util";
@@ -121,6 +122,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
   const confirmation = createConfirmation();
   const indicators = useTableSavedViewIndicators();
   const codeSerialiser = tableViewsSerialisation.codeSerialiser();
+  const featureCode = featureUseTrackers.tableSavedViewsCode();
   const [persistedState, setPersistedState] = createSignal<StoragePersistedState>({states: []});
   createPersistence<StoragePersistedState>({
     value: persistedState,
@@ -597,6 +599,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                   if (advancedView()) {
                     setCurrentInputView(view);
                   }
+                  featureCode.justUsed({action: "paste"});
                 } else {
                   const deserialisedParts = [];
                   for (let i = 0; i < deserialisedPartsResults.length; i++) {
@@ -707,6 +710,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                               ...selectedPartsMap().values(),
                             ],
                           }));
+                          featureCode.justUsed({action: "paste_multiple"});
                         }
                       }),
                     )
@@ -891,6 +895,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                         view: state().state,
                                       })
                                       .then((code) => navigator.clipboard.writeText(code))
+                                      .then(() => featureCode.justUsed({action: "copy"}))
                                   }
                                 />
                                 <MenuItem
@@ -910,7 +915,9 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                             })
                                             .then((code) => `${state.name}:\n  ${code}\n`),
                                         ),
-                                    ).then((codes) => navigator.clipboard.writeText(codes.join("")))
+                                    )
+                                      .then((codes) => navigator.clipboard.writeText(codes.join("")))
+                                      .then(() => featureCode.justUsed({action: "copy_all"}))
                                   }
                                 />
                               </SimpleMenu>

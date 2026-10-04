@@ -284,6 +284,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const featureFilterPrefix = featureUseTrackers.fuzzyGlobalFilterColumnPrefix();
+  const featureFilterSyntax = featureUseTrackers.fuzzyFilterSpecialSyntax();
   const entityURL = props.staticEntityURL;
   // The attribute columns configs, mapped by the index in props.columns where they were defined.
   const [attributeColumnsConfigsMap, setAttributeColumnsConfigsMap] = createSignal<
@@ -452,6 +453,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     columnsByPrefix: translations.columnsByPrefix,
     onColumnPrefixFilterUsed: (prefix) =>
       featureFilterPrefix.justUsed({comp: "table", model: translations.tableName(), prefix}),
+    onSpecialSyntaxUsed: (syntax) => featureFilterSyntax.justUsed({comp: "table", syntax}),
   });
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({

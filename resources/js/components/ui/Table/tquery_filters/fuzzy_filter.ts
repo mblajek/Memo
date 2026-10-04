@@ -13,6 +13,26 @@ export const NONEMPTY_CODE = GLOBAL_CHAR;
 
 const GLOB = `\\${GLOBAL_CHAR}`;
 
+/**
+ * A special syntax element of a filter text:
+ * | Element:       | Example:
+ * | :-             | :-
+ * | `empty`        | `''`, also with a column prefix
+ * | `nonempty`     | `*`, also with a column prefix
+ * | `starts_with`  | `abc*`
+ * | `ends_with`    | `*abc`
+ * | `quoted`       | `'a b'`
+ * | `column_exact` | `col=abc`
+ */
+export type FuzzySpecialSyntax = "empty" | "nonempty" | "starts_with" | "ends_with" | "quoted" | "column_exact";
+
+/** A function called for each occurrence of a special syntax element in the filter text. */
+export type OnFuzzySpecialSyntaxUsed = (syntax: FuzzySpecialSyntax) => void;
+
+interface SpecialSyntaxOptions {
+  readonly onSpecialSyntaxUsed?: OnFuzzySpecialSyntaxUsed;
+}
+
 /** The regexp for splitting textual column filter into words. */
 const WORD_REGEXP = new RegExp(`(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB}?|\\S+)(?:$|\\s)`, "g");
 
@@ -35,7 +55,10 @@ const WORD_REGEXP = new RegExp(`(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB
  * In the exact mode, the * character doesn't have any special meaning. The quotes, on the other hand,
  * can still be used just like in the default mode.
  */
-function fuzzyWordFilter(word: string, {exact = false} = {}) {
+function fuzzyWordFilter(
+  word: string,
+  {exact = false, onSpecialSyntaxUsed}: {readonly exact?: boolean} & SpecialSyntaxOptions = {},
+) {
   let startsWithGlob: boolean;
   let endsWithGlob: boolean;
   if (word === GLOBAL_CHAR || word === GLOBAL_CHAR + GLOBAL_CHAR) {
@@ -51,10 +74,14 @@ function fuzzyWordFilter(word: string, {exact = false} = {}) {
     endsWithGlob = word.endsWith(GLOBAL_CHAR);
   }
   const op = exact ? "=" : startsWithGlob === endsWithGlob ? "%v%" : startsWithGlob ? "%v" : "v%";
+  if (startsWithGlob !== endsWithGlob) {
+    onSpecialSyntaxUsed?.(startsWithGlob ? "ends_with" : "starts_with");
+  }
   word = word.slice(startsWithGlob ? 1 : 0, endsWithGlob ? -1 : undefined);
   // Unquote, unless it's just "'" or "''".
   if (word.length > 2 && word.startsWith(QUOTE) && word.endsWith(QUOTE)) {
     word = word.slice(1, -1);
+    onSpecialSyntaxUsed?.("quoted");
   }
   return {op, val: word} satisfies Pick<StringColumnFilter, "op" | "val">;
 }
@@ -73,20 +100,25 @@ type WordFilter = ReturnType<typeof fuzzyWordFilter>;
  * If the filter is not any of these values, it is split into words, and each word must match the
  * string independently. See fuzzyWordFilter (the default, non-exact mode).
  */
-export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {column: string}): FilterH {
+export function buildFuzzyTextualColumnFilter(
+  filterText: string,
+  {column, onSpecialSyntaxUsed}: {readonly column: string} & SpecialSyntaxOptions,
+): FilterH {
   const filterBase = {type: "column", column} as const;
   filterText = filterText.trim();
   if (filterText === EMPTY_CODE) {
+    onSpecialSyntaxUsed?.("empty");
     return {...filterBase, op: "null"};
   }
   if (filterText === NONEMPTY_CODE) {
+    onSpecialSyntaxUsed?.("nonempty");
     return {...filterBase, op: "null", inv: true};
   }
   return {
     type: "op",
     op: "&",
     val: Array.from(filterText.matchAll(WORD_REGEXP), ([_match, word]) =>
-      word ? {...filterBase, ...fuzzyWordFilter(word)} : undefined,
+      word ? {...filterBase, ...fuzzyWordFilter(word, {onSpecialSyntaxUsed})} : undefined,
     ).filter(NON_NULLABLE),
   };
 }
@@ -96,16 +128,21 @@ export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {col
  * but filters on the frontend. Useful e.g. for filtering dictionary positions.
  * Returns undefined if no filtering is needed (any value would be accepted).
  */
-export function buildFuzzyTextualLocalFilter(filterText: string): TextFilterPredicate | undefined {
+export function buildFuzzyTextualLocalFilter(
+  filterText: string,
+  {onSpecialSyntaxUsed}: SpecialSyntaxOptions = {},
+): TextFilterPredicate | undefined {
   filterText = filterText.trim();
   if (filterText === EMPTY_CODE) {
+    onSpecialSyntaxUsed?.("empty");
     return (text) => !text;
   }
   if (filterText === NONEMPTY_CODE) {
+    onSpecialSyntaxUsed?.("nonempty");
     return (text) => !!text;
   }
   const filters = Array.from(filterText.matchAll(WORD_REGEXP), ([_match, word]) =>
-    word ? createWordFilter(fuzzyWordFilter(word)) : undefined,
+    word ? createWordFilter(fuzzyWordFilter(word, {onSpecialSyntaxUsed})) : undefined,
   ).filter(NON_NULLABLE);
   return filters.length ? (text) => filters.every((f) => f(text)) : undefined;
 }
@@ -115,7 +152,7 @@ function createWordFilter({op, val}: WordFilter) {
   return createTextFilter(val, op);
 }
 
-interface FuzzyGlobalFilterConfigBase {
+interface FuzzyGlobalFilterConfigBase extends SpecialSyntaxOptions {
   readonly schema: Schema;
   /** The dictionaries, if dictionary columns filtering should be supported. */
   readonly dictionaries?: Dictionaries;
@@ -230,14 +267,29 @@ export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFi
     if (!column) {
       return undefined;
     }
-    config.onColumnPrefixFilterUsed?.(colPrefix, column);
-    if (word === EMPTY_CODE) {
-      return {type: "column", column, op: "null"};
+    // Report the usage only if the column filter is actually created.
+    const syntaxUsed: FuzzySpecialSyntax[] = exact ? ["column_exact"] : [];
+    const filter = ((): FilterH | undefined => {
+      if (word === EMPTY_CODE) {
+        syntaxUsed.push("empty");
+        return {type: "column", column, op: "null"};
+      }
+      if (word === NONEMPTY_CODE) {
+        syntaxUsed.push("nonempty");
+        return {type: "column", column, op: "null", inv: true};
+      }
+      return columnFilter(
+        column,
+        fuzzyWordFilter(word, {exact, onSpecialSyntaxUsed: (syntax) => syntaxUsed.push(syntax)}),
+      );
+    })();
+    if (filter) {
+      config.onColumnPrefixFilterUsed?.(colPrefix, column);
+      for (const syntax of syntaxUsed) {
+        config.onSpecialSyntaxUsed?.(syntax);
+      }
     }
-    if (word === NONEMPTY_CODE) {
-      return {type: "column", column, op: "null", inv: true};
-    }
-    return columnFilter(column, fuzzyWordFilter(word, {exact}));
+    return filter;
   }
 
   return {
@@ -255,7 +307,7 @@ export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFi
             return colPrefixFilter;
           }
         }
-        const wordFilter = fuzzyWordFilter(word);
+        const wordFilter = fuzzyWordFilter(word, {onSpecialSyntaxUsed: config.onSpecialSyntaxUsed});
         return {
           type: "op",
           op: "|",

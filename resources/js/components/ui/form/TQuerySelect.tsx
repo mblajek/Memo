@@ -1,6 +1,7 @@
 import {QueryKey} from "@tanstack/solid-query";
 import {FuzzyGlobalFilterConfig} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE} from "components/utils/array_filter";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {useLangFunc} from "components/utils/lang";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {createSelectRequestCreator} from "data-access/memo-api/tquery/select";
@@ -125,7 +126,10 @@ function makeQuery(
     onColumnPrefixFilterUsed,
     itemFunc,
   }: TQueryConfig,
-  {initialExtraFilter}: {initialExtraFilter?: FilterH} = {},
+  {
+    initialExtraFilter,
+    onSpecialSyntaxUsed,
+  }: {initialExtraFilter?: FilterH} & Pick<FuzzyGlobalFilterConfig, "onSpecialSyntaxUsed"> = {},
 ) {
   const textColumns = Array.isArray(textColumn) ? textColumn : [textColumn];
   sort ||= textColumns.map((column) => ({type: "column", column}));
@@ -139,6 +143,7 @@ function makeQuery(
     distinct,
     columnsByPrefix,
     onColumnPrefixFilterUsed,
+    onSpecialSyntaxUsed,
   });
   const {
     dataQuery,
@@ -178,10 +183,15 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
     "topItems",
   ]);
   const t = useLangFunc();
+  const featureFilterSyntax = featureUseTrackers.fuzzyFilterSpecialSyntax();
   // Extract the static props. They must not change anyway.
   /* eslint-disable solid/reactivity */
   const limit = props.querySpec.limit || DEFAULT_LIMIT;
-  const {dataQuery, items, filterText} = makeQuery({limit, ...props.querySpec});
+  // Track the special syntax in the main query only, the priority query gets the same filter text.
+  const {dataQuery, items, filterText} = makeQuery(
+    {limit, ...props.querySpec},
+    {onSpecialSyntaxUsed: (syntax) => featureFilterSyntax.justUsed({comp: "tquery_select", syntax})},
+  );
   const replacementData = makeQuery(
     {limit: 1e6, ...(props.replacementQuerySpec || props.querySpec)},
     {initialExtraFilter: "never"},

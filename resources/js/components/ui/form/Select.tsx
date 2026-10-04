@@ -3,6 +3,7 @@ import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {buildFuzzyTextualLocalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {cx} from "components/utils/classnames";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
@@ -183,6 +184,7 @@ const isOpenSetters = new Set<(open: boolean) => void>();
 export const Select: VoidComponent<SelectProps> = (allProps) => {
   const props = mergeProps(DEFAULT_PROPS, allProps);
   const t = useLangFunc();
+  const featureFilterSyntax = featureUseTrackers.fuzzyFilterSpecialSyntax();
   const formContext = useFormContextIfInForm();
 
   const isInvalid = () => !isValidationMessageEmpty(formContext?.form.errors(props.name));
@@ -306,7 +308,11 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
   });
   const internalFilter = createMemo(() =>
-    props.onFilterChange === "internal" ? buildFuzzyTextualLocalFilter(filterText()) : undefined,
+    props.onFilterChange === "internal"
+      ? buildFuzzyTextualLocalFilter(filterText(), {
+          onSpecialSyntaxUsed: (syntax) => featureFilterSyntax.justUsed({comp: "select", syntax}),
+        })
+      : undefined,
   );
   /** The items after filtering, regardless of the filtering mode. */
   const filteredItems = createMemo(() => {

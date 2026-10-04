@@ -112,7 +112,10 @@ export function createTableRequestCreator({
   initialSort?: SortingState;
   initialColumnGroups?: readonly string[];
   initialPageSize?: number;
-} & Pick<FuzzyGlobalFilterConfig, "columnsByPrefix" | "onColumnPrefixFilterUsed">): RequestCreator<RequestController> {
+} & Pick<
+  FuzzyGlobalFilterConfig,
+  "columnsByPrefix" | "onColumnPrefixFilterUsed" | "onSpecialSyntaxUsed"
+>): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   const columnsConfigByName = createMemo(() => {
     const map = new Map<string, ColumnConfig>();

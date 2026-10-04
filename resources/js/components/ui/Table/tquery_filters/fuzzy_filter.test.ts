@@ -3,7 +3,12 @@ import {Dictionaries} from "data-access/memo-api/dictionaries";
 import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
 import {Schema} from "data-access/memo-api/tquery/types";
 import {describe, expect, it} from "vitest";
-import {buildFuzzyGlobalFilter, buildFuzzyTextualColumnFilter, buildFuzzyTextualLocalFilter} from "./fuzzy_filter";
+import {
+  buildFuzzyGlobalFilter,
+  buildFuzzyTextualColumnFilter,
+  buildFuzzyTextualLocalFilter,
+  FuzzySpecialSyntax,
+} from "./fuzzy_filter";
 
 describe("buildFuzzyTextualColumnFilter", () => {
   const column = "col1";
@@ -466,5 +471,91 @@ describe("buildFuzzyGlobalFilter", () => {
       checkFilter("abc def", {match: ["abc def", "defasd qweabc tttt", "zabcdefz"], noMatch: ["abc", "bcdef"]});
       checkFilter("abc* def", {match: ["abc def"], noMatch: ["defasd qweabc tttt", "zabcdefz", "abc", "bcdef"]});
     });
+  });
+});
+
+describe("special syntax reporting", () => {
+  const schema: Schema = {
+    columns: [
+      {name: "col1", type: "string", nullable: true},
+      {name: "num", type: "int", nullable: true},
+    ],
+  };
+  const columnsByPrefix = new Map([
+    ["c1", "col1"],
+    ["n", "num"],
+  ]);
+
+  function reported(build: (onSpecialSyntaxUsed: (syntax: FuzzySpecialSyntax) => void) => void) {
+    const syntaxUsed: FuzzySpecialSyntax[] = [];
+    build((syntax) => syntaxUsed.push(syntax));
+    return syntaxUsed;
+  }
+
+  const WORD_CASES: readonly (readonly [string, readonly FuzzySpecialSyntax[]])[] = [
+    ["abc", []],
+    ["*abc*", []],
+    ["a*b", []],
+    ["abc*", ["starts_with"]],
+    ["*abc", ["ends_with"]],
+    ["'a b'", ["quoted"]],
+    ["'a b'*", ["starts_with", "quoted"]],
+    ["abc* *def", ["starts_with", "ends_with"]],
+  ];
+
+  it("reports in column filters", () => {
+    function syntax(text: string) {
+      return reported((onSpecialSyntaxUsed) =>
+        buildFuzzyTextualColumnFilter(text, {column: "col1", onSpecialSyntaxUsed}),
+      );
+    }
+    for (const [text, expected] of WORD_CASES) {
+      expect(syntax(text), text).toEqual(expected);
+    }
+    expect(syntax("''")).toEqual(["empty"]);
+    expect(syntax("*")).toEqual(["nonempty"]);
+  });
+
+  it("reports in local filters", () => {
+    function syntax(text: string) {
+      return reported((onSpecialSyntaxUsed) => buildFuzzyTextualLocalFilter(text, {onSpecialSyntaxUsed}));
+    }
+    for (const [text, expected] of WORD_CASES) {
+      expect(syntax(text), text).toEqual(expected);
+    }
+    expect(syntax("''")).toEqual(["empty"]);
+    expect(syntax("*")).toEqual(["nonempty"]);
+  });
+
+  it("reports in global filters", () => {
+    const prefixesUsed: string[] = [];
+    function syntax(text: string) {
+      return reported((onSpecialSyntaxUsed) =>
+        buildFuzzyGlobalFilter(text, {
+          schema,
+          columnsByPrefix,
+          onColumnPrefixFilterUsed: (prefix) => prefixesUsed.push(prefix),
+          onSpecialSyntaxUsed,
+        }),
+      );
+    }
+    for (const [text, expected] of WORD_CASES) {
+      expect(syntax(text), text).toEqual(expected);
+    }
+    // Not special as words of a global filter.
+    expect(syntax("''")).toEqual([]);
+    expect(syntax("*")).toEqual([]);
+    expect(prefixesUsed).toEqual([]);
+    expect(syntax("c1:abc")).toEqual([]);
+    expect(syntax("c1:'a b'")).toEqual(["quoted"]);
+    expect(syntax("c1:*")).toEqual(["nonempty"]);
+    expect(syntax("c1=abc*")).toEqual(["column_exact"]);
+    expect(syntax("c1=''")).toEqual(["column_exact", "empty"]);
+    expect(prefixesUsed).toEqual(["c1", "c1", "c1", "c1", "c1"]);
+    // An unknown prefix, the word is treated as regular text.
+    expect(syntax("x=abc*")).toEqual(["starts_with"]);
+    // A prefix of a column that cannot be filtered by text, the word is treated as regular text.
+    expect(syntax("n=abc*")).toEqual(["starts_with"]);
+    expect(prefixesUsed).toHaveLength(5);
   });
 });

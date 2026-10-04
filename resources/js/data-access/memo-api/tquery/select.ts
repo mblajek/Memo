@@ -28,7 +28,10 @@ export function createSelectRequestCreator({
   sort: Sort;
   limit: number;
   distinct?: boolean;
-} & Pick<FuzzyGlobalFilterConfig, "columnsByPrefix" | "onColumnPrefixFilterUsed">): RequestCreator<RequestController> {
+} & Pick<
+  FuzzyGlobalFilterConfig,
+  "columnsByPrefix" | "onColumnPrefixFilterUsed" | "onSpecialSyntaxUsed"
+>): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   return (schema) => {
     const [filterText, setFilterText] = createSignal<string>("");

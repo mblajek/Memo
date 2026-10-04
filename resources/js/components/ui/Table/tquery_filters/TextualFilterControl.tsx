@@ -5,6 +5,7 @@ import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {closeAllSelects, Select, SelectItem} from "components/ui/form/Select";
 import {cx} from "components/utils/classnames";
 import {debouncedFilterTextAccessor} from "components/utils/debounce";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {useLangFunc} from "components/utils/lang";
 import {typed} from "components/utils/typed";
 import {FilterH, filterHToObject} from "data-access/memo-api/tquery/filter_utils";
@@ -31,6 +32,7 @@ type Filter = FilterHWithState<{mode: Mode; text: string}>;
 export const TextualFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
+  const featureFilterSyntax = featureUseTrackers.fuzzyFilterSpecialSyntax();
   const {
     state: {
       mode: [mode, setMode],
@@ -49,7 +51,14 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
   function defaultBuildFilter(mode: Mode, value: string): (FilterH & object) | undefined {
     switch (mode) {
       case "~":
-        return value ? filterHToObject(buildFuzzyTextualColumnFilter(value, {column: props.schema.name})) : undefined;
+        return value
+          ? filterHToObject(
+              buildFuzzyTextualColumnFilter(value, {
+                column: props.schema.name,
+                onSpecialSyntaxUsed: (syntax) => featureFilterSyntax.justUsed({comp: "column_filter", syntax}),
+              }),
+            )
+          : undefined;
       case "=":
         return {type: "column", column: props.schema.name, op: "=", val: value};
       case "*":
