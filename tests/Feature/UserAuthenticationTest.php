@@ -6,6 +6,7 @@ use App\Http\Permissions\PermissionMiddleware;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
@@ -14,6 +15,8 @@ class UserAuthenticationTest extends TestCase
 {
     use DatabaseTransactions;
     use UserTrait;
+
+    private string $sessionId;
 
     private const URL_STATUS = '/api/v1/user/status';
     private const URL_LOGIN = '/api/v1/user/login';
@@ -34,6 +37,34 @@ class UserAuthenticationTest extends TestCase
         $this->withSession([
             PermissionMiddleware::SESSION_PASSWORD_HASH_HASH => $user->passwordHashHash(),
         ]);
+    }
+
+    /**
+     * Makes the following requests share one session id, as the session cookie does. Without it
+     * every request of a test starts a session with a new id.
+     */
+    private function useSessionId(string $id): void
+    {
+        $this->sessionId = $id;
+        // JSON requests, which post() makes, carry cookies only on demand.
+        $this->withCredentials();
+        $this->withCookie($this->app['session']->getName(), $id);
+    }
+
+    /**
+     * Puts the session in the state left by a request of $user that started while the user was
+     * logged in with the given password hash hash, and wrote its copy of the session back just
+     * now. Also drops the cached permissions, as a new request has none.
+     */
+    private function writeBackOutdatedSession(User $user, string $passwordHashHash): void
+    {
+        PermissionMiddleware::setPermissions(null);
+        $this->actingAs($user);
+        // Saved under the id, as the next request reads the session from the storage.
+        $session = $this->app['session']->driver();
+        $session->setId($this->sessionId);
+        $session->put(PermissionMiddleware::SESSION_PASSWORD_HASH_HASH, $passwordHashHash);
+        $session->save();
     }
 
     /**
@@ -211,7 +242,32 @@ class UserAuthenticationTest extends TestCase
         $result->assertOk();
         $user->refresh();
         self::assertSame($secret, $user->otp_secret);
-        self::assertNotNull($user->otp_used_ts);
+        // The time step of the code, not just a marker of success.
+        self::assertEqualsWithDelta(intdiv(time(), 30), $user->otp_used_ts, 1);
+    }
+
+    public function testLoginWithOtpUsedForConfiguringWillFail(): void
+    {
+        $google2fa = new Google2FA();
+        $secret = $google2fa->generateSecretKey();
+        $user = $this->createUser(['password_expire_at' => null]);
+        $otp = $google2fa->getCurrentOtp($secret);
+        $this->actingAs($user);
+        $this->withSession([
+            PermissionMiddleware::SESSION_PASSWORD_HASH_HASH => $user->passwordHashHash(),
+            'otp_secret_candidate' => ['otp_secret' => $secret, 'valid_until' => new \DateTimeImmutable('+1 minute')],
+        ]);
+        $this->post('/api/v1/user/otp/configure', ['otp' => $otp])->assertOk();
+        PermissionMiddleware::setPermissions(null);
+
+        $result = $this->post(static::URL_LOGIN, [
+            'email' => $user->email,
+            'password' => self::CORRECT_PASSWORD,
+            'otp' => $otp,
+        ]);
+
+        $result->assertUnauthorized();
+        $this->assertEquals('exception.bad_credentials', $result->json('errors')[0]['code']);
     }
 
     public function testConfigureOtpWithWrongCodeFails(): void
@@ -347,6 +403,24 @@ class UserAuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function testLogoutIsNotUndoneByOutdatedSessionCopy(): void
+    {
+        // The session is written as a whole when a request ends, so a request that started before
+        // the logout and ends after it puts the logged-in state back.
+        $user = $this->createUserWithNoRememberToken();
+        $this->useSessionId(Str::random(40));
+        $this->actingAsUser($user);
+        $this->post(static::URL_LOGOUT)->assertOk();
+
+        $this->writeBackOutdatedSession($user, $user->passwordHashHash());
+        $this->get(static::URL_STATUS)->assertUnauthorized();
+
+        // It is the logged out session that is refused: the same contents under another id are fine.
+        $this->useSessionId(Str::random(40));
+        $this->writeBackOutdatedSession($user, $user->passwordHashHash());
+        $this->get(static::URL_STATUS)->assertOk();
+    }
+
     public function testChangePasswordWithInvalidRepeatWillFail(): void
     {
         $user = $this->createUser();
@@ -417,6 +491,42 @@ class UserAuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($user);
         // The new password is now the valid credential.
         $this->assertTrue(Auth::validate(['email' => $user->email, 'password' => self::VALID_PASSWORD]));
+    }
+
+    public function testChangePasswordSurvivesOutdatedSessionCopy(): void
+    {
+        // A request that started before the change and ends after it puts the old password hash
+        // hash back in the session, which must not log out the user who changed the password.
+        $user = $this->createUserWithNoRememberToken();
+        $oldHashHash = $user->passwordHashHash();
+        $this->useSessionId(Str::random(40));
+        $this->actingAsUser($user);
+        $this->post(static::URL_PASSWORD, [
+            'current' => self::CORRECT_PASSWORD,
+            'password' => self::VALID_PASSWORD,
+            'repeat' => self::VALID_PASSWORD,
+        ])->assertOk();
+        $user->refresh();
+        self::assertNotSame($oldHashHash, $user->passwordHashHash());
+
+        $this->writeBackOutdatedSession($user, $oldHashHash);
+        $this->get(static::URL_STATUS)->assertOk();
+        // The session is repaired on the way.
+        $this->assertSame($user->passwordHashHash(), session(PermissionMiddleware::SESSION_PASSWORD_HASH_HASH));
+
+        // Any other session of the old password is logged out by the change.
+        $this->useSessionId(Str::random(40));
+        $this->writeBackOutdatedSession($user, $oldHashHash);
+        $this->get(static::URL_STATUS)->assertUnauthorized();
+    }
+
+    /**
+     * A user the way the application makes them. Refusing a session logs the user out, which
+     * saves a user who has a remember token, and that is not possible that early in a request.
+     */
+    private function createUserWithNoRememberToken(): User
+    {
+        return $this->createUser(['remember_token' => null]);
     }
 
     private function unauthorizedErrorJsonStructure(): array
