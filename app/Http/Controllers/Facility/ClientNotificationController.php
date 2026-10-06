@@ -154,7 +154,7 @@ class ClientNotificationController extends ApiController
             $addMeetingMethods[] = NotificationMethod::from($data['add_meeting_method_dict_id']);
         }
         if (array_key_exists('add_meeting_client_methods', $data) && $data['add_meeting_client_methods']) {
-            foreach ($client->attrValue(ClientAttributeUuidEnum::NotificationMethods) as $clientMethod) {
+            foreach ($client->attrValue(ClientAttributeUuidEnum::NotificationMethods) ?? [] as $clientMethod) {
                 $addMeetingMethods[] = NotificationMethod::from($clientMethod);
             }
         }

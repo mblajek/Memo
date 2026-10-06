@@ -2,7 +2,7 @@ import {Navigate, Route, RouteProps, Router, RouteSectionProps, useNavigate, use
 import {useQuery} from "@tanstack/solid-query";
 import {AppContextProvider} from "app_context";
 import {capitalizeString} from "components/ui/Capitalize";
-import {AccessBarrier} from "components/utils/AccessBarrier";
+import {AccessBarrier, NoPermissionsToView} from "components/utils/AccessBarrier";
 import {useLangFunc} from "components/utils/lang";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {QueryBarrier} from "components/utils/QueryBarrier";
@@ -13,11 +13,11 @@ import NotFound from "features/not-found/NotFound";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {PageWithTheme} from "features/root/components/theme_control";
 import {Favicon} from "features/root/Favicon";
-import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
+import {Component, ParentComponent, Show, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {probablyLoggedIn} from "state/probablyLoggedIn.state";
 import {clearAllHistoryState} from "./components/persistence/history_persistence";
-import {activeFacilityId} from "./state/activeFacilityId.state";
+import {activeFacilityId, useActiveFacility} from "./state/activeFacilityId.state";
 
 const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.page"));
 const AdminDB = lazyAutoPreload(() => import("features/root/pages/AdminDB.page"));
@@ -135,11 +135,7 @@ const App: VoidComponent = () => {
               matchFilters={{
                 facilityUrl: facilitiesQuery.isSuccess ? facilitiesQuery.data?.map(({url}) => url) || [] : undefined,
               }}
-              component={(props: RouteSectionProps) => (
-                <AccessBarrier roles={["facilityMember"]}>
-                  <QueryBarrier queries={[facilitiesQuery]}>{props.children}</QueryBarrier>
-                </AccessBarrier>
-              )}
+              component={FacilityPages}
             >
               <UnknownNotFound />
               <Route path="/" component={() => <Navigate href="home" />} />
@@ -275,3 +271,20 @@ const FacilityAdminOrStaffPages: ParentComponent = (props) => (
     {props.children}
   </AccessBarrier>
 );
+
+/** The pages of the facility from the URL, available to the members of that facility only. */
+const FacilityPages: Component<RouteSectionProps> = (props) => {
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
+  const activeFacility = useActiveFacility();
+  return (
+    <AccessBarrier roles={["facilityMember"]}>
+      <QueryBarrier queries={[facilitiesQuery]}>
+        {/* The permissions concern the active facility, which is not the facility from the URL if the
+            user cannot select that one. */}
+        <Show when={activeFacility()?.url === props.params.facilityUrl} fallback={<NoPermissionsToView />}>
+          {props.children}
+        </Show>
+      </QueryBarrier>
+    </AccessBarrier>
+  );
+};

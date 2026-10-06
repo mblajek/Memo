@@ -125,7 +125,6 @@ export default (() => {
               } else if (mode === "clientGroup") {
                 return {type: "column", column: "attendant.clientGroupId", op: "=", val: selectedGroupId()!};
               } else {
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`Bad mode: ${mode}`);
               }
             };

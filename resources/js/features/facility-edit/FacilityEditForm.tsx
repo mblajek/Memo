@@ -37,7 +37,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
     // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
-      toastSuccess(t("forms.user_edit.success"));
+      toastSuccess(t("forms.facility_edit.success"));
       // Important: Invalidation should happen after calling onSuccess which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
       // but also causes problems apparently.

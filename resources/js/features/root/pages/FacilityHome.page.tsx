@@ -9,7 +9,7 @@ export default (() => {
   const activeFacility = useActiveFacility();
   // TODO: Implement. This page could show facility contact info and basic stats.
   return (
-    <Show when={(activeFacility() && status.data?.permissions.facilityAdmin) || status.data?.permissions.facilityStaff}>
+    <Show when={activeFacility() && (status.data?.permissions.facilityAdmin || status.data?.permissions.facilityStaff)}>
       <Navigate href={`/${activeFacility()!.url}/calendar`} />
     </Show>
   );

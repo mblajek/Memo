@@ -21,12 +21,14 @@ export default defineConfig([
       parserOptions: {projectService: true},
     },
     rules: {
+      "@typescript-eslint/no-this-alias": "off",
       "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/no-empty-interface": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-namespace": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
@@ -45,6 +47,7 @@ export default defineConfig([
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-base-to-string": "off",
+      "@typescript-eslint/restrict-template-expressions": "off",
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
       "@typescript-eslint/no-deprecated": "warn",
       "@typescript-eslint/ban-ts-comment": "off",

@@ -41,7 +41,7 @@ export const AccessBarrier: ParentComponent<Props> = (allProps) => {
   const invalidate = useInvalidator();
   const defProps = mergeProps(
     {
-      fallback: () => <DefaultFallback />,
+      fallback: () => <NoPermissionsToView />,
       roles: [],
       error: () => {
         invalidate.resetEverything();
@@ -69,7 +69,7 @@ export const AccessBarrier: ParentComponent<Props> = (allProps) => {
   );
 };
 
-const DefaultFallback: VoidComponent = () => {
+export const NoPermissionsToView: VoidComponent = () => {
   const t = useLangFunc();
   return (
     <p class="m-2">

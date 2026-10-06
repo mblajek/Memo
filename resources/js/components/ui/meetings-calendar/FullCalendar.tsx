@@ -793,6 +793,17 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
     }
   }
 
+  // The resources requested before the list of resources is loaded, e.g. when opening a link to the
+  // calendar.
+  const [resourcesToShow, setResourcesToShow] = createSignal<string[]>();
+  createEffect(() => {
+    const resourceIds = resourcesToShow();
+    if (resourceIds && staff() && dictionaries()) {
+      showResources(resourceIds);
+      setResourcesToShow(undefined);
+    }
+  });
+
   const SCROLL_MARGIN_PIXELS = 20;
   const scrollMarginMinutes = createMemo(() => Math.round((SCROLL_MARGIN_PIXELS / pixelsPerHour()) * 60));
   const [scrollToDayMinute, setScrollToDayMinute] = createSignal<number>();
@@ -829,7 +840,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
             setDaysSelectionAndMonthFromDay(DateTime.fromISO(searchParams.date));
           }
           if (searchParams.resources) {
-            showResources(searchParams.resources.split(","));
+            setResourcesToShow(searchParams.resources.split(","));
           }
           setSearchParams({mode: undefined, date: undefined, resources: undefined}, {replace: true});
           history.replaceState({...history.state, mode: undefined, date: undefined, resources: undefined}, "");
