@@ -148,6 +148,11 @@ class AuthController extends ApiController
     )]
     public function logout(): JsonResponse
     {
+        // TODO: Fix the race with the other requests of the session. Every request writes the whole
+        // session back when it ends, so a request that started before the logout and ends after it
+        // restores the logged-in session. The same way a new password hash hash set in password()
+        // gets replaced by the old one, which logs the user out. Invalidating the session here is not
+        // enough, the late request also sets the cookie back to the old session id.
         Auth::logout();
         return new JsonResponse();
     }
@@ -275,7 +280,8 @@ class AuthController extends ApiController
             return ExceptionFactory::forbidden()->render();
         }
         $google2fa = new Google2FA();
-        $otpVerifyResult = $google2fa->verifyKey($storedData['otp_secret'], $otp);
+        // Get the time step of the code, to store it as used.
+        $otpVerifyResult = $google2fa->verifyKeyNewer($storedData['otp_secret'], $otp, oldTimestamp: 0);
         if ($otpVerifyResult === false) {
             // Don't remove the values from session, give the user another chance.
             return ExceptionFactory::badCredentials()->render();
