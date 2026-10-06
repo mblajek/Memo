@@ -130,10 +130,13 @@ class AuthController extends ApiController
             Auth::logout();
             return ExceptionFactory::badCredentials()->render();
         }
+        // Logging in gives the session a new id, so the id marked as logged out by logout() stays
+        // unusable. A request still running at this point may set the cookie back to that old id,
+        // which leaves the user not logged in.
         Auth::login($user);
         $request->session()->forget(PermissionMiddleware::SESSION_DEVELOPER_MODE);
         $request->session()->regenerate();
-        $this->setSessionHashHash($request, $user);
+        PermissionMiddleware::sessionSetPassword($request->session(), $user);
         return new JsonResponse();
     }
 
@@ -146,13 +149,9 @@ class AuthController extends ApiController
             new OA\Response(response: 200, description: 'OK'),
         ]
     )]
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        // TODO: Fix the race with the other requests of the session. Every request writes the whole
-        // session back when it ends, so a request that started before the logout and ends after it
-        // restores the logged-in session. The same way a new password hash hash set in password()
-        // gets replaced by the old one, which logs the user out. Invalidating the session here is not
-        // enough, the late request also sets the cookie back to the old session id.
+        PermissionMiddleware::sessionLoggedOut($request->session());
         Auth::logout();
         return new JsonResponse();
     }
@@ -188,14 +187,8 @@ class AuthController extends ApiController
 
         $user = $this->getUserOrFail();
         $changePasswordService->handle($request, $user, $data['password']);
-        $this->setSessionHashHash($request, $user);
 
         return new JsonResponse();
-    }
-
-    private function setSessionHashHash(Request $request, User $user): void
-    {
-        $request->session()->put(PermissionMiddleware::SESSION_PASSWORD_HASH_HASH, $user->passwordHashHash());
     }
 
     #[OA\Post(

@@ -2,6 +2,7 @@
 
 namespace App\Services\User;
 
+use App\Http\Permissions\PermissionMiddleware;
 use App\Models\User;
 use App\Services\System\LogService;
 use Illuminate\Http\Request;
@@ -24,7 +25,10 @@ readonly class ChangePasswordService
         $user->password = Hash::make($password);
         $user->password_expire_at = null;
 
+        // Before saving: from the moment the password changes, the session must be good for it.
+        PermissionMiddleware::sessionChangePassword($request->session(), $user);
         $user->saveOrFail();
+        PermissionMiddleware::sessionSetPassword($request->session(), $user);
 
         $this->logService->addEntry(
             request: $request,

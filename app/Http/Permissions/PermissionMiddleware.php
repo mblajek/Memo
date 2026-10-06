@@ -11,6 +11,7 @@ use Closure;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class PermissionMiddleware
@@ -18,6 +19,13 @@ class PermissionMiddleware
     public const string SESSION_DEVELOPER_MODE = 'developer_mode';
     // used to log-out on all devices after password change
     public const string SESSION_PASSWORD_HASH_HASH = 'password_hash_hash';
+
+    // The session is written as a whole when a request ends, so a request that started earlier
+    // may replace it with an outdated copy. What must not be undone this way is also kept in
+    // the cache, by session id, for as long as an outdated copy may live.
+    private const string CACHE_LOGGED_OUT_SESSION = 'logged_out_session:';
+    private const string CACHE_SESSION_PASSWORD_HASH_HASH = 'session_password_hash_hash:';
+    private const int MAX_REQUEST_SECONDS = 600;
 
 
     private static ?PermissionObject $permissionObject = null;
@@ -46,6 +54,40 @@ class PermissionMiddleware
     public static function user(): User
     {
         return self::permissions()->user ?? ExceptionFactory::unauthorised()->throw();
+    }
+
+    /** Marks the session as logged out, whatever its contents say from now on. */
+    public static function sessionLoggedOut(Session $session): void
+    {
+        Cache::put(self::CACHE_LOGGED_OUT_SESSION . $session->getId(), true, self::outdatedSessionSeconds());
+    }
+
+    /**
+     * Keeps the session good for a new password of the user, whatever its contents say. To be
+     * called before the new password is saved, so that no request sees the password without it.
+     */
+    public static function sessionChangePassword(Session $session, User $user): void
+    {
+        Cache::put(
+            self::CACHE_SESSION_PASSWORD_HASH_HASH . $session->getId(),
+            $user->passwordHashHash(),
+            self::outdatedSessionSeconds(),
+        );
+    }
+
+    /**
+     * Binds the session to the current password of the user. Enough for a session with a new id,
+     * which has no outdated copies; a change of the password needs sessionChangePassword() first.
+     */
+    public static function sessionSetPassword(Session $session, User $user): void
+    {
+        $session->put(self::SESSION_PASSWORD_HASH_HASH, $user->passwordHashHash());
+    }
+
+    /** How long an outdated copy of a session may live: written by a late request, then unused. */
+    private static function outdatedSessionSeconds(): int
+    {
+        return config('session.lifetime') * 60 + self::MAX_REQUEST_SECONDS;
     }
 
     /**
@@ -80,7 +122,10 @@ class PermissionMiddleware
         $session = $request->hasSession() ? $request->session() : null;
 
         if ($user = User::fromAuthenticatable($request->user())) {
-            if (self::checkSessionPasswordHashHash($user, $session)) {
+            if (
+                $session && !Cache::has(self::CACHE_LOGGED_OUT_SESSION . $session->getId())
+                && self::checkSessionPasswordHashHash($user, $session)
+            ) {
                 $creator->loggedIn = true;
                 $creator->user = $user;
                 $creator->verified = ($user->email_verified_at !== null);
@@ -114,9 +159,23 @@ class PermissionMiddleware
         return $request->route('facility');
     }
 
-    private static function checkSessionPasswordHashHash(User $user, ?Session $session): bool
+    private static function checkSessionPasswordHashHash(User $user, Session $session): bool
     {
-        return $session && $user->password
-            && hash_equals($user->passwordHashHash(), $session->get(self::SESSION_PASSWORD_HASH_HASH));
+        if (!$user->password) {
+            return false;
+        }
+        $hashHash = $user->passwordHashHash();
+        // A match needs no confirmation: an outdated copy of the session can only bring back the
+        // value for an earlier password, which never equals the one for the current password.
+        if (hash_equals($hashHash, (string)$session->get(self::SESSION_PASSWORD_HASH_HASH))) {
+            return true;
+        }
+        // An outdated copy of the session may have replaced the value set for the current password.
+        $cached = Cache::get(self::CACHE_SESSION_PASSWORD_HASH_HASH . $session->getId());
+        if (hash_equals($hashHash, (string)$cached)) {
+            $session->put(self::SESSION_PASSWORD_HASH_HASH, $hashHash);
+            return true;
+        }
+        return false;
     }
 }
