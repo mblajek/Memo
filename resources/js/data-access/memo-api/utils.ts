@@ -1,4 +1,4 @@
-import {AxiosError, type AxiosResponse} from "axios";
+import {AxiosError, AxiosHeaders, type AxiosResponse} from "axios";
 import {DateTime} from "luxon";
 import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {Api} from "./types";
@@ -28,11 +28,27 @@ export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id, T
   return result;
 }
 
+export const UUID_REGEX = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
+
+/** Creates a fake AxiosError with the not found status, for a request that found no entity. */
+function entityNotFoundError(response?: AxiosResponse) {
+  const config = response?.config || {headers: new AxiosHeaders()};
+  return new AxiosError("Entity not found", AxiosError.ERR_BAD_REQUEST, config, response?.request, {
+    headers: {},
+    config,
+    ...response,
+    data: {errors: [{code: "exception.not_found"}]} satisfies Api.ErrorResponse,
+    status: 404,
+    statusText: "NotFound",
+  });
+}
+
 /**
  * Returns a function for getting entity by id, made from a list calling function.
  *
  * The get request uses list with the in param under the hood, and throws an appropriate
- * fake AxiosError if the entity is not found.
+ * fake AxiosError if the entity is not found. An id that is not a UUID cannot belong to any
+ * entity, so it gives the same error, without a request that would be rejected as invalid.
  */
 export function createGetFromList<T extends Api.Entity>(
   getEntityListBase: (
@@ -40,19 +56,17 @@ export function createGetFromList<T extends Api.Entity>(
     config?: Api.Config,
   ) => Promise<AxiosResponse<Api.Response.GetList<T>>>,
 ) {
-  return (id: Api.Id, config?: Api.Config) =>
-    getEntityListBase(createListRequest(id), config).then((response) => {
-      const [result] = response.data.data;
-      if (!result) {
-        throw new AxiosError("Entity not found", AxiosError.ERR_BAD_REQUEST, response.config, response.request, {
-          ...response,
-          data: {errors: [{code: "exception.not_found"}]} satisfies Api.ErrorResponse,
-          status: 404,
-          statusText: "NotFound",
-        });
-      }
-      return result;
-    });
+  return async (id: Api.Id, config?: Api.Config) => {
+    if (!UUID_REGEX.test(id)) {
+      throw entityNotFoundError();
+    }
+    const response = await getEntityListBase(createListRequest(id), config);
+    const [result] = response.data.data;
+    if (!result) {
+      throw entityNotFoundError(response);
+    }
+    return result;
+  };
 }
 
 /** Returns the ISO representation of datetime in UTC time zone, suitable for sending to backend. */

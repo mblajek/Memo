@@ -9,10 +9,12 @@ use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
+use App\Rules\Valid;
 use App\Services\User\StorageService;
 use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -45,7 +47,11 @@ class UserController extends ApiController
     {
         $user = $this->getUserOrFail();
         $data = $this->validate([
-            'last_login_facility_id' => 'nullable|uuid|exists:facilities,id|sometimes',
+            'last_login_facility_id' => Valid::uuid(
+                [Rule::exists('members', 'facility_id')->where('user_id', $user->id)],
+                sometimes: true,
+                nullable: true,
+            ),
         ]);
         $service->handle($user, $data);
 

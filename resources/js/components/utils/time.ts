@@ -1,44 +1,37 @@
 import "init_luxon";
 
 import {DateTime, Settings} from "luxon";
-import {createSignal} from "solid-js";
+import {createMemo, createRoot, createSignal} from "solid-js";
 import {timeZone} from "time_zone_controller";
 
-// Current time, with seconds accuracy.
-const [getCurrentTimeSecond, setCurrentTimeSecond] = createSignal(DateTime.now());
-// Current time, with minutes accuracy.
-const [getCurrentTimeMinute, setCurrentTimeMinute] = createSignal(DateTime.now().startOf("minute"));
-// Current date, with days accuracy.
-const [getCurrentDate, setCurrentDate] = createSignal(DateTime.now().startOf("day"));
-
-let lastTimeZone = timeZone();
+// The current instant, updated every second.
+const [getNow, setNow] = createSignal(DateTime.now());
 
 function update() {
   const now = DateTime.now();
-  if (now.minute !== getCurrentTimeMinute().minute) {
-    setCurrentTimeMinute(now.startOf("minute"));
-    if (now.day !== getCurrentTimeSecond().day) {
-      setCurrentDate(now.startOf("day"));
-    }
-  }
-  // Don't use signals to avoid creating effects without owner.
-  if (timeZone() !== lastTimeZone) {
-    setCurrentTimeMinute((t) => t.setZone(timeZone()));
-    setCurrentTimeSecond((t) => t.setZone(timeZone()));
-    lastTimeZone = timeZone();
-  }
-  setCurrentTimeSecond(now);
+  setNow(now);
   // Update again at the start of the next second.
   setTimeout(update, 1000 - now.millisecond);
 }
 
 // Start updating the time indefinitely.
-// eslint-disable-next-line solid/reactivity
 update();
 
-export const currentTimeSecond = getCurrentTimeSecond;
-export const currentTimeMinute = getCurrentTimeMinute;
-export const currentDate = getCurrentDate;
+function sameTime(a: DateTime, b: DateTime) {
+  return a.toMillis() === b.toMillis() && a.zone.equals(b.zone);
+}
+
+// The values are derived from the time zone as well, so that they are already correct when
+// something reads them right after the time zone changes.
+export const {currentTimeSecond, currentTimeMinute, currentDate} = createRoot(() => {
+  /** Current time, with seconds accuracy. */
+  const currentTimeSecond = createMemo(() => getNow().setZone(timeZone()));
+  /** Current time, with minutes accuracy. */
+  const currentTimeMinute = createMemo(() => currentTimeSecond().startOf("minute"), undefined, {equals: sameTime});
+  /** Current date, with days accuracy. */
+  const currentDate = createMemo(() => currentTimeMinute().startOf("day"), undefined, {equals: sameTime});
+  return {currentTimeSecond, currentTimeMinute, currentDate};
+});
 
 export function withNoThrowOnInvalid<T extends {isValid: boolean} | undefined>(
   func: () => T,
