@@ -54,6 +54,7 @@ const WeeklyTimeTables = lazyAutoPreload(() => import("features/root/pages/Weekl
 
 const App: VoidComponent = () => {
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
+  const facilitiesPending = () => probablyLoggedIn() && facilitiesQuery.isPending;
 
   /**
    * A component for redirecting the __facility links to an actual facility.
@@ -64,6 +65,9 @@ const App: VoidComponent = () => {
     const params = useParams();
     const navigate = useNavigate();
     createEffect(() => {
+      if (facilitiesPending()) {
+        return;
+      }
       if (activeFacilityId()) {
         const activeFacility = facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId());
         if (activeFacility) {
@@ -79,6 +83,9 @@ const App: VoidComponent = () => {
   const RedirectRootToFacilityRoot = (() => {
     const navigate = useNavigate();
     createEffect(() => {
+      if (facilitiesPending()) {
+        return;
+      }
       if (activeFacilityId() && probablyLoggedIn()) {
         const activeFacility = facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId());
         if (activeFacility) {
