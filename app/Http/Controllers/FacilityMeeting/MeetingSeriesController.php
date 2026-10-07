@@ -328,8 +328,8 @@ class MeetingSeriesController extends ApiController
             $meetingsData[$meeting->id] = array_combine(
                 $conflictTypes,
                 array_map(fn(string $conflictType) => match ($conflictType) {
-                    'staff' => $meeting->getAttendants(AttendanceType::Staff)->pluck('id')->toArray(),
-                    'clients' => $meeting->getAttendants(AttendanceType::Client)->pluck('id')->toArray(),
+                    'staff' => $meeting->getAttendants(AttendanceType::Staff)->pluck('user_id')->toArray(),
+                    'clients' => $meeting->getAttendants(AttendanceType::Client)->pluck('user_id')->toArray(),
                     'resources' => $meeting->resources->pluck('resource_dict_id')->toArray(),
                 }, $conflictTypes),
             );
