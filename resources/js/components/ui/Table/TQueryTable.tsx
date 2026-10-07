@@ -73,9 +73,10 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  getOwner,
   onCleanup,
   onMount,
-  untrack,
+  runWithOwner,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {DocsModalInfoIcon, DocsModalProps} from "../docs_modal";
@@ -482,6 +483,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     loadTableView,
   } = requestController;
   let persistencesCreated = false;
+  const owner = getOwner();
   createComputed(() => {
     const sch = schema();
     if (sch && attributes()) {
@@ -565,9 +567,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         }
       });
       // Create the persistences, but make sure it is only done once, and doesn't cause this block to run again.
+      // They belong to the component, not to this block: it would dispose them on its next run.
       if (!persistencesCreated) {
         persistencesCreated = true;
-        untrack(() => {
+        runWithOwner(owner, () => {
           if (props.staticPersistenceKey) {
             // eslint-disable-next-line solid/reactivity
             const columnSizing = delayedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
