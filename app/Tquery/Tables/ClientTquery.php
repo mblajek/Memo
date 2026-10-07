@@ -12,6 +12,9 @@ use App\Tquery\Engine\TqBuilder;
 
 final readonly class ClientTquery extends FacilityUserTquery
 {
+    /** The groups of a client in the order the client joined them. */
+    private const string GROUPS_ORDER = '`group_clients`.`created_at`, `group_clients`.`id`';
+
     protected function getBuilder(): TqBuilder
     {
         $builder = TqBuilder::fromTable(TqTableAliasEnum::users);
@@ -42,6 +45,7 @@ final readonly class ClientTquery extends FacilityUserTquery
             select: "`group_clients`.`client_group_id`",
             from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`",
             columnAlias: 'client.groups.*.id',
+            orderBy: self::GROUPS_ORDER,
         );
 
         $config->addListQuery(
@@ -50,6 +54,7 @@ final readonly class ClientTquery extends FacilityUserTquery
             from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`"
             . " and `group_clients`.`role` is not null",
             columnAlias: 'client.groups.*.role',
+            orderBy: self::GROUPS_ORDER,
         );
 
         $config->addListQuery(

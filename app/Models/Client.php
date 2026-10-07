@@ -74,7 +74,7 @@ class Client extends Model
                 ->join('members', 'members.user_id', 'group_clients.user_id')
                 ->select(['group_clients.*', 'members.client_id']),
             'group_clients',
-        );
+        )->orderBy('group_clients.created_at')->orderBy('group_clients.id');
     }
 
     public function fillShortCode(): void

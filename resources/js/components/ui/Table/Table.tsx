@@ -301,7 +301,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
             >
               <div ref={scrollToTopElement} class={s.scrollToTopElement}>
                 <div class={s.tableBg}>
-                  <div class={s.table} style={{"grid-template-columns": gridTemplateColumns()}}>
+                  <div class={s.table} role="table" style={{"grid-template-columns": gridTemplateColumns()}}>
                     <div
                       on:wheel={{
                         handleEvent: (e) => {
@@ -332,11 +332,12 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                         passive: false,
                       }}
                       class={s.headerRow}
+                      role="row"
                     >
                       <For each={columns()}>
                         {({column, getHeaderContext}) => (
                           <Show when={column.getIsVisible() && getHeaderContext()}>
-                            <div class={s.cell}>
+                            <div class={s.cell} role="columnheader" data-column={column.id}>
                               <CellRenderer component={column.columnDef.header} props={getHeaderContext()!} />
                             </div>
                           </Show>
@@ -357,11 +358,11 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                         const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
                         return (
                           <NonBlocking nonBlocking={props.nonBlocking}>
-                            <div class={s.dataRow} bool:inert={props.isDimmed}>
+                            <div class={s.dataRow} role="row" bool:inert={props.isDimmed}>
                               <For each={columns()}>
                                 {({column, getCellContext}) => (
                                   <Show when={column.getIsVisible()}>
-                                    <div class={s.cell}>
+                                    <div class={s.cell} role="cell" data-column={column.id}>
                                       <CellRenderer component={column.columnDef.cell} props={getCellContext(row())} />
                                     </div>
                                   </Show>

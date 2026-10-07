@@ -74,7 +74,8 @@ export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props
       <PasswordField name="repeat" autocomplete="new-password" />
       <FelteSubmit
         cancel={() => {
-          // Start logging out first: cancelling typically destroys this form, and the mutation with it.
+          // Start logging out first: cancelling typically destroys this form, and the mutation
+          // with it.
           if (props.forceChange) {
             logOut.logOut();
           }

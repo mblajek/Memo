@@ -58,7 +58,7 @@ import {
 } from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {Button} from "../Button";
-import {Capitalize} from "../Capitalize";
+import {Capitalize, capitalizeString} from "../Capitalize";
 import {CheckboxInput} from "../CheckboxInput";
 import {DocsModalInfoIcon, DocsModalInfoIconProps} from "../docs_modal";
 import {SegmentedControl} from "../form/SegmentedControl";
@@ -1194,12 +1194,17 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
             <div class="flex">
-              <Button class="h-full secondary small rounded-r-none!" onClick={[moveDaysSelection, -1]}>
+              <Button
+                class="h-full secondary small rounded-r-none!"
+                title={capitalizeString(t("calendar.previous"))}
+                onClick={[moveDaysSelection, -1]}
+              >
                 <IoArrowBackOutline class="text-current" />
               </Button>
               <Button
                 class="h-full secondary small rounded-l-none!"
                 style={{"margin-left": "-1px"}}
+                title={capitalizeString(t("calendar.next"))}
                 onClick={[moveDaysSelection, 1]}
               >
                 <IoArrowForwardOutline class="text-current" />
