@@ -4,10 +4,20 @@ services:
     deploy: {resources: {limits: {memory: "2500M"}}}
     build: {context: ".", dockerfile: "docker/php.dockerfile",
       args: {ME_USER_UID: "$ME_USER_UID", XDEBUG: "$XDEBUG"}}
-    volumes: [".:/var/www", "./docker/php.ini:/usr/local/etc/php/php.ini"]
+    volumes:
+      - ".:/var/www"
+      - "./docker/php.ini:/usr/local/etc/php/php.ini"
+      # The container's own node_modules, apart from the one of the host: the two record different
+      # paths of the package store, and each would otherwise redo the other's install.
+      - "node_modules:/var/www/node_modules"
     ports: ["9081:80", "9082:9082", "9083:8025"] #apache+vite+mailpit
     user: "$CLI_USER"
     environment:
       PHP_IDE_CONFIG: "serverName=localhost"
+      # In the volume of node_modules: pnpm links the packages from the store, which it can only do
+      # within one file system.
+      pnpm_config_store_dir: "/var/www/node_modules/.pnpm-store"
+volumes:
+  node_modules: {}
 networks:
   memo-network: {}

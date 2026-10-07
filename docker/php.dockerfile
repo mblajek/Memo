@@ -46,6 +46,8 @@ ENV PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH"
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 RUN pnpm add -g vite
+# A volume mounted here takes the owner of this directory.
+RUN mkdir -p /var/www/node_modules && chown me:me /var/www/node_modules
 
 # mailpit
 
