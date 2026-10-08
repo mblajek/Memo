@@ -148,12 +148,14 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
       <div class="w-full flex items-stretch uppercase">
         <Button
           class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
+          data-role="prev-month"
           onClick={() => props.setMonth(props.month.minus({months: 1}))}
         >
           <FaSolidArrowLeft />
         </Button>
         <Button
           class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
+          data-role="next-month"
           onClick={() => props.setMonth(props.month.plus({months: 1}))}
         >
           <FaSolidArrowRight />
@@ -162,6 +164,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           <Show when={props.onMonthNameClick} fallback={<div>{props.month.monthLong}</div>}>
             <Button
               class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
+              data-role="month"
               onClick={() => {
                 props.onMonthNameClick?.();
                 featureHeaderClick.justUsed({target: "month"});
@@ -172,7 +175,11 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           </Show>
           <PopOver
             trigger={(popOver) => (
-              <Button class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover" onClick={popOver.open}>
+              <Button
+                class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
+                data-role="year"
+                onClick={popOver.open}
+              >
                 {props.month.year}
               </Button>
             )}
@@ -244,6 +251,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           {(di) => (
             <Button
               class={cx("w-full text-center relative", di.classes, rangeClasses(di.day, hoverRange(), "bg-hover"))}
+              data-day={di.day.toISODate()}
               onClick={() => props.onDayClick?.(di.day, getHoverRange()(di.day))}
               onDblClick={() => props.onDayDoubleClick?.(di.day, getHoverRange()(di.day))}
               {...hoverEvents((hovered) => setHover(hovered ? di.day : undefined))}

@@ -545,6 +545,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       >
                         <Button
                           class="min-h-small-input self-start"
+                          aria-pressed={!!clientGroupId()}
                           title={
                             <>
                               <Show

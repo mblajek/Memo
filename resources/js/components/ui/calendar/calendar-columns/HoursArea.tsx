@@ -60,6 +60,7 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
 
   return (
     <div
+      data-hours-of-day={props.day.toISODate()}
       {...htmlAttributes.merge(divProps, {
         class: cx(
           "w-full h-full overflow-clip relative",

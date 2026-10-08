@@ -152,7 +152,7 @@ export const UserInfo: VoidComponent = () => {
                 <Button class="p-0.5 flex items-center gap-0.5" title={t("user_settings")} onClick={popOver.open}>
                   <actionIcons.ThreeDots class="text-current fill-current" />
                   <Show when={suggestPasswordChange() || suggestConfigureOTP()}>
-                    <WarningMark />
+                    <WarningMark data-role="settings-warning" />
                   </Show>
                 </Button>
               )}

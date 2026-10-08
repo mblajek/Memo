@@ -729,6 +729,7 @@ export default (() => {
             <TextInput
               class="w-52 px-2"
               type="month"
+              data-role="from-month"
               value={fromMonth()}
               onInput={({target: {value}}) => setFromMonth(value)}
             />
@@ -736,6 +737,7 @@ export default (() => {
             <TextInput
               class="w-52 px-2"
               type="month"
+              data-role="to-month"
               value={toMonth()}
               onInput={({target: {value}}) => setToMonth(value)}
             />

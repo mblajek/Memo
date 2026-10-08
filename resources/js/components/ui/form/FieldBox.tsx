@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const FieldBox: ParentComponent<Props> = (props) => (
-  <div class="flex flex-col items-stretch">
+  <div class="flex flex-col items-stretch" data-field-box={props.name}>
     <FieldLabel fieldName={props.name} umbrella={props.umbrella} label={props.label} />
     {props.children}
     <For each={props.validationMessagesForFields || [props.name]}>
