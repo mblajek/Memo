@@ -1,0 +1,30 @@
+{
+  "//": [
+    "The tests run against an app server that is already running, and reach its DB directly,",
+    "with the mariadb client programs, to snapshot and restore it around the tests.",
+    "The DB is the one the app's .env points at (memoEnvFile). It is restored to its state at the",
+    "start after every test that changes it: whatever anyone else does in it during the run is",
+    "lost. Never a DB in real use — the tests refuse a server or an .env of the production",
+    "environment, and a DB other than the one named here.",
+    "To have the servers started for you, on a DB of their own, use config.docker.template.json."
+  ],
+  "targetType": "local",
+  "ui": {
+    "baseURL": "http://localhost:8000",
+    "admin": {
+      "email": "tester@example.com",
+      "password": "REPLACE_ME"
+    }
+  },
+  "memoEnvFile": "/path/to/memo/.env",
+  "// expectedDB": [
+    "The DB that the .env has to point at, by its DB_HOST, DB_PORT and DB_DATABASE. The tests",
+    "refuse to start on any other: an .env changed since, or a wrong one, would have them restore",
+    "over a DB not meant for them."
+  ],
+  "expectedDB": {
+    "host": "db.example.com",
+    "port": 3306,
+    "name": "memo_dev"
+  }
+}

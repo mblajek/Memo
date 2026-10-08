@@ -1,3 +1,4 @@
 /.state/
 /test-results/
 /playwright-report/
+/.docker/

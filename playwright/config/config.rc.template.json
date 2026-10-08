@@ -1,0 +1,26 @@
+{
+  "//": [
+    "The tests run against a deployed app server (ui), and snapshot and restore its DB through",
+    "the DB dump API of another deployment that manages it (dbAPI).",
+    "",
+    "ui is the rc server: the tests fill its DB with their data. dbAPI is the deployment the rc",
+    "belongs to, which the tests only ask for dumps and restores of the rc DB. Do not swap them:",
+    "the tests refuse a ui server of the production environment, and the same server in both",
+    "places."
+  ],
+  "targetType": "rc",
+  "ui": {
+    "baseURL": "https://rc-memo.example.com",
+    "admin": {
+      "email": "tester@example.com",
+      "password": "REPLACE_ME"
+    }
+  },
+  "dbAPI": {
+    "baseURL": "https://memo.example.com",
+    "admin": {
+      "email": "admin@example.com",
+      "password": "REPLACE_ME"
+    }
+  }
+}

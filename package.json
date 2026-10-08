@@ -15,12 +15,18 @@
     "test": "pnpm install && vitest run",
     "test-watch": "pnpm install && vitest watch",
     "coverage": "pnpm install && vitest run --coverage",
-    "lint": "pnpm install && eslint resources/js"
+    "lint": "pnpm install && eslint resources/js",
+    "playwright-typecheck": "pnpm install && tsc --noEmit -p playwright/tsconfig.json",
+    "playwright-lint": "pnpm install && eslint --config playwright/eslint.config.mjs playwright",
+    ":playwright": "playwright test -c playwright/playwright.config.ts",
+    ":playwright-rep": "playwright show-report playwright/playwright-report"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@solidjs/testing-library": "^0.8.10",
     "@testing-library/jest-dom": "^7.0.1",
     "@types/luxon": "^3.7.4",
+    "@types/node": "^25.9.1",
     "@types/wicg-file-system-access": "^2023.10.7",
     "eslint": "^9.39.5",
     "eslint-config-love": "^154.1.0",

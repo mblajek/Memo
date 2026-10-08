@@ -1,0 +1,57 @@
+{
+  "//": [
+    "This file is a complete config as it is: copy it to config.json and run. No other target",
+    "works without filling its config in.",
+    "",
+    "The tests start their own app server and DB server, in docker containers, and run against them.",
+    "Nothing of yours is changed: the .env of the checkout is only read, and a server you have",
+    "running on the checkout (and its DB) is left alone — both can run at the same time.",
+    "",
+    "What is started, and kept for the next run unless docker.keepRunning is false:",
+    "  memo-e2e-db   MariaDB with its data in memory (fast, and gone when the container stops).",
+    "  memo-e2e-php  The app, from the image of the app's own container, serving this checkout",
+    "                with an .env of its own: a copy of the checkout's .env with the DB replaced",
+    "                (kept in playwright/.docker/, which git ignores).",
+    "",
+    "Needed on this machine: docker, the image of the app's container (`docker compose build`",
+    "in the checkout), and the mariadb client programs (mariadb, mariadb-dump).",
+    "",
+    "The frontend: the app loads it from the Vite dev server. If one is running on the checkout",
+    "(your own dev container), it is used. If none is, one is started in memo-e2e-php, on",
+    "docker.vitePort; the two can run side by side, and the app uses the one started last.",
+    "",
+    "The tests log in as a global admin they create in the new DB (also with docker.base \"copy\");",
+    "a run logs its e-mail and password at the start, for you to log in to that server too.",
+    "",
+    "To start over with a new DB: `docker rm -f memo-e2e-db`. Changing docker.base does the same."
+  ],
+  "targetType": "docker",
+  "ui": {
+    "// baseURL": "Where the app container serves the app. Pick a free port; not the one of your own server.",
+    "baseURL": "http://localhost:9084"
+  },
+  "docker": {
+    "// base": [
+      "What the DB starts from:",
+      "  \"empty\"  The app's migrations and nothing else. Needs no access to any other DB. The",
+      "           tests must pass on this.",
+      "  \"copy\"   A copy of the DB that the checkout's .env points at, taken when the container is",
+      "           made. Shows that the tests also pass next to real data, as they have to on an rc",
+      "           server. The credentials are read from that .env and used for the one dump only."
+    ],
+    "base": "empty",
+    "// optional": [
+      "The rest can be left out; these are the defaults.",
+      "  memoDir      The checkout to serve; relative to the playwright directory.",
+      "  appImage     The image for the app container.",
+      "  dbPort       The port of this machine the DB container is reached on (by the tests only).",
+      "  vitePort     The port for a Vite dev server started by the tests; not the one of your own.",
+      "  keepRunning  Leave the containers running after a run, so the next one starts at once."
+    ],
+    "memoDir": "..",
+    "appImage": "memo-memo-php",
+    "dbPort": 3307,
+    "vitePort": 9085,
+    "keepRunning": true
+  }
+}
