@@ -1,4 +1,5 @@
 import type {Locator, Page} from "@playwright/test";
+import {DateTime} from "luxon";
 import {shownDateTime} from "../helpers/dates.ts";
 import {attributeToCreate, clientAttributes} from "../helpers/queries.ts";
 import {savedFile, stubSaveFilePicker, exportTable} from "../helpers/saved_file.ts";
@@ -52,6 +53,14 @@ const EMPTY_VALUE = "—";
 /** The time of the filled client as the app shows it: in the time zone of the browser. */
 const MOMENT = shownDateTime(FILLED_VALUES.e2eMoment);
 
+/** A time as it is typed into a form: the local one, to the minute. */
+const TYPED_MOMENT = "2024-06-15T08:45";
+
+/** The typed time as the API has it. */
+function apiTime(typed: string) {
+  return DateTime.fromISO(typed).toUTC().toFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+}
+
 /** The values of the filled client as the details show them. */
 const FILLED_VIEW: Readonly<Record<string, string | RegExp>> = {
   e2eFlag: "bool_values.yes",
@@ -80,12 +89,6 @@ attributeValuesLayer.describe((artifact) => {
     const client = await clientAttributes(api, artifact().facilityId, clientId);
     return Object.fromEntries(VALUE_API_NAMES.filter((name) => name in client).map((name) => [name, client[name]]));
   };
-  /**
-   * Takes the time value from the filled client: the edit form sends it back as it got it, which
-   * the server refuses, so a client with one cannot be saved there (see the test of that).
-   */
-  const clearMoment = async (api: MemoAPI) =>
-    api.patch(`${clientsPath()}/${artifact().filledClientId}`, {client: {e2eMoment: null}});
   const clientIdByName = async (api: MemoAPI, name: string) => {
     const {rows} = await api.tquery<{id: string}>(`${clientsPath()}/tquery`, {
       columns: ["id"],
@@ -241,9 +244,7 @@ attributeValuesLayer.describe((artifact) => {
         for (const apiName of ["e2eTags", "e2eNumbers", "e2eDays"]) {
           await expect(listInputs(form, apiName)).toHaveCount(0);
         }
-        // The app has no control for a time yet: the row has the label and the level only.
-        await expectSectionShown(attributeRow(form, "e2eMoment"), true);
-        await expect(control("e2eMoment", "input, textarea")).toHaveCount(0);
+        await expect(control("e2eMoment", 'input[type="datetime-local"]')).toBeVisible();
         // An attribute of the level `empty` is offered only while it has a value.
         await expectSectionShown(attributeRow(form, "e2eLegacy"), false);
         for (const {apiName, requirementLevel, type} of Object.values(VALUE_ATTRS)) {
@@ -258,6 +259,8 @@ attributeValuesLayer.describe((artifact) => {
       await chooseInFormSelect(page, "client.typeDictId", /clientType\.adult/);
       await formField(form, "client.e2eFlag").check();
       await formField(form, "client.e2eDay").fill("2024-02-29");
+      // A time is entered as the local one.
+      await control("e2eMoment", "input").fill(TYPED_MOMENT);
       await formField(form, "client.e2eCount").fill("-12");
       await formField(form, "client.e2eLabel").fill("Typed label");
       await form.locator('textarea[name="client.e2eStory"]').fill("First line\nSecond line");
@@ -278,6 +281,7 @@ attributeValuesLayer.describe((artifact) => {
       expect(await e2eValues(staffApi, clientId)).toEqual({
         e2eFlag: true,
         e2eDay: "2024-02-29",
+        e2eMoment: apiTime(TYPED_MOMENT),
         e2eCount: -12,
         e2eLabel: "Typed label",
         e2eStory: "First line\nSecond line",
@@ -294,6 +298,7 @@ attributeValuesLayer.describe((artifact) => {
         for (const [apiName, text] of Object.entries({
           e2eFlag: "bool_values.yes",
           e2eDay: "czwartek, 29.02.2024",
+          e2eMoment: "sobota, 15.06.2024, 08:45:00",
           e2eCount: "-12",
           e2eLabel: "Typed label",
           e2eStory: /^First line\s+Second line$/,
@@ -374,7 +379,6 @@ attributeValuesLayer.describe((artifact) => {
   test("the values of each type are changed and cleared in the edit form", {tag: "@ui"}, async ({page, api}) => {
     const {sizeIds, adultClientInfos, filledClientId} = artifact();
     const staffApi = await api.loggedInAs(STAFF);
-    await clearMoment(staffApi);
     await login(page, STAFF);
     const form = await openDetails(page, adultClientInfos[0]!);
     await editButton(form).click();
@@ -415,6 +419,8 @@ attributeValuesLayer.describe((artifact) => {
     await expectFormSuccess(page, "client_edit");
 
     expect(await e2eValues(staffApi, filledClientId)).toEqual({
+      // Not touched in the form.
+      e2eMoment: FILLED_VALUES.e2eMoment,
       // An unticked box is a "no", not the lack of a value.
       e2eFlag: false,
       e2eCount: 7,
@@ -791,7 +797,6 @@ attributeValuesLayer.describe((artifact) => {
       attributeToCreate("e2eKeeper", "users", {name: "+E2E keeper", requirementLevel: "recommended"}),
     );
     await adminApi.patch(`${clientsPath()}/${filledClientId}`, {client: {e2eKeeper: staffUserId}});
-    await clearMoment(adminApi);
     await login(page, STAFF);
     const form = await openDetails(page, adultClientInfos[0]!);
     await expect(attributeRow(form, "e2eKeeper")).toContainText("E2E keeper");
@@ -857,7 +862,6 @@ attributeValuesLayer.describe((artifact) => {
       const {facilityId, sizeIds, adultClientInfos, filledClientId} = artifact();
       const adminApi = await api.loggedInAs(ADMIN);
       const staffApi = await api.loggedInAs(STAFF);
-      await clearMoment(staffApi);
       // The filled client has "Medium" as the size, and "Large" and "Small" as the sizes.
       for (const positionId of [sizeIds.medium, sizeIds.large]) {
         await adminApi.patch(`facility/${facilityId}/admin/position/${positionId}`, {isDisabled: true});
@@ -887,20 +891,71 @@ attributeValuesLayer.describe((artifact) => {
     },
   );
 
-  test("a client with a time value is saved in the edit form", {tag: "@ui"}, async ({page}) => {
-    await login(page, STAFF);
-    const form = await openDetails(page, artifact().adultClientInfos[0]!);
-    await editButton(form).click();
-    await formField(form, "client.e2eLabel").fill("Saved");
-    await submitButton(page, "client_edit").click();
-    await expectFormErrors(form, {"client.e2eMoment": "date_format"});
-    test.fail(
-      true,
-      "The form sends the time back with the microseconds it got it with, and the server takes whole seconds only: " +
-        "an error at a field the form has no control for.",
-    );
-    await expectFormSuccess(page, "client_edit");
-  });
+  test(
+    "a time value is edited as the local time: kept through an edit of another field, changed and cleared",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, adultClientInfos, filledClientId} = artifact();
+      const staffApi = await api.loggedInAs(STAFF);
+      await (
+        await api.loggedInAs(ADMIN)
+      ).post(
+        `facility/${facilityId}/admin/attribute`,
+        attributeToCreate("e2eMoments", "datetime", {isMultiValue: true}),
+      );
+      const moment = async () => (await e2eValues(staffApi, filledClientId)).e2eMoment ?? null;
+      await login(page, STAFF);
+      const form = await openDetails(page, adultClientInfos[0]!);
+      const input = attributeRow(form, "e2eMoment").locator('input[type="datetime-local"]');
+      const save = async () => {
+        await submitButton(page, "client_edit").click();
+        await expect(editButton(form)).toBeVisible();
+      };
+
+      await test.step("an edit of another field keeps the time", async () => {
+        await editButton(form).click();
+        await expect(input).toHaveValue(DateTime.fromISO(FILLED_VALUES.e2eMoment).toFormat("yyyy-MM-dd'T'HH:mm"));
+        await formField(form, "client.e2eLabel").fill("Saved");
+        await save();
+        expect(await e2eValues(staffApi, filledClientId)).toMatchObject({
+          e2eLabel: "Saved",
+          e2eMoment: FILLED_VALUES.e2eMoment,
+        });
+      });
+
+      await test.step("a time typed in is saved, and shown; so is one of a list of times", async () => {
+        await editButton(form).click();
+        await input.fill(TYPED_MOMENT);
+        await addToList(form, "e2eMoments", TYPED_MOMENT);
+        await save();
+        expect(await moment()).toBe(apiTime(TYPED_MOMENT));
+        expect(await clientAttributes(staffApi, facilityId, filledClientId)).toMatchObject({
+          e2eMoments: [apiTime(TYPED_MOMENT)],
+        });
+        await expect(attributeValue(form, "e2eMoment")).toHaveText("sobota, 15.06.2024, 08:45:00");
+        await expect(attributeValue(form, "e2eMoments")).toHaveText("sobota, 15.06.2024, 08:45:00");
+      });
+
+      await test.step("a part of the time deleted and typed anew leaves the rest of it", async () => {
+        await editButton(form).click();
+        await input.focus();
+        await page.keyboard.press("Backspace");
+        // A time with a part missing reads as empty.
+        await expect(input).toHaveValue("");
+        await page.keyboard.type("07");
+        // Which part has the focus first is the browser's choice: the day or the month.
+        await expect(input).toHaveValue(/^2024-(06-07|07-15)T08:45$/);
+        await page.getByRole("button", {name: "actions.cancel"}).click();
+      });
+
+      await test.step("the time is cleared", async () => {
+        await editButton(form).click();
+        await input.fill("");
+        await save();
+        expect(await moment()).toBeNull();
+      });
+    },
+  );
 
   test(
     "a list-of-booleans attribute, which the forms have no control for, says so in its row of the client form",
@@ -921,7 +976,6 @@ attributeValuesLayer.describe((artifact) => {
       await test.step("a value given through the API is shown, and kept through an edit", async () => {
         const {facilityId, adultClientInfos, filledClientId} = artifact();
         const staffApi = await api.loggedInAs(STAFF);
-        await clearMoment(staffApi);
         const flags = [true, false, true];
         await staffApi.patch(`facility/${facilityId}/user/client/${filledClientId}`, {client: {e2eFlags: flags}});
         const details = await openDetails(page, adultClientInfos[0]!);

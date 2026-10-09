@@ -3,7 +3,9 @@
 namespace App\Http\Resources;
 
 use App\Exceptions\FatalExceptionFactory;
+use App\Utils\Date\DateHelper;
 use App\Utils\Transformer\StringTransformer;
+use DateTimeInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -38,11 +40,20 @@ abstract class AbstractJsonResource extends JsonResource
         if ($this->withAttrValues()) {
             $resource = $this->resource;
             if (method_exists($resource, 'attrValues')) {
-                $result += StringTransformer::camelKeys($resource->attrValues());
+                $result += StringTransformer::camelKeys(array_map(
+                    fn(mixed $value) => is_array($value) ? array_map(self::attrValueToApi(...), $value)
+                        : self::attrValueToApi($value),
+                    $resource->attrValues(),
+                ));
             } else {
                 FatalExceptionFactory::unexpected()->throw();
             }
         }
         return $result;
+    }
+
+    private static function attrValueToApi(mixed $value): mixed
+    {
+        return ($value instanceof DateTimeInterface) ? DateHelper::toZuluString($value) : $value;
     }
 }

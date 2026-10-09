@@ -10,6 +10,7 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {cx} from "components/utils/classnames";
+import {dateTimeLocalToISO, isoToDateTimeLocal} from "components/utils/date_time_local";
 import {isDEV} from "components/utils/dev_mode";
 import {DATE_FORMAT, DATE_TIME_FORMAT} from "components/utils/formatting";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -46,11 +47,14 @@ import {HideableSection} from "../HideableSection";
 import {InfoIcon} from "../InfoIcon";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
+import {TextInput} from "../TextInput";
 import {ThingsList} from "../ThingsList";
 import {CHECKBOX} from "../symbols";
 import {title} from "../title";
 import {CheckboxField} from "./CheckboxField";
 import {DateField} from "./DateField";
+import {FieldBox} from "./FieldBox";
+import {labelIdForField} from "./FieldLabel";
 import {DictionarySelect} from "./DictionarySelect";
 import {MultilineTextField} from "./MultilineTextField";
 import {TQuerySelect} from "./TQuerySelect";
@@ -129,9 +133,34 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
             );
           case "date":
             return <DateField name={fieldName} label="" small />;
-          case "datetime":
-            // TODO: Implement. Cannot use datetime-local because this needs to use UTC.
-            return undefined;
+          case "datetime": {
+            // The value of the field is the UTC time, as the API has it. The input shows and takes
+            // it as the local time; it has no name, to stay out of the data of the form.
+            let input: HTMLInputElement | undefined;
+            // Written only when it differs: a partly typed time reads as empty, and is not to be
+            // wiped.
+            createEffect(() => {
+              const local = isoToDateTimeLocal(form.data(fieldName) || null);
+              if (input && input.value !== local) {
+                input.value = local;
+              }
+            });
+            return (
+              <FieldBox name={fieldName} label="">
+                <TextInput
+                  ref={input}
+                  id={fieldName}
+                  type="datetime-local"
+                  class="px-1 min-h-small-input min-w-56"
+                  max="3000-12-31T23:59"
+                  onChange={({currentTarget}) =>
+                    form.setFields(fieldName, dateTimeLocalToISO(currentTarget.value) ?? "", true)
+                  }
+                  aria-labelledby={labelIdForField(fieldName)}
+                />
+              </FieldBox>
+            );
+          }
           default:
             return type satisfies never;
         }

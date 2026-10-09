@@ -66,12 +66,8 @@ attributeValuesLayer.describe((artifact) => {
     const noneId = adultClientInfos[2]!.id;
 
     await test.step("the client endpoint leaves out what has no value", async () => {
-      // The time of a datetime comes back with microseconds; an attribute of the level `empty`
-      // holds a value like any other.
-      expect(await clientValues(staffApi, filledClientId)).toEqual({
-        ...filled,
-        e2eMoment: "2024-03-04T10:30:00.000000Z",
-      });
+      // An attribute of the level `empty` holds a value like any other.
+      expect(await clientValues(staffApi, filledClientId)).toEqual(filled);
       expect(await clientValues(staffApi, requiredOnlyClientId)).toEqual(e2eValues(requiredOnly));
       expect(await clientValues(staffApi, noneId)).toEqual(e2eValues({}));
       const client = await clientAttributes(staffApi, artifact().facilityId, filledClientId);
@@ -154,7 +150,7 @@ attributeValuesLayer.describe((artifact) => {
       }),
     );
     // A false and a zero are values, not the lack of one.
-    expect(await clientValues(staffApi, clientId)).toEqual({...created, e2eMoment: "1999-12-31T23:59:59.000000Z"});
+    expect(await clientValues(staffApi, clientId)).toEqual(created);
 
     const changed = {
       e2eFlag: true,
@@ -171,14 +167,13 @@ attributeValuesLayer.describe((artifact) => {
       e2eLegacy: "y",
     };
     await staffApi.patch(`${clientsPath()}/${clientId}`, {client: changed});
-    expect(await clientValues(staffApi, clientId)).toEqual({...changed, e2eMoment: "2038-01-19T03:14:08.000000Z"});
+    expect(await clientValues(staffApi, clientId)).toEqual(changed);
 
     await test.step("a patch of one value leaves the others", async () => {
       await staffApi.patch(`${clientsPath()}/${clientId}`, {client: {e2eCount: 1}});
       expect(await clientValues(staffApi, clientId)).toEqual({
         ...changed,
         e2eCount: 1,
-        e2eMoment: "2038-01-19T03:14:08.000000Z",
       });
     });
 
@@ -598,10 +593,7 @@ attributeValuesLayer.describe((artifact) => {
     };
     const path = `${clientsPath()}/${filledClientId}`;
     await staffApi.patch(path, {client: lists});
-    expect(await clientAttributes(staffApi, facilityId, filledClientId)).toMatchObject({
-      ...lists,
-      e2eMoments: ["2024-03-04T10:30:00.000000Z", "2024-03-04T09:00:00.000000Z"],
-    });
+    expect(await clientAttributes(staffApi, facilityId, filledClientId)).toMatchObject(lists);
     // The tquery gives the booleans and the times of a list as the DB has them, unlike those of
     // a single value.
     const [row] = await clientRows(staffApi, ["client.e2eFlags", "client.e2eMoments", "client.e2eStories"], {
