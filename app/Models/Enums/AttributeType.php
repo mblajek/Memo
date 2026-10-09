@@ -66,7 +66,12 @@ enum AttributeType: string
             self::Bool => Valid::bool(sometimes: $nullable, nullable: $nullable),
             self::Date => Valid::date(sometimes: $nullable, nullable: $nullable),
             self::Datetime => Valid::datetime(sometimes: $nullable, nullable: $nullable),
-            self::Int => Valid::int(sometimes: $nullable, nullable: $nullable),
+            // the range of the values.int_value column, a signed 32-bit integer
+            self::Int => Valid::int(
+                ['min:' . -(2 ** 31), 'max:' . (2 ** 31 - 1)],
+                sometimes: $nullable,
+                nullable: $nullable,
+            ),
             self::String => Valid::trimmed(sometimes: $nullable, nullable: $nullable),
             self::Dict => Valid::dict($dictionaryId, sometimes: $nullable, nullable: $nullable),
             self::Text => Valid::text(sometimes: $nullable, nullable: $nullable),

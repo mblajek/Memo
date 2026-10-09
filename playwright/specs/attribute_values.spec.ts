@@ -263,19 +263,21 @@ attributeValuesLayer.describe((artifact) => {
     expect(await clientValues(staffApi, filledClientId)).toEqual(before);
   });
 
-  test("an integer too large to store is refused", async ({api}) => {
+  test("an integer out of the range of 32 bits is refused; the ends of the range are stored", async ({api}) => {
     const staffApi = await api.loggedInAs(STAFF);
-    const res = await staffApi.patch(
-      `${clientsPath()}/${artifact().filledClientId}`,
-      {client: {e2eCount: 2147483648}},
-      FAIL,
-    );
-    expect(res.status()).toBe(500);
-    test.fail(
-      true,
-      "The values are kept in a 32-bit column and nothing checks the range: the insert fails with a 500.",
-    );
-    expect(res.status()).toBe(400);
+    const path = `${clientsPath()}/${artifact().filledClientId}`;
+    for (const [value, code] of [
+      [2147483648, "validation.max.numeric"],
+      [-2147483649, "validation.min.numeric"],
+    ] as const) {
+      await expectValidationErrors(await staffApi.patch(path, {client: {e2eCount: value}}, FAIL), [
+        {field: "client.e2eCount", code},
+      ]);
+    }
+    for (const value of [2147483647, -2147483648]) {
+      await staffApi.patch(path, {client: {e2eCount: value}});
+      expect((await clientValues(staffApi, artifact().filledClientId)).e2eCount).toBe(value);
+    }
   });
 
   readOnlyTest("a required attribute is required, on create and when cleared", async ({api}) => {
