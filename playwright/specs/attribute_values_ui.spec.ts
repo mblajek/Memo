@@ -902,33 +902,42 @@ attributeValuesLayer.describe((artifact) => {
     await expectFormSuccess(page, "client_edit");
   });
 
-  test("the client form opens in a facility with a list-of-booleans attribute", {tag: "@ui"}, async ({page, api}) => {
-    const adminApi = await api.loggedInAs(ADMIN);
-    await adminApi.post(
-      `facility/${artifact().facilityId}/admin/attribute`,
-      attributeToCreate("e2eFlags", "bool", {isMultiValue: true}),
-    );
-    // The app logs the error it caught; a browser may give the text of the log entry as "Error"
-    // alone, so the message is read from the logged object.
-    const errors: string[] = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") {
-        for (const arg of message.args()) {
-          void arg
-            .evaluate((value) => (value instanceof Error ? value.message : String(value)))
-            .then((text) => errors.push(text))
-            .catch(() => undefined);
-        }
-      }
-    });
-    await login(page, STAFF);
-    await page.goto(`/${FACILITY.url}/clients/create`);
-    await expect.poll(() => errors.join("\n")).toContain("Unsupported multiple attribute of type bool");
-    test.fail(
-      true,
-      "The attribute form lets any type be multi-value, but the client form throws on this one, " +
-        "and the page is left blank.",
-    );
-    await expect(formField(page.locator("#client_create"), "name")).toBeVisible();
-  });
+  test(
+    "a list-of-booleans attribute, which the forms have no control for, says so in its row of the client form",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const adminApi = await api.loggedInAs(ADMIN);
+      await adminApi.post(
+        `facility/${artifact().facilityId}/admin/attribute`,
+        attributeToCreate("e2eFlags", "bool", {isMultiValue: true}),
+      );
+      await openPage(page, `/${FACILITY.url}/clients/create`, STAFF);
+      const form = page.locator("#client_create");
+      await expect(formField(form, "name")).toBeVisible();
+      await expect(attributeValue(form, "e2eFlags")).toHaveText("attributes.unsupported_field");
+      // The other attributes have their controls.
+      await expect(formField(form, "client.e2eLabel")).toBeVisible();
+
+      await test.step("a value given through the API is shown, and kept through an edit", async () => {
+        const {facilityId, adultClientInfos, filledClientId} = artifact();
+        const staffApi = await api.loggedInAs(STAFF);
+        await clearMoment(staffApi);
+        const flags = [true, false, true];
+        await staffApi.patch(`facility/${facilityId}/user/client/${filledClientId}`, {client: {e2eFlags: flags}});
+        const details = await openDetails(page, adultClientInfos[0]!);
+        await expect(attributeValue(details, "e2eFlags")).toHaveText(
+          "bool_values.yes, bool_values.no, bool_values.yes",
+        );
+        await editButton(details).click();
+        await expect(attributeValue(details, "e2eFlags")).toHaveText("attributes.unsupported_field");
+        await formField(details, "client.e2eCount").fill("43");
+        await submitButton(page, "client_edit").click();
+        await expectFormSuccess(page, "client_edit");
+        expect(await clientAttributes(staffApi, facilityId, filledClientId)).toMatchObject({
+          e2eCount: 43,
+          e2eFlags: flags,
+        });
+      });
+    },
+  );
 });

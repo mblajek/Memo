@@ -34,6 +34,8 @@ requirement_level:
 
 no_attributes: "Brak atrybutów do pokazania"
 
+unsupported_field: "Edycja tego atrybutu nie jest obsługiwana"
+
 show_all: "Pokaż wszystkie atrybuty"
 
 attribs_and_dicts:

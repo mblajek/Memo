@@ -175,7 +175,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       if (aProps.attribute.multiple)
         switch (aProps.attribute.basicType) {
           case "bool":
-            throw new Error(`Unsupported multiple attribute of type ${aProps.attribute.basicType}`);
+            return <span class={cx("text-sm", ERR_COLOR_CLASS)}>{t("attributes.unsupported_field")}</span>;
           case "string":
           case "text":
           case "int":
