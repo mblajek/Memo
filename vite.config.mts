@@ -4,7 +4,7 @@ import {PluginOption} from "vite";
 import eslint from "vite-plugin-eslint";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
-import {defineConfig} from "vitest/config";
+import {configDefaults, defineConfig} from "vitest/config";
 
 function betterHotReload(): PluginOption {
   const LANG_FILE_PATTERN = /\/resources\/lang\/.+\.yml$/;
@@ -74,5 +74,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    // The Playwright tests are not unit tests; they are run by their own runner.
+    exclude: [...configDefaults.exclude, "playwright/**"],
   },
 });
