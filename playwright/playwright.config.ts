@@ -1,4 +1,5 @@
 import {defineConfig, devices} from "@playwright/test";
+import {BROWSER_LOCALE} from "./helpers/dates.ts";
 import {loadConfig} from "./lib/config.ts";
 // Loaded here to be in effect in every process of a run.
 import "./lib/init_luxon.ts";
@@ -20,6 +21,8 @@ export default defineConfig({
 
   use: {
     baseURL: cfg.ui.baseURL,
+    // The locale of the app's users: the formats of dates and times, and the first day of the week.
+    locale: BROWSER_LOCALE,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

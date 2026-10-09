@@ -1,9 +1,21 @@
-import {storageKeys, storageValue} from "../helpers/queries.ts";
+import {SHOWN_TABLE_TIME, daysFromNow, shownDateTime} from "../helpers/dates.ts";
+import {storageKeys, storageValue, userAccount, userName} from "../helpers/queries.ts";
 import {DateTime} from "luxon";
 import {ADMIN, BARE_MEMBER, FACILITY, STAFF, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
 import {disableTranslations} from "../helpers/lang.ts";
-import {expectFormSuccess, expectSectionShown, formField, submitButton, tableRows} from "../helpers/selectors.ts";
-import {expect, openPage, readOnlyTest, test} from "../lib/test.ts";
+import {
+  columnChooserBox,
+  columnHeader,
+  expectFormSuccess,
+  expectSectionShown,
+  formField,
+  showTableColumns,
+  submitButton,
+  tableCellTexts,
+  tableRows,
+} from "../helpers/selectors.ts";
+import {createdId} from "../lib/responses.ts";
+import {MemoAPI, expect, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 /** The staff list and the staff details form, which only a facility admin can edit. */
 
@@ -118,6 +130,97 @@ facilityLayer.describe((artifact) => {
     },
   );
 
+  readOnlyTest(
+    "the staff table has the columns of the account for an admin only, and a value in each column",
+    {tag: "@ui"},
+    async ({page, globalAdminApi}) => {
+      const ADMIN_ONLY = [
+        "hasEmailVerified",
+        "passwordExpireAt",
+        "lastPasswordChangeAt",
+        "isOtpRequired",
+        "otpRequiredAt",
+        "hasOtpConfigured",
+        "isManagedByThisFacility",
+        "managedByFacility.name",
+        "lastLoginFailureAt",
+        "staff.isActive",
+        "staff.deactivatedAt",
+      ];
+      const HIDDEN_AT_FIRST = [
+        "hasGlobalAdmin",
+        "firstMeetingDate",
+        "lastMeetingDate",
+        "completedMeetingsCount",
+        "plannedMeetingsCount",
+        "staff.createdAt",
+        "staff.createdBy.name",
+      ];
+      const SHOWN_AT_FIRST = [
+        "name",
+        "email",
+        "hasPassword",
+        "staff.hasFacilityAdmin",
+        "completedMeetingsCountLastMonth",
+        "plannedMeetingsCountNextMonth",
+      ];
+      const main = page.locator("main");
+
+      // The staff member first: the columns shown are kept in the browser.
+      await test.step("a staff member who is not an admin", async () => {
+        await openPage(page, `/${FACILITY.url}/staff`, STAFF);
+        for (const column of SHOWN_AT_FIRST) {
+          await expect(columnHeader(main, column), column).toBeVisible();
+        }
+        await main.getByRole("button", {name: "tables.choose_columns"}).click();
+        for (const column of HIDDEN_AT_FIRST) {
+          await expect(columnChooserBox(page, "staff", column), column).not.toBeChecked();
+        }
+        for (const column of ADMIN_ONLY) {
+          await expect(columnChooserBox(page, "staff", column), column).toHaveCount(0);
+        }
+      });
+
+      await test.step("an admin", async () => {
+        await page.goto("about:blank");
+        await page.context().clearCookies();
+        await openPage(page, `/${FACILITY.url}/staff`, ADMIN);
+        await showTableColumns(page, main, "staff", [...ADMIN_ONLY, ...HIDDEN_AT_FIRST]);
+        const columns = [...SHOWN_AT_FIRST, ...ADMIN_ONLY, ...HIDDEN_AT_FIRST];
+        const cells = {
+          "name": STAFF_ADMIN.name,
+          "email": STAFF_ADMIN.email,
+          "hasPassword": "bool_values.yes",
+          "staff.hasFacilityAdmin": "bool_values.yes",
+          "completedMeetingsCountLastMonth": "0",
+          "plannedMeetingsCountNextMonth": "0",
+          "hasEmailVerified": "bool_values.yes",
+          "passwordExpireAt": "—",
+          "lastPasswordChangeAt": "—",
+          "isOtpRequired": "bool_values.no",
+          "otpRequiredAt": "—",
+          "hasOtpConfigured": "bool_values.no",
+          "isManagedByThisFacility": "bool_values.no",
+          "managedByFacility.name": "—",
+          "lastLoginFailureAt": "—",
+          "staff.isActive": "bool_values.yes",
+          "staff.deactivatedAt": "—",
+          "hasGlobalAdmin": "bool_values.no",
+          "firstMeetingDate": "—",
+          "lastMeetingDate": "—",
+          "completedMeetingsCount": "0",
+          "plannedMeetingsCount": "0",
+          "staff.createdAt": expect.stringMatching(SHOWN_TABLE_TIME),
+          "staff.createdBy.name": await userName(globalAdminApi),
+        };
+        await expect.poll(() => tableCellTexts(tableRows(main, STAFF_ADMIN.name), columns)).toEqual(cells);
+        await expect
+          .poll(() => tableCellTexts(tableRows(main, STAFF.name), columns))
+          .toEqual({...cells, "name": STAFF.name, "email": STAFF.email, "staff.hasFacilityAdmin": "bool_values.no"});
+      });
+    },
+  );
+
   test(
     "a deactivated staff member is on the staff list only with the inactive ones shown",
     {tag: "@ui"},
@@ -135,8 +238,125 @@ facilityLayer.describe((artifact) => {
       await main.getByLabel("facility_user.staff.list_show_inactive").check();
       await expect(tableRows(main, STAFF.name)).toHaveCount(1);
       await expect(tableRows(main, STAFF_ADMIN.name)).toHaveCount(1);
+      await test.step("the columns of the activity", async () => {
+        const columns = ["staff.isActive", "staff.deactivatedAt"];
+        await showTableColumns(page, main, "staff", columns);
+        await expect
+          .poll(() => tableCellTexts(tableRows(main, STAFF.name), columns))
+          .toEqual({
+            "staff.isActive": "bool_values.no",
+            "staff.deactivatedAt": expect.stringMatching(SHOWN_TABLE_TIME),
+          });
+        await expect
+          .poll(() => tableCellTexts(tableRows(main, STAFF_ADMIN.name), columns))
+          .toEqual({"staff.isActive": "bool_values.yes", "staff.deactivatedAt": "—"});
+      });
       await main.getByLabel("facility_user.staff.list_show_inactive").uncheck();
       await expect(tableRows(main, STAFF.name)).toHaveCount(0);
+    },
+  );
+
+  test(
+    "a deactivated staff member is shown as inactive, and is activated again in the form",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, staffUserId} = artifact();
+      const adminApi = await api.loggedInAs(ADMIN);
+      const staffPath = `facility/${facilityId}/user/staff`;
+      await adminApi.patch(`${staffPath}/${staffUserId}`, {staff: {deactivatedAt: "2020-01-01T07:00:00Z"}});
+      await openPage(page, `/${FACILITY.url}/staff/${staffUserId}`, ADMIN);
+      const form = page.locator("form#staff_edit");
+      const inactive = form.getByText("facility_user.staff.is_inactive.label");
+      await expect(inactive).toBeVisible();
+      // With the time of deactivation, in the browser's time zone.
+      const since = "2020-01-01T07:00:00Z";
+      await expect(form).toContainText(`facility_user.staff.is_inactive.since{date:${shownDateTime(since)}}`);
+
+      await form.getByRole("button", {name: "actions.edit"}).click();
+      const isActive = formField(form, "staff.isActive");
+      await expect(isActive).not.toBeChecked();
+      await expect(formField(form, "staff.deactivatedAt")).toHaveValue(
+        DateTime.fromISO(since).toFormat("yyyy-MM-dd'T'HH:mm"),
+      );
+      await isActive.check();
+      await expectSectionShown(formField(form, "staff.deactivatedAt"), false);
+      await submitButton(page, "staff_edit").click();
+      await expectFormSuccess(page, "staff_edit");
+      await expect(inactive).toHaveCount(0);
+      const [staff] = await adminApi.list<{staff: {deactivatedAt: string | null}}>(staffPath, staffUserId);
+      expect(staff!.staff.deactivatedAt).toBeNull();
+    },
+  );
+
+  test(
+    "an admin edits the name, the password with its expiry and the roles of a staff member managed by the facility",
+    {tag: "@ui"},
+    async ({page, globalAdminApi}) => {
+      const {facilityId} = artifact();
+      const managed = {name: "Managed Staff", email: "managed-staff-ui@test.pl", password: "ManagedStaffPass1!"};
+      const newPassword = "ChangedInTheForm2!";
+      const userId = await createdId(
+        await globalAdminApi.createUser({...managed, hasEmailVerified: true, managedByFacilityId: facilityId}),
+      );
+      await globalAdminApi.createMember({userId, facilityId, isFacilityStaff: true, isActiveFacilityStaff: true});
+      const account = () => userAccount(globalAdminApi, userId);
+
+      await openPage(page, `/${FACILITY.url}/staff/${userId}`, ADMIN);
+      const form = page.locator("form#staff_edit");
+      const editButton = form.getByRole("button", {name: "actions.edit"});
+      const adminRole = formField(form, "staff.hasFacilityAdmin");
+
+      await test.step("a new name and password, an expiry, a required OTP and the admin role", async () => {
+        await editButton.click();
+        await expect(form.getByText("facility_user.managed_by_current_facility", {exact: true})).toBeVisible();
+        await expect(formField(form, "name")).toHaveValue(managed.name);
+        await expect(formField(form, "email")).toHaveValue(managed.email);
+        await expect(formField(form, "hasEmailVerified")).toBeChecked();
+        await expect(formField(form, "hasPassword")).toBeChecked();
+        // The password never expires unless given a time.
+        await expect(formField(form, "passwordExpireAt")).toHaveValue("");
+        await expect(form.getByText("forms.user.password_expire_never")).toBeVisible();
+        await formField(form, "name").fill("Managed Staff, renamed");
+        await formField(form, "password").click();
+        await formField(form, "password").fill(newPassword);
+        await formField(form, "passwordExpireAt_daysLeft").fill("10");
+        await expect(formField(form, "passwordExpireAt")).not.toHaveValue("");
+        await formField(form, "isOtpRequired").check();
+        await adminRole.check();
+        await submitButton(page, "staff_edit").click();
+        await expectFormSuccess(page, "staff_edit");
+        await expect(editButton).toBeVisible();
+        await expect(page.locator("main").getByRole("heading", {name: "Managed Staff, renamed"})).toBeVisible();
+
+        const saved = await account();
+        expect(saved).toMatchObject({
+          name: "Managed Staff, renamed",
+          hasPassword: true,
+          members: [{hasFacilityAdmin: true, isActiveFacilityStaff: true}],
+        });
+        expect(daysFromNow(saved.passwordExpireAt!)).toBeCloseTo(10, 1);
+        expect(daysFromNow(saved.otpRequiredAt!)).toBeCloseTo(7, 1);
+        expect((await MemoAPI.attemptLogin({email: managed.email, password: newPassword})).status).toBe(200);
+        expect((await MemoAPI.attemptLogin(managed)).status).toBe(401);
+      });
+
+      await test.step("without a password the member cannot be a facility admin", async () => {
+        await editButton.click();
+        await expect(formField(form, "passwordExpireAt_daysLeft")).toHaveValue("10");
+        await expect(adminRole).toBeChecked();
+        await formField(form, "hasPassword").uncheck();
+        await expect(adminRole).not.toBeChecked();
+        await expect(adminRole).toBeDisabled();
+        await submitButton(page, "staff_edit").click();
+        await expect(editButton).toBeVisible();
+        expect(await account()).toMatchObject({
+          hasPassword: false,
+          passwordExpireAt: null,
+          otpRequiredAt: null,
+          members: [{hasFacilityAdmin: false, isActiveFacilityStaff: true}],
+        });
+        expect((await MemoAPI.attemptLogin({email: managed.email, password: newPassword})).status).toBe(401);
+      });
     },
   );
 

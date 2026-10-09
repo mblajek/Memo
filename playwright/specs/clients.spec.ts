@@ -1,8 +1,8 @@
 import {clientAttributes} from "../helpers/queries.ts";
 import {CLIENTS_ADULTS, CLIENTS_CHILDREN, clientsLayer} from "../lib/layers/clients.ts";
-import {ADMIN, FACILITY, STAFF} from "../lib/layers/facility.ts";
+import {ADMIN, BARE_MEMBER, FACILITY, STAFF} from "../lib/layers/facility.ts";
 import {expectValidationError, expectValidationErrors, responseData} from "../lib/responses.ts";
-import {expect, openPage, readOnlyTest, test} from "../lib/test.ts";
+import {MemoAPI, expect, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 clientsLayer.describe((artifact) => {
   readOnlyTest("staff sees the facility clients", {tag: "@ui"}, async ({page}) => {
@@ -89,6 +89,80 @@ clientsLayer.describe((artifact) => {
     // Eve has no notes: null, or no field at all.
     expect(byName.get("Eve Kowalski")?.notes ?? null).toBeNull();
   });
+
+  readOnlyTest(
+    "the endpoints of clients, client groups, staff and members are for facility staff and admins only",
+    async ({api}) => {
+      const {facilityId, staffUserId, adultClientInfos} = artifact();
+      const client = adultClientInfos[0]!;
+      const base = `facility/${facilityId}`;
+      const FAIL = {allowFailure: true};
+      const idQuery = {columns: [{type: "column", column: "id"}], paging: {size: 1}};
+      const reads = (asked: MemoAPI) => ({
+        "client list": () => asked.get(`${base}/user/client/list?in=${client.id}`, FAIL),
+        "client tquery columns": () => asked.get(`${base}/user/client/tquery`, FAIL),
+        "client tquery": () => asked.post(`${base}/user/client/tquery`, idQuery, FAIL),
+        "client group list": () => asked.get(`${base}/client-group/list?in=${client.id}`, FAIL),
+        "staff list": () => asked.get(`${base}/user/staff/list?in=${staffUserId}`, FAIL),
+        "staff tquery columns": () => asked.get(`${base}/user/staff/tquery`, FAIL),
+        "staff tquery": () => asked.post(`${base}/user/staff/tquery`, idQuery, FAIL),
+        "member tquery columns": () => asked.get(`${base}/user/tquery`, FAIL),
+        "member tquery": () => asked.post(`${base}/user/tquery`, idQuery, FAIL),
+      });
+      const writes = (asked: MemoAPI) => ({
+        "client create": () =>
+          asked.createFacilityClient(facilityId, {name: "Intruder", client: {typeDictId: client.typeDictId}}, FAIL),
+        "client patch": () => asked.patch(`${base}/user/client/${client.id}`, {name: "Hijacked"}, FAIL),
+        "client delete": () => asked.delete(`${base}/user/client/${client.id}`, undefined, FAIL),
+        "client notification method": () =>
+          asked.patch(`${base}/user/client/${client.id}/notification/method`, {addMeetingClientMethods: true}, FAIL),
+        "client group create": () =>
+          asked.createClientGroup(facilityId, {clients: [{userId: client.id, role: null}]}, FAIL),
+        "client groups to attendants": () =>
+          asked.post(`${base}/client-group/assign-to-attendants`, {clientUserId: client.id, replaceAll: false}, FAIL),
+        "staff patch": () =>
+          asked.patch(`${base}/user/staff/${staffUserId}`, {staff: {deactivatedAt: "2020-01-01T00:00:00Z"}}, FAIL),
+        "admin patch": () => asked.patch(`${base}/user/admin/${staffUserId}`, {member: {hasFacilityAdmin: true}}, FAIL),
+      });
+      const staffApi = await api.loggedInAs(STAFF);
+      const state = async () => ({
+        clients: (
+          await staffApi.tquery(`${base}/user/client/tquery`, {
+            columns: ["id", "name", "client.groups.count"],
+            sort: [{column: "name"}],
+          })
+        ).rows,
+        staff: (
+          await staffApi.tquery(`${base}/user/staff/tquery`, {
+            columns: ["id", "staff.isActive", "staff.hasFacilityAdmin"],
+            sort: [{column: "name"}],
+          })
+        ).rows,
+      });
+      const before = await state();
+      expect(before.clients).toHaveLength(10);
+
+      for (const [who, asked, status] of [
+        ["member with no role", await api.loggedInAs(BARE_MEMBER), 403],
+        ["anonymous", api, 401],
+      ] as const) {
+        for (const [name, request] of Object.entries({...reads(asked), ...writes(asked)})) {
+          expect((await request()).status(), `${who}: ${name}`).toBe(status);
+        }
+      }
+      expect(await state()).toEqual(before);
+
+      // A staff member and a facility admin who is not staff can read all of these.
+      for (const [who, asked] of [
+        ["staff", staffApi],
+        ["admin", await api.loggedInAs(ADMIN)],
+      ] as const) {
+        for (const [name, request] of Object.entries(reads(asked))) {
+          expect((await request()).status(), `${who}: ${name}`).toBe(200);
+        }
+      }
+    },
+  );
 
   readOnlyTest("staff delete-client API on a real client returns 403", async ({api}) => {
     const staffApi = await api.loggedInAs(STAFF);

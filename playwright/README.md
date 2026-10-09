@@ -209,6 +209,9 @@ takes `*` as a wildcard.
 
 Edge is not run separately — it is Chromium.
 
+The browsers run in the Polish locale (`pl-PL`, set in `playwright.config.ts`), as the app's users
+have it: the tests expect its formats of dates and times, and its weeks starting on Monday.
+
 A few tests are skipped in Firefox, each with its reason: the CSV exports (Firefox has no API for
 them, and the app does not export there), and the tests of app problems listed at the end of
 TESTS.md.

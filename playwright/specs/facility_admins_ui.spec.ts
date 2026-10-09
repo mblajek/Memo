@@ -1,12 +1,18 @@
 import type {Page} from "@playwright/test";
 import {ADMIN, BARE_MEMBER, FACILITY, STAFF, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
 import {createdId} from "../lib/responses.ts";
+import {SHOWN_TABLE_TIME} from "../helpers/dates.ts";
+import {userName, userAccount} from "../helpers/queries.ts";
 import {
+  columnChooserBox,
+  columnHeader,
   expectFormErrors,
   expectFormSuccess,
   expectSectionShown,
   formField,
+  showTableColumns,
   submitButton,
+  tableCellTexts,
   tableRows,
 } from "../helpers/selectors.ts";
 import {expect, openPage, readOnlyTest, test} from "../lib/test.ts";
@@ -38,6 +44,83 @@ facilityLayer.describe((artifact) => {
     await expect(main.getByText(STAFF.name)).toHaveCount(0);
     await expect(main.getByText(BARE_MEMBER.name)).toHaveCount(0);
   });
+
+  readOnlyTest(
+    "the admins table is read-only for a staff member, and has a value in each column for an admin",
+    {tag: "@ui"},
+    async ({page, globalAdminApi}) => {
+      const ADMIN_ONLY = [
+        "hasEmailVerified",
+        "passwordExpireAt",
+        "lastPasswordChangeAt",
+        "isOtpRequired",
+        "otpRequiredAt",
+        "hasOtpConfigured",
+        "isManagedByThisFacility",
+        "managedByFacility.name",
+        "lastLoginFailureAt",
+      ];
+      const HIDDEN_AT_FIRST = ["member.isActiveStaff", "createdAt", "createdBy.name"];
+      const SHOWN_AT_FIRST = ["name", "email", "member.isStaff", "hasGlobalAdmin"];
+      const main = page.locator("main");
+
+      // The staff member first: the columns shown are kept in the browser.
+      await test.step("a staff member who is not an admin", async () => {
+        await openPage(page, `/${FACILITY.url}/admins`, STAFF);
+        await expect(tableRows(main, ADMIN.name)).toHaveCount(1);
+        await expect(tableRows(main, STAFF_ADMIN.name)).toHaveCount(1);
+        for (const column of SHOWN_AT_FIRST) {
+          await expect(columnHeader(main, column), column).toBeVisible();
+        }
+        await expect(columnHeader(main, "actions")).toHaveCount(0);
+        await expect(main.getByRole("button", {name: "actions.edit"})).toHaveCount(0);
+        await main.getByRole("button", {name: "tables.choose_columns"}).click();
+        for (const column of HIDDEN_AT_FIRST) {
+          await expect(columnChooserBox(page, "facility_admin", column), column).not.toBeChecked();
+        }
+        for (const column of ADMIN_ONLY) {
+          await expect(columnChooserBox(page, "facility_admin", column), column).toHaveCount(0);
+        }
+      });
+
+      await test.step("an admin", async () => {
+        await page.goto("about:blank");
+        await page.context().clearCookies();
+        await openAdmins(page);
+        await showTableColumns(page, main, "facility_admin", [...ADMIN_ONLY, ...HIDDEN_AT_FIRST]);
+        const columns = [...SHOWN_AT_FIRST, ...ADMIN_ONLY, ...HIDDEN_AT_FIRST];
+        const cells = {
+          "name": ADMIN.name,
+          "email": ADMIN.email,
+          "member.isStaff": "bool_values.no",
+          "hasGlobalAdmin": "bool_values.no",
+          "hasEmailVerified": "bool_values.yes",
+          "passwordExpireAt": "—",
+          "lastPasswordChangeAt": "—",
+          "isOtpRequired": "bool_values.no",
+          "otpRequiredAt": "—",
+          "hasOtpConfigured": "bool_values.no",
+          "isManagedByThisFacility": "bool_values.no",
+          "managedByFacility.name": "—",
+          "lastLoginFailureAt": "—",
+          "member.isActiveStaff": "bool_values.no",
+          "createdAt": expect.stringMatching(SHOWN_TABLE_TIME),
+          "createdBy.name": await userName(globalAdminApi),
+        };
+        await expect.poll(() => tableCellTexts(tableRows(main, ADMIN.name), columns)).toEqual(cells);
+        await expect
+          .poll(() => tableCellTexts(tableRows(main, STAFF_ADMIN.name), columns))
+          .toEqual({
+            ...cells,
+            "name": STAFF_ADMIN.name,
+            "email": STAFF_ADMIN.email,
+            "member.isStaff": "bool_values.yes",
+            "member.isActiveStaff": "bool_values.yes",
+          });
+        await expect(tableRows(main, ADMIN.name).getByRole("button", {name: "actions.edit"})).toBeVisible();
+      });
+    },
+  );
 
   readOnlyTest(
     "a globally managed admin has only the admin role to edit; cancel changes nothing",
@@ -133,22 +216,27 @@ facilityLayer.describe((artifact) => {
       await formField(form, "email").fill("managed-admin-ui-new@test.pl");
       await submitButton(page, "facility_admin_edit").click();
       await expectFormSuccess(page, "user_edit");
-      await expect(tableRows(page.locator("main"), "Managed Admin, renamed")).toContainText(
-        "managed-admin-ui-new@test.pl",
-      );
+      const main = page.locator("main");
+      await expect(tableRows(main, "Managed Admin, renamed")).toContainText("managed-admin-ui-new@test.pl");
+      await test.step("the table says who manages the admin, and that the new email is not verified", async () => {
+        const columns = ["isManagedByThisFacility", "managedByFacility.name", "hasEmailVerified"];
+        await showTableColumns(page, main, "facility_admin", columns);
+        await expect
+          .poll(() => tableCellTexts(tableRows(main, "Managed Admin, renamed"), columns))
+          .toEqual({
+            "isManagedByThisFacility": "bool_values.yes",
+            "managedByFacility.name": FACILITY.name,
+            "hasEmailVerified": "bool_values.no",
+          });
+      });
 
-      const data = await globalAdminApi.list<{
-        name: string;
-        email: string;
-        managedByFacilityId: string | null;
-        members: unknown[];
-      }>("admin/user", userId);
-      expect(data[0]).toMatchObject({
+      const account = await userAccount(globalAdminApi, userId);
+      expect(account).toMatchObject({
         name: "Managed Admin, renamed",
         email: "managed-admin-ui-new@test.pl",
         managedByFacilityId: facilityId,
       });
-      expect(data[0]!.members).toHaveLength(1);
+      expect(account.members).toHaveLength(1);
     },
   );
 

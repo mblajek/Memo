@@ -4,12 +4,15 @@ import {
   COLOUR_DICT_NAME,
   COLOURS_ATTR,
   NICKNAME_ATTR,
+  OTHER_DICT_NAME,
   TAGGED_CLIENT_NICKNAME,
   technicalsLayer,
 } from "../lib/layers/technicals.ts";
 import {createdId} from "../lib/responses.ts";
 import {
+  attributeRow,
   chooseInFormSelect,
+  columnChooserBox,
   expectFormSuccess,
   expectSectionShown,
   formField,
@@ -18,7 +21,7 @@ import {
   tableRows,
 } from "../helpers/selectors.ts";
 import {expect, login, MemoAPI, openPage, readOnlyTest, test} from "../lib/test.ts";
-import {clientAttributes} from "../helpers/queries.ts";
+import {attributeToCreate, clientAttributes} from "../helpers/queries.ts";
 
 /**
  * UI tests of the facility admin's technicals pages (dictionaries, positions, attributes), and of
@@ -111,6 +114,45 @@ technicalsLayer.describe((artifact) => {
     await search.fill("E2E nickname");
     await expect(tableRows(main, "E2E nickname").locator("title=actions.edit")).toBeVisible();
   });
+
+  test(
+    "an attribute and a dictionary of another facility are not on this facility's pages",
+    {tag: "@ui"},
+    async ({page, globalAdminApi}) => {
+      const {otherFacilityId} = artifact();
+      const foreign = {...attributeToCreate("e2eForeign", "string"), facilityId: otherFacilityId};
+      await globalAdminApi.post("admin/attribute", foreign);
+      const main = page.locator("main");
+
+      await test.step("the client form", async () => {
+        await openPage(page, `/${FACILITY.url}/clients/create`, ADMIN);
+        const form = page.locator("form#client_create");
+        await expect(attributeRow(form, NICKNAME_ATTR.apiName)).toBeVisible();
+        await expect(attributeRow(form, foreign.apiName)).toHaveCount(0);
+        await expect(form.getByText(foreign.name.slice(1))).toHaveCount(0);
+      });
+
+      await test.step("the columns of the clients table", async () => {
+        await openPage(page, `/${FACILITY.url}/clients`);
+        await main.getByRole("button", {name: "tables.choose_columns"}).click();
+        await expect(columnChooserBox(page, "client", `client.${NICKNAME_ATTR.apiName}`)).toBeVisible();
+        await expect(columnChooserBox(page, "client", `client.${foreign.apiName}`)).toHaveCount(0);
+      });
+
+      await test.step("the technicals pages of the facility admin", async () => {
+        await openPage(page, `${TECHNICALS}/attributes`);
+        await expect(tableRows(main, NICKNAME_ATTR.name.slice(1))).toHaveCount(1);
+        await expect(main.getByText(foreign.name.slice(1))).toHaveCount(0);
+        // The dictionary select of the attribute form offers the facility's dictionaries only.
+        await page.getByRole("button", {name: /actions\.attribute\.add/}).click();
+        const form = page.locator("form#attribute_create");
+        await chooseInFormSelect(page, "type", /^dict$/);
+        await formSelect(form, "dictionaryId").click();
+        await expect(page.getByRole("option", {name: COLOUR_DICT_NAME.slice(1)})).toBeVisible();
+        await expect(page.getByRole("option", {name: OTHER_DICT_NAME.slice(1)})).toHaveCount(0);
+      });
+    },
+  );
 
   test(
     "facility admin creates a dictionary and its first position via the forms",
@@ -416,6 +458,78 @@ technicalsLayer.describe((artifact) => {
   );
 
   test(
+    "the description and the metadata of an attribute take effect in the client form",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      await openPage(page, `${TECHNICALS}/attributes`, ADMIN);
+      const main = page.locator("main");
+      const adminApi = await api.loggedInAs(ADMIN);
+      const addAttribute = async (name: string, fillIn: () => Promise<void>) => {
+        await page.getByRole("button", {name: /actions\.attribute\.add/}).click();
+        const heading = page.getByRole("heading", {name: /forms\.attribute_create\.form_name/});
+        await expect(heading).toBeVisible();
+        await page.getByRole("checkbox", {name: "forms.generic.advanced_view"}).check();
+        await formField(page, "name").fill(name);
+        await fillIn();
+        await submitButton(page, "attribute_create").click();
+        await expect(heading).toHaveCount(0);
+        await expect(tableRows(main, name)).toHaveCount(1);
+      };
+
+      // A separator that starts folded, and after it an attribute that is therefore in its group.
+      await addAttribute("UI folded group", async () => {
+        await chooseInFormSelect(page, "type", /^separator$/);
+        // A separator has no requirement level.
+        await expectSectionShown(formSelect(page, "requirementLevel"), false);
+        await formField(page, "metadata").fill('{"groupFolding": {"enabled": true, "initialFolded": true}}');
+      });
+      await addAttribute("UI explained", async () => {
+        await formField(page, "apiName").fill("uiExplained");
+        await page.locator('textarea[name="description"]').fill("What to put here");
+        await formField(page, "metadata").fill('{"isMultiLine": true}');
+      });
+      const created = (name: string) => attributes(adminApi).then((all) => all.find((a) => a.name === `+${name}`));
+      expect(await created("UI folded group")).toMatchObject({
+        type: "separator",
+        description: null,
+        metadata: {groupFolding: {enabled: true, initialFolded: true}},
+      });
+      expect(await created("UI explained")).toMatchObject({
+        type: "string",
+        description: "What to put here",
+        metadata: {isMultiLine: true},
+      });
+
+      await test.step("the client form: the group unfolds, the field has several lines and an explanation", async () => {
+        await openPage(page, `/${FACILITY.url}/clients/create`);
+        const form = page.locator("#client_create");
+        const row = attributeRow(form, "uiExplained");
+        await expect(form.getByText("UI folded group")).toBeVisible();
+        await expectSectionShown(form.getByText("UI folded group"), true);
+        await expectSectionShown(row, false);
+        await form.locator("title=actions.expand").click();
+        await expectSectionShown(row, true);
+        await expect(row.locator('textarea[name="client.uiExplained"]')).toBeVisible();
+        await expect(row.locator('[aria-description="What to put here"]')).toBeVisible();
+        await form.locator("title=actions.collapse").click();
+        await expectSectionShown(row, false);
+      });
+
+      await test.step("the description and the metadata are cleared in the edit form", async () => {
+        await openPage(page, `${TECHNICALS}/attributes`);
+        await tableRows(main, "UI explained").locator("title=actions.edit").click();
+        await expect(page.locator('textarea[name="description"]')).toHaveValue("What to put here");
+        await expect(formField(page, "metadata")).toHaveValue('{"isMultiLine":true}');
+        await page.locator('textarea[name="description"]').fill("");
+        await formField(page, "metadata").fill("");
+        await submitButton(page, "attribute_edit").click();
+        await expectFormSuccess(page, "attribute_edit");
+        expect(await created("UI explained")).toMatchObject({description: null, metadata: null});
+      });
+    },
+  );
+
+  test(
     "advanced view shows the api name and the metadata of an attribute, in every technicals form",
     {tag: "@ui"},
     async ({page, api}) => {
@@ -584,6 +698,51 @@ technicalsLayer.describe((artifact) => {
         expect((await dictionaries(await api.loggedInAs(ADMIN))).find((d) => d.name === "+UI Global")).toMatchObject({
           isExtendable: true,
         });
+      });
+    },
+  );
+
+  test(
+    "global admin adds a global position and one of a facility to a global dictionary",
+    {tag: "@ui"},
+    async ({page, api, globalAdminApi}) => {
+      const {facilityId} = artifact();
+      const dictId = await createdId(
+        await globalAdminApi.post("admin/dictionary", {facilityId: null, name: "+UI Shared", isExtendable: true}),
+      );
+      await openPage(page, `/admin/technicals/dictionaries/${dictId}`, (await loadConfig()).ui.admin);
+      const main = page.locator("main");
+      const addPosition = async (name: string, fillIn?: () => Promise<void>) => {
+        await page.getByRole("button", {name: /actions\.position\.add/}).click();
+        const heading = page.getByRole("heading", {name: /forms\.position_create\.form_name/});
+        await expect(heading).toBeVisible();
+        await formField(page, "name").fill(name);
+        await fillIn?.();
+        await submitButton(page, "position_create").click();
+        await expect(heading).toHaveCount(0);
+        await expect(tableRows(main, name)).toHaveCount(1);
+      };
+
+      // With no facility chosen the position is a global one.
+      await addPosition("Everywhere");
+      await addPosition("Only Here", async () => {
+        await chooseInFormSelect(page, "facilityId", FACILITY.name);
+        await formField(page, "isDisabled").check();
+      });
+      const {positions} = (await dictionaries(await api.loggedInAs(ADMIN))).find((d) => d.id === dictId)!;
+      expect(positions).toMatchObject([
+        {name: "+Everywhere", facilityId: null, isDisabled: false},
+        {name: "+Only Here", facilityId, isDisabled: true},
+      ]);
+      await expect(tableRows(main, "Only Here")).toContainText(FACILITY.name);
+      await expect(tableRows(main, "Everywhere")).not.toContainText(FACILITY.name);
+
+      await test.step("the facility of a position cannot be changed", async () => {
+        await tableRows(main, "Only Here").locator("title=actions.edit").click();
+        await expect(page.getByRole("heading", {name: /forms\.position_edit\.form_name/})).toBeVisible();
+        await expect(formSelect(page, "facilityId")).toContainText(FACILITY.name);
+        await expect(formSelect(page, "facilityId")).toHaveAttribute("inert");
+        await expect(formField(page, "isDisabled")).toBeChecked();
       });
     },
   );

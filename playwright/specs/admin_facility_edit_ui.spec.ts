@@ -1,7 +1,18 @@
 import type {Page} from "@playwright/test";
 import {loadConfig} from "../lib/config.ts";
-import {FACILITY, facilityLayer} from "../lib/layers/facility.ts";
-import {expectFormErrors, expectFormSuccess, formField, submitButton, tableRows} from "../helpers/selectors.ts";
+import {ADMIN, FACILITY, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
+import {SHOWN_TABLE_TIME} from "../helpers/dates.ts";
+import {userName} from "../helpers/queries.ts";
+import {
+  expectFormErrors,
+  expectFormSuccess,
+  formField,
+  showTableColumns,
+  submitButton,
+  tableCell,
+  tableCellTexts,
+  tableRows,
+} from "../helpers/selectors.ts";
 import {expect, MemoAPI, openPage, readOnlyTest, test} from "../lib/test.ts";
 import {responseData} from "../lib/responses.ts";
 
@@ -12,6 +23,17 @@ async function facility(adminApi: MemoAPI, facilityId: string) {
   const data = await responseData<readonly {id: string; name: string; url: string}[]>(res);
   const {name, url} = data.find((f) => f.id === facilityId)!;
   return {name, url};
+}
+
+/** The facilities with the given name, as the global admin's API gives them. */
+async function facilitiesNamed(adminApi: MemoAPI, name: string) {
+  const data =
+    await adminApi.getData<readonly {name: string; url: string; meetingNotificationTemplateSubject: string | null}[]>(
+      "admin/facility/list",
+    );
+  return data
+    .filter((f) => f.name === name)
+    .map(({name, url, meetingNotificationTemplateSubject}) => ({name, url, meetingNotificationTemplateSubject}));
 }
 
 /** Opens the edit modal of the seeded facility, as the global admin. */
@@ -30,6 +52,37 @@ async function openFacilityEdit(page: Page) {
 }
 
 facilityLayer.describe((artifact) => {
+  readOnlyTest(
+    "the facilities table shows the URL, the admins and the notification template of a facility",
+    {tag: "@ui"},
+    async ({page, globalAdminApi}) => {
+      await openPage(page, "/admin/facilities", (await loadConfig()).ui.admin);
+      const main = page.locator("main");
+      await page.getByPlaceholder("actions.search").fill(FACILITY.name);
+      const row = tableRows(main, FACILITY.name);
+      await expect(row).toHaveCount(1);
+      const hidden = ["meetingNotificationTemplateSubject", "createdAt", "createdBy.id"];
+      await showTableColumns(page, main, "facility", hidden);
+      await expect
+        .poll(() => tableCellTexts(row, ["name", "url", ...hidden]))
+        .toEqual({
+          "name": FACILITY.name,
+          "url": `/${FACILITY.url}`,
+          // The seeded facility has no template.
+          "meetingNotificationTemplateSubject": "—",
+          "createdAt": expect.stringMatching(SHOWN_TABLE_TIME),
+          "createdBy.id": await userName(globalAdminApi),
+        });
+      // The admins come in no order of their own.
+      const admins = tableCell(row, "facilityAdmins.*.name");
+      await expect(admins).toContainText(ADMIN.name);
+      await expect(admins).toContainText(STAFF_ADMIN.name);
+      expect((await admins.innerText()).replace(/\s+/g, "")).toHaveLength(
+        `${ADMIN.name}${STAFF_ADMIN.name}`.replace(/\s+/g, "").length,
+      );
+    },
+  );
+
   test(
     "the global admin renames a facility and changes its URL in the modal",
     {tag: "@ui"},
@@ -70,6 +123,60 @@ facilityLayer.describe((artifact) => {
         name: FACILITY.name,
         url: "int-test-free",
       });
+    },
+  );
+
+  test(
+    "the notification template of a facility is set, and cleared again, in the modal",
+    {tag: "@ui"},
+    async ({page, globalAdminApi}) => {
+      const template = "Reminder: {{meeting_datetime}}";
+      const form = await openFacilityEdit(page);
+      const field = formField(form, "meetingNotificationTemplateSubject");
+      await expect(field).toHaveValue("");
+      await field.fill(template);
+      await submitButton(page, "facility_edit").click();
+      await expectFormSuccess(page, "facility_edit");
+      await expect(form).toBeHidden();
+      expect(await facilitiesNamed(globalAdminApi, FACILITY.name)).toEqual([
+        {name: FACILITY.name, url: FACILITY.url, meetingNotificationTemplateSubject: template},
+      ]);
+
+      await tableRows(page, FACILITY.name).getByRole("button", {name: "actions.edit"}).click();
+      await expect(field).toHaveValue(template);
+      await field.fill("");
+      await submitButton(page, "facility_edit").click();
+      await expect(form).toBeHidden();
+      expect(await facilitiesNamed(globalAdminApi, FACILITY.name)).toEqual([
+        {name: FACILITY.name, url: FACILITY.url, meetingNotificationTemplateSubject: null},
+      ]);
+    },
+  );
+
+  test(
+    "the facility create form proposes a URL made from the name, until another one is typed",
+    {tag: "@ui"},
+    async ({page, globalAdminApi}) => {
+      await openPage(page, "/admin/facilities", (await loadConfig()).ui.admin);
+      await page.getByRole("button", {name: /actions\.facility\.add/}).click();
+      const form = page.locator("#facility_create");
+      const name = formField(form, "name");
+      const url = formField(form, "url");
+      // Lower case, without the diacritics, with dashes for the spaces and nothing else.
+      await name.fill("Zażółć  Gęślą-Jaźń (nr 2)!");
+      await expect(url).toHaveValue("zazolc-gesla-jazn-nr-2");
+      await name.fill("Second Name");
+      await expect(url).toHaveValue("second-name");
+      await url.fill("own-url");
+      await name.fill("Third Name");
+      await expect(url).toHaveValue("own-url");
+      // Created with no notification template.
+      await submitButton(page, "facility_create").click();
+      await expectFormSuccess(page, "facility_create");
+      await expect(tableRows(page, "Third Name")).toContainText("/own-url");
+      expect(await facilitiesNamed(globalAdminApi, "Third Name")).toEqual([
+        {name: "Third Name", url: "own-url", meetingNotificationTemplateSubject: null},
+      ]);
     },
   );
 

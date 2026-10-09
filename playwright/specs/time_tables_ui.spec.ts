@@ -27,10 +27,6 @@ import {expect, login, MemoAPI, openPage, readOnlyTest, test} from "../lib/test.
  * the staff absences page, and how work times and leave times show in the facility calendar.
  */
 
-// The weeks of the pages follow the browser's locale; in the Polish one they start on Monday, the
-// way the dates helpers and the time tables layer count them.
-test.use({locale: "pl-PL"});
-
 const WEEKLY = "facility_user.weekly_time_tables";
 const [MON, TUE, WED, THU, FRI, SAT, SUN] = [0, 1, 2, 3, 4, 5, 6] as const;
 
@@ -736,6 +732,64 @@ timeTablesLayer.describe((artifact) => {
       },
     ]);
   });
+
+  test(
+    "a leave time of a part of a day is added for a staff member; then made a whole day, with no notes",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, staffUserId, weekDate} = artifact();
+      const adminApi = await api.loggedInAs(ADMIN);
+      const {meetingType} = await adminApi.dictionaries();
+      const leaveTimes = async (filter: Record<string, unknown>) =>
+        (
+          await adminApi.tquery(`facility/${facilityId}/meeting/tquery`, {
+            columns: ["id", "date", "startDayminute", "durationMinutes", "typeDictId", "isFacilityWide", "notes"],
+            filter: {type: "column", ...filter},
+            pageSize: 10,
+          })
+        ).rows;
+      await login(page, ADMIN);
+      const {main, add} = await openTimeTablesCalendar(page, weekDate, staffUserId);
+      await add(FRI).click();
+      await page.getByRole("button", {name: "forms.leave_time_create.form_name"}).click();
+      await expect(page.getByRole("heading", {name: "forms.leave_time_create.form_name"})).toBeVisible();
+      const form = page.locator("form").filter({has: submitButton(page, "leave_time_create")});
+      // A leave time is of the whole day unless told otherwise.
+      await expect(formField(form, "time.allDay")).toBeChecked();
+      await formField(form, "time.allDay").uncheck();
+      await formField(form, "time.startTime").fill("12:00");
+      await formField(form, "time.endTime").fill("14:30");
+      await form.getByRole("textbox", {name: /field_names\.notes$/}).fill("E2E half day off");
+      await submitButton(page, "leave_time_create").click();
+      await expectFormSuccess(page, "leave_time_create");
+      const created = await leaveTimes({column: "notes", op: "%v%", val: "E2E half day off"});
+      expect(created).toEqual([
+        {
+          id: expect.any(String),
+          date: addDays(weekDate, FRI),
+          startDayminute: 720,
+          durationMinutes: 150,
+          typeDictId: meetingType!.leave_time!,
+          isFacilityWide: false,
+          notes: "E2E half day off",
+        },
+      ]);
+
+      await main.getByText("E2E half day off").first().click();
+      await page.getByRole("button", {name: "actions.edit"}).click();
+      await expect(page.getByRole("heading", {name: "forms.leave_time_edit.form_name"})).toBeVisible();
+      const editForm = page.locator("form").filter({has: submitButton(page, "leave_time_edit")});
+      await expect(formField(editForm, "time.startTime")).toHaveValue("12:00");
+      await formField(editForm, "time.allDay").check();
+      await editForm.getByRole("textbox", {name: /field_names\.notes$/}).fill("");
+      await submitButton(page, "leave_time_edit").click();
+      await expectFormSuccess(page, "leave_time_edit");
+      expect(await leaveTimes({column: "id", op: "=", val: created[0]!.id})).toEqual([
+        {...created[0], startDayminute: 0, durationMinutes: 24 * 60, notes: null},
+      ]);
+      await expect(main.getByText("E2E half day off")).toHaveCount(0);
+    },
+  );
 
   test("a work time is changed and then deleted from its details", {tag: "@ui"}, async ({page, api}) => {
     const {facilityId, staffUserId, staffWorkTimes, weekDate} = artifact();

@@ -3,6 +3,32 @@ import {createdId, responseData} from "../lib/responses.ts";
 
 /** Reads of the server state, and requests, that several specs use. */
 
+export interface UserAccount {
+  readonly name: string;
+  readonly email: string | null;
+  readonly hasEmailVerified: boolean;
+  readonly hasPassword: boolean;
+  readonly passwordExpireAt: string | null;
+  readonly otpRequiredAt: string | null;
+  readonly hasOtpConfigured: boolean;
+  readonly hasGlobalAdmin: boolean;
+  readonly managedByFacilityId: string | null;
+  readonly members: readonly UserAccountMember[];
+}
+
+export interface UserAccountMember {
+  readonly facilityId: string;
+  readonly hasFacilityAdmin: boolean;
+  readonly isFacilityStaff: boolean;
+  readonly isActiveFacilityStaff: boolean;
+  readonly isFacilityClient: boolean;
+}
+
+/** The user as the global admin's API gives it. */
+export async function userAccount(adminApi: MemoAPI, userId: string) {
+  return (await adminApi.list<UserAccount>("admin/user", userId))[0]!;
+}
+
 export interface MeetingClient {
   readonly userId: string;
   readonly clientGroupId: string | null;
@@ -41,6 +67,11 @@ export async function clientAttributes(api: MemoAPI, facilityId: string, clientU
     clientUserId,
   );
   return client!.client;
+}
+
+/** The name of the logged-in user. */
+export async function userName(api: MemoAPI) {
+  return (await api.getData<{user: {name: string}}>("user/status")).user.name;
 }
 
 /** The facility the logged-in user was last in, as the server has it. */
@@ -104,4 +135,22 @@ export async function createMeetingResource(adminApi: MemoAPI, facilityId: strin
       isDisabled: false,
     }),
   );
+}
+
+/**
+ * The body of a request creating an attribute: of a client, optional, single-value and named after
+ * its api name, unless `extra` says otherwise.
+ */
+export function attributeToCreate(apiName: string, type: string, extra: Readonly<Record<string, unknown>> = {}) {
+  return {
+    model: "client",
+    name: `+${apiName}`,
+    apiName,
+    type,
+    dictionaryId: null,
+    isMultiValue: false,
+    requirementLevel: "optional",
+    description: null,
+    ...extra,
+  };
 }

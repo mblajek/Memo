@@ -1,9 +1,11 @@
-import {test, type Page} from "@playwright/test";
+import {expect, test, type Locator, type Page} from "@playwright/test";
 
 interface SavedFile {
   name: string;
   chunks: number[][];
   closed: boolean;
+  /** How many files the picker was asked for. */
+  count: number;
 }
 
 /**
@@ -17,13 +19,14 @@ export async function stubSaveFilePicker(page: Page) {
     "The browser has no File System Access API; the app does not export there.",
   );
   await page.addInitScript(() => {
-    const saved = {name: "", chunks: [] as number[][], closed: false};
+    const saved = {name: "", chunks: [] as number[][], closed: false, count: 0};
     Object.assign(window, {
       e2eSavedFile: saved,
       showSaveFilePicker: (options: {suggestedName?: string}) => {
         saved.name = options.suggestedName ?? "";
         saved.chunks.length = 0;
         saved.closed = false;
+        saved.count++;
         return Promise.resolve({
           createWritable: () =>
             Promise.resolve(
@@ -60,5 +63,54 @@ export async function savedFile(page: Page) {
     .replace(/^\uFEFF/, "")
     .split(/\r?\n/)
     .filter(Boolean);
-  return {name: saved.name, closed: saved.closed, lines, bytes};
+  return {name: saved.name, closed: saved.closed, count: saved.count, lines, bytes};
+}
+
+/**
+ * Exports the table in the root to CSV through the stubbed picker: all its pages, or the one
+ * shown. Returns the file once it is written.
+ */
+export async function exportTable(page: Page, root: Locator, pages: "all_pages" | "current_page" = "all_pages") {
+  const {count} = await savedFile(page);
+  await root.getByRole("button", {name: /csv_export\.label/}).click();
+  await page.getByRole("button", {name: new RegExp(`tables\\.export\\.${pages}`, "i")}).click();
+  await expect
+    .poll(async () => {
+      const file = await savedFile(page);
+      return file.count > count && file.closed;
+    })
+    .toBe(true);
+  return await savedFile(page);
+}
+
+/** The rows of a CSV text, each a list of its values: a quoted one may span lines. */
+export function parseCSV(text: string) {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  const pattern = /"((?:[^"]|"")*)"|([^",\r\n]*)/y;
+  let pos = 0;
+  while (pos < text.length) {
+    pattern.lastIndex = pos;
+    const [match, quoted, plain] = pattern.exec(text)!;
+    row.push(quoted === undefined ? plain! : quoted.replaceAll('""', '"'));
+    pos += match.length;
+    if (text[pos] === ",") {
+      pos++;
+    } else {
+      rows.push(row);
+      row = [];
+      pos += text.startsWith("\r\n", pos) ? 2 : 1;
+    }
+  }
+  // The text ended right after a comma: with an empty value.
+  if (row.length) {
+    rows.push([...row, ""]);
+  }
+  return rows;
+}
+
+/** The rows of an exported table after the header row, each as its values by the column header. */
+export function exportedRecords(file: {readonly bytes: Buffer}) {
+  const [header, ...rows] = parseCSV(file.bytes.toString("utf8").replace(/^\uFEFF/, ""));
+  return rows.map((row) => Object.fromEntries(header!.map((column, index) => [column, row[index] ?? ""])));
 }

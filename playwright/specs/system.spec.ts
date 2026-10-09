@@ -19,7 +19,74 @@ readOnlyTest("system status endpoint reachable", async ({api}) => {
   expect(data.version).toBeTruthy();
   expect(data.currentDate).toBeTruthy();
   expect(data.randomUuid).toMatch(/^[0-9a-f-]+$/);
+  // Pinned as it is: a caller who is not logged in is told what the About page shows to logged-in
+  // users only, and most of it to the global admin only.
+  expect((await api.get("user/status", {allowFailure: true})).status()).toBe(401);
+  expect(Object.keys(data)).toEqual(
+    expect.arrayContaining([
+      "appEnv",
+      "commitHash",
+      "commitDate",
+      "dumpsEnabled",
+      "lastDump",
+      "cpu15m",
+      "freeDiskSpaceMb",
+    ]),
+  );
+  expect(Object.keys(data)).not.toContain("integrationEvents");
 });
+
+readOnlyTest("a path that is no endpoint, no document and no image is answered with 404", async ({api, request}) => {
+  const res = await api.get("no/such/endpoint", {allowFailure: true});
+  expect(res.status()).toBe(404);
+  expect(await res.json()).toEqual({errors: [{code: "exception.route_not_found"}]});
+  for (const path of ["/docs/pl/no-such-page.md", "/img/no-such-image.png"]) {
+    expect((await request.get(path)).status(), path).toBe(404);
+  }
+  // A document of the help is a file; any other path gets the app, which shows its own "not found".
+  expect((await request.get("/docs/pl/index.md")).status()).toBe(200);
+  const app = await request.get("/no-such-page");
+  expect(app.status()).toBe(200);
+  expect(app.headers()["content-type"]).toContain("text/html");
+});
+
+readOnlyTest(
+  "About page shows the state of the server to the global admin, and links to the help",
+  {tag: "@ui"},
+  async ({page, api}) => {
+    const cfg = await loadConfig();
+    const status = await api.getData<{
+      appEnv: string;
+      commitHash: string | null;
+      lastDump: string | null;
+      cpu15m: number | null;
+      freeDiskSpaceMb: number | null;
+    }>("system/status");
+    await openPage(page, "/help/about", cfg.ui.admin);
+    const main = page.locator("main");
+    /** The value next to the label of the given key. */
+    const value = (key: string) => main.locator(`label:text-is("about_page.${key}") + *`);
+    await expect(value("app_env")).toHaveText(status.appEnv);
+    for (const [key, known] of Object.entries({
+      last_dump: status.lastDump,
+      cpu_load: status.cpu15m,
+      free_disk_space: status.freeDiskSpaceMb,
+    })) {
+      await expect(value(key), key).toHaveText(known === null ? "—" : /\d/);
+    }
+    if (status.commitHash) {
+      const commit = value("commit_info").getByRole("link");
+      await expect(commit).toHaveText(status.commitHash.slice(0, 8));
+      await expect(commit).toHaveAttribute("href", new RegExp(`/commits/${status.commitHash}$`));
+    } else {
+      await expect(value("commit_info")).toHaveText("—");
+    }
+    await expect(main.getByRole("link", {name: "changelog.long_text"})).toHaveAttribute("href", "/help/changelog");
+    await main.getByRole("link", {name: "privacy_policy"}).click();
+    await expect(page).toHaveURL(/\/help\/privacy-policy$/);
+    await expect(main.locator("h1, h2").first()).toBeVisible();
+  },
+);
 
 readOnlyTest("help index renders default markdown page", {tag: "@ui"}, async ({page}) => {
   const cfg = await loadConfig();

@@ -159,6 +159,75 @@ meetingsLayer.describe((artifact) => {
     await expectValidationErrors(res, [{field: "durationMinutes", code: "validation.min.numeric"}]);
   });
 
+  test("each field of a meeting is validated; the limits themselves are accepted", async ({api}) => {
+    const {facilityId, staffUserId, staffAdminUserId, todayMeeting, adultClientInfos} = artifact();
+    const staffApi = await api.loggedInAs(STAFF);
+    const dicts = await staffApi.dictionaries();
+    const ok = dicts.attendanceStatus!.ok!;
+    const planned = dicts.meetingStatus!.planned!;
+    const [adam, bea] = adultClientInfos;
+    const staff = (userId: string, attendanceStatusDictId = ok) => ({userId, attendanceStatusDictId});
+    const client = (userId: string, attendanceStatusDictId = ok) => ({
+      ...staff(userId, attendanceStatusDictId),
+      clientGroupId: null,
+      notifications: [],
+    });
+    const path = `facility/${facilityId}/meeting/${todayMeeting.id}`;
+    const read = async () =>
+      (await staffApi.list<Record<string, unknown>>(`facility/${facilityId}/meeting`, todayMeeting.id))[0]!;
+    const before = await read();
+    const notInDictionary = "validation.custom.position_in_dictionary";
+    const dataType = "validation.custom.data_type";
+    // The patch, and the field and the code of the error.
+    const cases: readonly (readonly [patch: Record<string, unknown>, field: string, code: string])[] = [
+      [{typeDictId: planned}, "typeDictId", notInDictionary],
+      [{typeDictId: "other"}, "typeDictId", "validation.uuid"],
+      [{typeDictId: null}, "typeDictId", "validation.required"],
+      [{date: "2026-02-30"}, "date", "validation.date_format"],
+      [{date: "01.02.2026"}, "date", "validation.date_format"],
+      [{date: null}, "date", "validation.required"],
+      [{notes: "x".repeat(4001)}, "notes", "validation.max.string"],
+      [{notes: " padded "}, "notes", "validation.custom.trimmed"],
+      [{startDayminute: -1}, "startDayminute", "validation.min.numeric"],
+      [{startDayminute: 600.5}, "startDayminute", "validation.integer"],
+      [{startDayminute: "600"}, "startDayminute", dataType],
+      [{durationMinutes: 4}, "durationMinutes", "validation.min.numeric"],
+      [{durationMinutes: 24 * 60 + 1}, "durationMinutes", "validation.max.numeric"],
+      [{statusDictId: ok}, "statusDictId", notInDictionary],
+      [{isRemote: "yes"}, "isRemote", "validation.boolean"],
+      [{isRemote: null}, "isRemote", "validation.required"],
+      // The same person twice; a client as staff and a staff member as a client.
+      [{staff: [staff(staffUserId), staff(staffUserId)]}, "staff.1.userId", "validation.custom.unique_items"],
+      [{staff: [staff(adam!.id)]}, "staff.0.userId", "validation.custom.member_exists"],
+      [{staff: [staff(staffUserId, planned)]}, "staff.0.attendanceStatusDictId", notInDictionary],
+      [{staff: [{userId: staffUserId}]}, "staff.0.attendanceStatusDictId", "validation.present"],
+      [{staff: "everyone"}, "staff", "validation.array"],
+      [{clients: [client(adam!.id), client(adam!.id)]}, "clients.1.userId", "validation.custom.unique_items"],
+      [{clients: [client(staffAdminUserId)]}, "clients.0.userId", "validation.custom.member_exists"],
+      [{clients: [client(bea!.id, planned)]}, "clients.0.attendanceStatusDictId", notInDictionary],
+      // An entry with a key that is not known.
+      [{clients: [{...client(bea!.id), extra: 1}]}, "clients.0", "validation.array"],
+    ];
+    for (const [patch, field, code] of cases) {
+      await test.step(`${field}: ${JSON.stringify(patch).slice(0, 60)}`, async () => {
+        await expectValidationErrors(await staffApi.patch(path, patch, {allowFailure: true}), [{field, code}]);
+      });
+    }
+    expect(await read()).toEqual(before);
+
+    // The last minute of the day, the shortest and the longest duration, the longest notes.
+    for (const patch of [
+      {startDayminute: 24 * 60 - 1, durationMinutes: 5},
+      {startDayminute: 0, durationMinutes: 24 * 60, notes: "x".repeat(4000)},
+    ]) {
+      await staffApi.patch(path, patch);
+      expect(await read()).toMatchObject(patch);
+    }
+    // An empty text is no notes.
+    await staffApi.patch(path, {notes: ""});
+    expect((await read()).notes).toBeNull();
+  });
+
   readOnlyTest("creating a meeting with an out-of-range startDayminute is rejected", async ({api}) => {
     const staffApi = await api.loggedInAs(STAFF);
     const {facilityId, staffUserId, adultClientInfos} = artifact();
@@ -595,6 +664,76 @@ meetingsLayer.describe((artifact) => {
     expect(rows.get(first)!["resourceConflicts.exists"]).toBe(false);
     expect(rows.get(second)!["resourceConflicts.exists"]).toBe(false);
   });
+
+  readOnlyTest(
+    "each table query endpoint names its columns, and returns every one of them",
+    async ({api, globalAdminApi}) => {
+      const {facilityId} = artifact();
+      const staffAdminApi = await api.loggedInAs(STAFF_ADMIN);
+      const facility = `facility/${facilityId}`;
+      const KNOWN_TYPES = [
+        "bool",
+        "date",
+        "datetime",
+        "dict",
+        "dict_list",
+        "int",
+        "list",
+        "object",
+        "string",
+        "string_list",
+        "text",
+        "uuid",
+        "uuid_list",
+      ];
+      // With the least number of rows each has in this layer.
+      const endpoints: readonly (readonly [MemoAPI, string, number])[] = [
+        [staffAdminApi, `${facility}/user/client/tquery`, 10],
+        [staffAdminApi, `${facility}/user/staff/tquery`, 2],
+        [staffAdminApi, `${facility}/user/tquery`, 14],
+        [staffAdminApi, `${facility}/meeting/tquery`, 5],
+        [staffAdminApi, `${facility}/meeting/attendant/tquery`, 13],
+        [staffAdminApi, `${facility}/meeting/client/tquery`, 7],
+        [staffAdminApi, `${facility}/notification/tquery`, 0],
+        [staffAdminApi, "system/dictionary/tquery", 1],
+        [staffAdminApi, "system/attribute/tquery", 1],
+        [staffAdminApi, "system/position/tquery", 1],
+        [globalAdminApi, "admin/user/tquery", 14],
+        [globalAdminApi, "admin/facility/tquery", 1],
+        [globalAdminApi, "admin/db-dump/tquery", 0],
+      ];
+      for (const [endpointApi, path, leastRows] of endpoints) {
+        const schema = (await (await endpointApi.get(path)).json()) as {
+          columns: readonly {name?: string; type: string; nullable?: boolean}[];
+        };
+        // The count of the rows of a group is in the schema, but is no column to ask for.
+        const columns = schema.columns.filter(({type}) => type !== "count");
+        expect(schema.columns.length - columns.length, path).toBe(1);
+        expect(columns.length, path).toBeGreaterThan(5);
+        for (const {name, type} of columns) {
+          expect(name, path).toBeTruthy();
+          expect(KNOWN_TYPES, `${path}: ${name}`).toContain(type);
+        }
+        const names = columns.map(({name}) => name!);
+        expect(new Set(names).size, path).toBe(names.length);
+        const {rows, total} = await endpointApi.tquery(path, {columns: names});
+        expect(total, path).toBeGreaterThanOrEqual(leastRows);
+        expect(rows.length, path).toBe(total);
+        for (const row of rows) {
+          expect(Object.keys(row).toSorted(), path).toEqual(names.toSorted());
+        }
+        // Only a column declared nullable is ever empty.
+        for (const {name, nullable} of columns) {
+          if (!nullable) {
+            expect(
+              rows.filter((row) => row[name!] === null || row[name!] === undefined),
+              `${path}: ${name}`,
+            ).toEqual([]);
+          }
+        }
+      }
+    },
+  );
 
   readOnlyTest("meeting endpoints are for facility staff and admins only", async ({api}) => {
     const {facilityId, staffUserId, todayMeeting} = artifact();

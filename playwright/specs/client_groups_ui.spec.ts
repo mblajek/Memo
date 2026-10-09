@@ -1,7 +1,17 @@
 import {clientGroupsLayer} from "../lib/layers/client_groups.ts";
-import {FACILITY, STAFF} from "../lib/layers/facility.ts";
-import type {Page} from "@playwright/test";
-import {chooseInFormSelect, expectFormSuccess, formField, formSelect, submitButton} from "../helpers/selectors.ts";
+import {FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
+import type {Locator, Page} from "@playwright/test";
+import {
+  chooseInFormSelect,
+  expectFormSuccess,
+  formField,
+  formSelect,
+  showTableColumns,
+  submitButton,
+  tableCell,
+  tableCellTexts,
+  tableRowsWithCell,
+} from "../helpers/selectors.ts";
 import {expect, openPage, readOnlyTest, test, type MemoAPI} from "../lib/test.ts";
 
 /**
@@ -43,6 +53,48 @@ function groupButtons(page: Page) {
 }
 
 clientGroupsLayer.describe((artifact) => {
+  readOnlyTest(
+    "the clients table counts the groups of a client, and lists the members of the groups",
+    {tag: "@ui"},
+    async ({page}) => {
+      const {adultClientInfos, childClientInfos} = artifact();
+      await openPage(page, `/${FACILITY.url}/clients`, STAFF);
+      const main = page.locator("main");
+      const columns = ["client.groups.count", "client.groups.*.role", "client.groups.*.clients.*.userId"];
+      await showTableColumns(page, main, "client", columns);
+      const row = (name: string) => tableRowsWithCell(main, "name", name);
+      const [adam, bea, carl, diana] = adultClientInfos.map(({name}) => name);
+      const [zoe, will, yara, xander, violet] = childClientInfos.map(({name}) => name);
+      // The members of the client's groups other than the client, in no order of their own.
+      const expectGroups = async (name: string, count: number, ...others: readonly string[]) => {
+        await expect(tableCell(row(name), "client.groups.count"), name).toHaveText(String(count));
+        const members = tableCell(row(name), "client.groups.*.clients.*.userId");
+        await expect(members.locator("li"), name).toHaveCount(others.length);
+        expect((await members.locator("li").allInnerTexts()).map((text) => text.trim()).toSorted(), name).toEqual(
+          others.toSorted(),
+        );
+        // Nobody has a role in the groups of the layer.
+        expect(await tableCellTexts(row(name), ["client.groups.*.role"])).toEqual({"client.groups.*.role": "—"});
+        if (!others.length) {
+          await expect(members).toHaveText("—");
+        }
+      };
+      await expectGroups(adam!, 2, bea!, zoe!, will!, xander!, violet!);
+      await expectGroups(bea!, 1, adam!, zoe!, will!);
+      await expectGroups(carl!, 1, yara!);
+      await expectGroups(diana!, 0);
+      await expectGroups(xander!, 1, adam!, violet!);
+
+      await test.step("a member leads to that client's page", async () => {
+        await tableCell(row(carl!), "client.groups.*.clients.*.userId")
+          .getByRole("link", {name: yara!})
+          .first()
+          .click();
+        await expect(page).toHaveURL(new RegExp(`/${FACILITY.url}/clients/${childClientInfos[2]!.id}$`));
+      });
+    },
+  );
+
   test(
     "creating a client group via the modal: fill notes, submit, see success toast",
     {tag: "@ui"},
@@ -65,6 +117,102 @@ clientGroupsLayer.describe((artifact) => {
       expect(groupIds).toHaveLength(1);
       const body = await staffApi.list<{notes: string | null}>(`facility/${facilityId}/client-group`, groupIds);
       expect(body.map((g) => g.notes)).toEqual([notes]);
+    },
+  );
+
+  test(
+    "a group is created with several members, each with a role, and no notes; the roles are then cleared",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, adultClientInfos, childClientInfos} = artifact();
+      const eve = adultClientInfos.find((c) => c.firstName === "Eve")!;
+      const diana = adultClientInfos.find((c) => c.firstName === "Diana")!;
+      const xander = childClientInfos.find((c) => c.firstName === "Xander")!;
+      // The roles offered in the form are the positions of a dictionary, which has none at first.
+      const adminApi = await api.loggedInAs(STAFF_ADMIN);
+      await adminApi.post(`facility/${facilityId}/admin/position`, {
+        dictionaryId: await adminApi.dictionaryId("clientGroupClientRole"),
+        name: "+guardian",
+        isDisabled: false,
+      });
+      const staffApi = await api.loggedInAs(STAFF);
+      await openClient(page, eve.id);
+      await page.getByRole("button", {name: "actions.client_group.add", exact: true}).click();
+      const form = page.locator("form#client_group_create");
+      const role = (index: number) => formField(form, `clients.${index}.role`);
+      /** The button after the role input, opening the list of the roles to choose from. */
+      const rolesButton = (roleInput: Locator) => roleInput.locator("xpath=following::button[1]");
+
+      await expect(formSelect(form, "clients.0.userId")).toContainText(eve.name);
+      await role(0).fill("aunt");
+      await chooseInFormSelect(page, "clients.1.userId", new RegExp(xander.name));
+      // A child needs no role: the field says so.
+      await expect(role(1)).toHaveAttribute("placeholder", "dictionary.clientType.child");
+      await expect(role(0)).not.toHaveAttribute("placeholder", /./);
+      await chooseInFormSelect(page, "clients.2.userId", new RegExp(diana.name));
+      await rolesButton(role(2)).click();
+      await page.getByRole("button", {name: "guardian", exact: true}).click();
+      await expect(role(2)).toHaveValue("guardian");
+      await submitButton(page, "client_group_create").click();
+      await expectFormSuccess(page, "client_group_create");
+
+      const groupIds = await clientGroupIds(staffApi, facilityId, eve.id);
+      expect(groupIds).toHaveLength(1);
+      const created = (await groups(staffApi, facilityId, ...groupIds))[0]!;
+      expect(created.notes).toBeNull();
+      expect(byUserId(created.clients)).toEqual(
+        byUserId([
+          {userId: eve.id, role: "aunt"},
+          {userId: xander.id, role: null},
+          {userId: diana.id, role: "guardian"},
+        ]),
+      );
+
+      await test.step("the group on the page of the client", async () => {
+        const main = page.locator("main");
+        await expect(main.getByRole("link", {name: xander.name})).toBeVisible();
+        await expect(main.getByRole("link", {name: diana.name})).toBeVisible();
+        await expect(main.getByText("— aunt")).toBeVisible();
+        await expect(main.getByText("— guardian")).toBeVisible();
+      });
+
+      await test.step("notes are added, the roles are cleared in the edit form", async () => {
+        await groupButtons(page).getByRole("button", {name: "actions.edit"}).click();
+        const editForm = page.locator("form#client_group_edit");
+        await expect(formField(editForm, "notes")).toHaveValue("");
+        for (const {name} of [eve, xander, diana]) {
+          await expect(editForm).toContainText(name);
+        }
+        const indexOf = async (name: string) => {
+          for (const index of [0, 1, 2]) {
+            if ((await formSelect(editForm, `clients.${index}.userId`).innerText()).includes(name)) {
+              return index;
+            }
+          }
+          throw new Error(`No row of ${name}`);
+        };
+        const eveRole = formField(editForm, `clients.${await indexOf(eve.name)}.role`);
+        const dianaRole = formField(editForm, `clients.${await indexOf(diana.name)}.role`);
+        await expect(eveRole).toHaveValue("aunt");
+        await expect(dianaRole).toHaveValue("guardian");
+        await eveRole.fill("");
+        // The first item of the list of the roles is "no role".
+        await rolesButton(dianaRole).click();
+        await page.getByRole("button", {name: "facility_user.client_groups.role_preset_empty"}).click();
+        await expect(dianaRole).toHaveValue("");
+        await formField(editForm, "notes").fill("Notes added later");
+        await submitButton(page, "client_group_edit").click();
+        await expectFormSuccess(page, "client_group_edit");
+        const edited = (await groups(staffApi, facilityId, ...groupIds))[0]!;
+        expect(edited.notes).toBe("Notes added later");
+        expect(byUserId(edited.clients)).toEqual(
+          byUserId([
+            {userId: eve.id, role: null},
+            {userId: xander.id, role: null},
+            {userId: diana.id, role: null},
+          ]),
+        );
+      });
     },
   );
 

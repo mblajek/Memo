@@ -1,6 +1,7 @@
 import {createMeetingResource} from "../helpers/queries.ts";
 import {checkedSeriesDates, seededDays, viewHeading} from "../helpers/meetings.ts";
 import {DateTime} from "luxon";
+import {BROWSER_LOCALE, shownTableDate} from "../helpers/dates.ts";
 import {
   calendarPageButtons,
   clickSlotBelowMeeting,
@@ -14,7 +15,15 @@ import {FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
 import {meetingsLayer} from "../lib/layers/meetings.ts";
 import {disableTranslations} from "../helpers/lang.ts";
 import {responseData} from "../lib/responses.ts";
-import {chooseInFormSelect, expectFormErrors, expectFormSuccess, formField, formSelect} from "../helpers/selectors.ts";
+import {
+  chooseInFormSelect,
+  expectFormErrors,
+  expectFormSuccess,
+  formField,
+  formSelect,
+  tableCellTexts,
+  tableRows,
+} from "../helpers/selectors.ts";
 import {expect, login, MemoAPI, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 /**
@@ -65,6 +74,8 @@ async function meetingsStartingAt(api: MemoAPI, facilityId: string, startDayminu
 // The seeded meeting of today is 10:00–11:00; the slot clicked in the create tests is 11:15.
 const TODAY_MEETING_MINUTES = 60;
 const ROOM = "E2E Room";
+const PROJECTOR = "E2E Projector";
+const NOTES = "First line\nSecond line";
 const SLOT = {minutesAfterEnd: 15, startDayminute: 675, time: "11:15"} as const;
 
 meetingsLayer.describe((artifact) => {
@@ -344,6 +355,139 @@ meetingsLayer.describe((artifact) => {
     },
   );
 
+  test(
+    "a meeting is created with no client, with a status, notes and resources; the modal and the list show them",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, staffUserId, todayMeeting, customTypeIds} = artifact();
+      const adminApi = await api.loggedInAs(STAFF_ADMIN);
+      const roomId = await createMeetingResource(adminApi, facilityId, ROOM);
+      const projectorId = await createMeetingResource(adminApi, facilityId, PROJECTOR);
+      const staffApi = await api.loggedInAs(STAFF);
+      await login(page, STAFF);
+      await openCalendar(page, FACILITY.url, {mode: "day", date: seededDay(0), resources: [STAFF.name]});
+      await clickSlotBelowMeeting(page, meetingBlocks(page, todayMeeting.id), {
+        durationMinutes: TODAY_MEETING_MINUTES,
+        minutesAfterEnd: SLOT.minutesAfterEnd,
+      });
+      const form = page.locator("#meeting_create");
+      await chooseInFormSelect(page, "typeDictId", /Integration Test Therapy/);
+      // The time of the slot is shown as a text until asked for the fields.
+      await expect(formField(form, "time.endTime")).toBeHidden();
+      await form.locator('[data-field-box="dateAndTime"]').getByRole("button", {name: "actions.edit"}).click();
+      await formField(form, "time.endTime").fill("13:00");
+      await chooseInFormSelect(page, "statusDictId", /meetingStatus\.completed/);
+      await form.getByRole("textbox", {name: "forms.meeting_create.field_names.notes"}).fill(NOTES);
+      // The list closes after each choice.
+      await chooseInFormSelect(page, "resources", PROJECTOR);
+      await chooseInFormSelect(page, "resources", ROOM);
+      await form.getByRole("button", {name: "forms.meeting_create.submit"}).click();
+      await expectFormSuccess(page, "meeting_create");
+      await expect(form).toHaveCount(0);
+
+      const created = await meetingsStartingAt(staffApi, facilityId, SLOT.startDayminute, seededDay(0));
+      expect(created).toHaveLength(1);
+      const dicts = await staffApi.dictionaries();
+      expect(created[0]).toMatchObject({
+        date: seededDay(0),
+        durationMinutes: 105,
+        typeDictId: customTypeIds.therapy,
+        statusDictId: dicts.meetingStatus!.completed!,
+        isRemote: false,
+        notes: NOTES,
+        staff: [{userId: staffUserId, attendanceStatusDictId: dicts.attendanceStatus!.ok!}],
+        clients: [],
+      });
+      // The server gives the resources of a meeting in no order of its own.
+      expect(created[0]!.resources.map(({resourceDictId}) => resourceDictId).toSorted()).toEqual(
+        [roomId, projectorId].toSorted(),
+      );
+
+      await test.step("the view mode of the modal", async () => {
+        await meetingBlocks(page, created[0]!.id).click();
+        await expect(viewHeading(page)).toBeVisible();
+        const view = page.locator("#meeting_edit");
+        const dateAndTime = view.locator('[data-field-box="dateAndTime"]');
+        // The browsers differ in the padding of the hour.
+        await expect(dateAndTime).toContainText(/11:15\s*–\s*13:00/);
+        await expect(dateAndTime).toContainText("calendar.duration.hours_minutes{hours:1,minutes:45}");
+        await expect(formSelect(view, "typeDictId")).toContainText("Integration Test Therapy");
+        await expect(formSelect(view, "statusDictId")).toContainText("dictionary.meetingStatus.completed");
+        await expect(view.getByRole("link", {name: STAFF.name})).toBeVisible();
+        await expect(
+          view.getByText("forms.meeting.field_names.clients__interval{postProcess:interval,count:0}"),
+        ).toBeVisible();
+        await expect(formField(view, "isRemote")).not.toBeChecked();
+        await expect(view.locator('[data-field-box="notes"]')).toContainText(/First line\s*Second line/);
+        await expect(formSelect(view, "resources")).toContainText(ROOM);
+        await expect(formSelect(view, "resources")).toContainText(PROJECTOR);
+        await page.keyboard.press("Escape");
+        await expect(viewHeading(page)).toHaveCount(0);
+      });
+
+      await test.step("the row of the meetings list", async () => {
+        await openPage(page, `/${FACILITY.url}/meetings`);
+        const row = tableRows(page.locator("main"), "First line");
+        await expect(row).toHaveCount(1);
+        await expect
+          .poll(() =>
+            tableCellTexts(row, [
+              "date",
+              "startDayminute",
+              "typeDictId",
+              "statusDictId",
+              "staff.*.userId",
+              "clients.*.userId",
+              "isRemote",
+              "notes",
+              "resources.*.dictId",
+            ]),
+          )
+          .toEqual({
+            "date": shownTableDate(seededDay(0)),
+            "startDayminute": "11:15 – 13:00",
+            "typeDictId": expect.stringContaining("Integration Test Therapy"),
+            "statusDictId": "dictionary.meetingStatus.completed",
+            "staff.*.userId": STAFF.name,
+            "clients.*.userId": "",
+            "isRemote": "bool_values.no",
+            "notes": "First line Second line",
+            "resources.*.dictId": expect.stringMatching(new RegExp(`^(${ROOM} ${PROJECTOR}|${PROJECTOR} ${ROOM})$`)),
+          });
+      });
+    },
+  );
+
+  test("an all-day meeting is created with the all-day box of the create form", {tag: "@ui"}, async ({page, api}) => {
+    const {facilityId, todayMeeting} = artifact();
+    const staffApi = await api.loggedInAs(STAFF);
+    await login(page, STAFF);
+    await openCalendar(page, FACILITY.url, {mode: "day", date: seededDay(0), resources: [STAFF.name]});
+    await clickSlotBelowMeeting(page, meetingBlocks(page, todayMeeting.id), {
+      durationMinutes: TODAY_MEETING_MINUTES,
+      minutesAfterEnd: SLOT.minutesAfterEnd,
+    });
+    const form = page.locator("#meeting_create");
+    await chooseInFormSelect(page, "typeDictId", /Integration Test Therapy/);
+    await form.locator('[data-field-box="dateAndTime"]').getByRole("button", {name: "actions.edit"}).click();
+    await formField(form, "time.allDay").check();
+    // The times are gone from the form; the date stays.
+    await expect(formField(form, "time.startTime")).toHaveCount(0);
+    await expect(formField(form, "time.endTime")).toBeDisabled();
+    await expect(formField(form, "date")).toHaveValue(seededDay(0));
+    await form.getByRole("button", {name: "forms.meeting_create.submit"}).click();
+    await expectFormSuccess(page, "meeting_create");
+
+    const created = await meetingsStartingAt(staffApi, facilityId, 0, seededDay(0));
+    expect(created).toHaveLength(1);
+    expect(created[0]).toMatchObject({date: seededDay(0), durationMinutes: 24 * 60});
+    await meetingBlocks(page, created[0]!.id).click();
+    await expect(viewHeading(page)).toBeVisible();
+    const dateAndTime = page.locator("#meeting_edit").locator('[data-field-box="dateAndTime"]');
+    await expect(dateAndTime).toContainText("calendar.all_day");
+    await expect(dateAndTime).not.toContainText(/\d:\d\d/);
+  });
+
   readOnlyTest("the create form without a meeting type is not accepted", {tag: "@ui"}, async ({page, api}) => {
     const {facilityId, todayMeeting} = artifact();
     const staffApi = await api.loggedInAs(STAFF);
@@ -435,7 +579,7 @@ meetingsLayer.describe((artifact) => {
 
       await test.step("the date in the month cell switches to the week view of that date", async () => {
         // The date buttons carry the full date as their title, in the browser's locale.
-        const title = DateTime.fromISO(nextWeek).toLocaleString(DateTime.DATE_HUGE, {locale: "en-US"});
+        const title = DateTime.fromISO(nextWeek).toLocaleString(DateTime.DATE_HUGE, {locale: BROWSER_LOCALE});
         await main.locator(`title=${title}`).click();
         await expectCalendarMode(page, "week");
         await expect(future).toBeVisible();
@@ -467,7 +611,7 @@ meetingsLayer.describe((artifact) => {
       const today = meetingBlocks(page, todayMeeting.id);
       const future = meetingBlocks(page, futureMeeting.id);
       // The small calendar shows the month of the middle of the week, a week of the browser's locale.
-      const seededYear = DateTime.fromISO(seededDay(0), {locale: "en-US"})
+      const seededYear = DateTime.fromISO(seededDay(0), {locale: BROWSER_LOCALE})
         .startOf("week", {useLocaleWeeks: true})
         .plus({days: 3}).year;
       const yearButton = main.locator('[data-role="year"]');

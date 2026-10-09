@@ -112,7 +112,7 @@ meetingsLayer.describe((artifact) => {
         // The meeting's time is a time of day, the same in every time zone.
         await block.click();
         await expect(page.getByRole("heading", {name: /models\.meeting\._name/i})).toBeVisible();
-        await expect(page.locator("#meeting_edit")).toContainText(/10:00( AM)?\s*–\s*11:00/);
+        await expect(page.locator("#meeting_edit")).toContainText(/10:00\s*–\s*11:00/);
         await page.getByRole("button", {name: "actions.edit"}).click();
         await expect(page.locator('#meeting_edit input[name="date"]')).toHaveValue(todayMeeting.date);
         await expect(page.locator('#meeting_edit input[name="time.startTime"]')).toHaveValue("10:00");

@@ -11,7 +11,7 @@ import {
 } from "../lib/layers/technicals.ts";
 import {createdId, expectValidationError, expectValidationErrors} from "../lib/responses.ts";
 import {MemoAPI, expect, readOnlyTest, test} from "../lib/test.ts";
-import {clientAttributes} from "../helpers/queries.ts";
+import {attributeToCreate, clientAttributes} from "../helpers/queries.ts";
 
 /**
  * API-level tests of the dictionary / position / attribute administration: the facility admin
@@ -85,17 +85,7 @@ async function findAttribute(api: MemoAPI, id: string) {
 }
 
 function stringClientAttribute(apiName: string, extra: Record<string, unknown> = {}) {
-  return {
-    model: "client",
-    name: `+${apiName}`,
-    apiName,
-    type: "string",
-    dictionaryId: null,
-    isMultiValue: false,
-    requirementLevel: "optional",
-    description: null,
-    ...extra,
-  };
+  return attributeToCreate(apiName, "string", extra);
 }
 
 const FAIL = {allowFailure: true} as const;
@@ -150,6 +140,34 @@ technicalsLayer.describe((artifact) => {
       isMultiValue: false,
     });
   });
+
+  // Pinned as it is, not as it should be: the two lists need no login, and hold what every facility
+  // has defined.
+  readOnlyTest(
+    "the lists of dictionaries and of attributes are given to anyone, with those of every facility",
+    async ({api}) => {
+      const {colourDictId, otherDictId, otherPositionId, nicknameAttrId} = artifact();
+      expect((await api.get("user/status", FAIL)).status()).toBe(401);
+      const dictionaries = await allDictionaries(api);
+      expect(dictionaries.find(({id}) => id === colourDictId)?.positions.map(({name}) => name)).toEqual([
+        ...COLOUR_NAMES,
+      ]);
+      expect(dictionaries.find(({id}) => id === otherDictId)).toMatchObject({
+        name: OTHER_DICT_NAME,
+        positions: [expect.objectContaining({id: otherPositionId})],
+      });
+      expect(await findAttribute(api, nicknameAttrId)).toMatchObject(NICKNAME_ATTR);
+      // The table queries of the same data, and the list of the facilities, do need a login.
+      for (const path of [
+        "system/dictionary/tquery",
+        "system/attribute/tquery",
+        "system/position/tquery",
+        "system/facility/list",
+      ]) {
+        expect((await api.get(path, FAIL)).status(), path).toBe(401);
+      }
+    },
+  );
 
   readOnlyTest("technicals tquery endpoints return the seeded rows", async ({api}) => {
     const {facilityId, colourDictId, coloursAttrId, nicknameAttrId, unusedAttrId} = artifact();

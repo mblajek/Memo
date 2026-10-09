@@ -3,6 +3,7 @@ import {
   checkedSeriesDates,
   editHeading,
   openMeeting,
+  reopenMeeting,
   saveEdit,
   seededDays,
   startEditing,
@@ -21,6 +22,7 @@ import {
   expectSectionShown,
   formField,
   formSelect,
+  formSelectClearButton,
   submitButton,
   tableCell,
 } from "../helpers/selectors.ts";
@@ -594,6 +596,156 @@ meetingsLayer.describe((artifact) => {
       await expect(block).toHaveCount(1);
       await resourceInput(page, "day", STAFF_ADMIN.name).check();
       await expect(block).toHaveCount(2);
+    },
+  );
+
+  test(
+    "the notes, the resources and the clients of a meeting are cleared in the edit form",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, groupMeeting, adultClientInfos} = artifact();
+      const diana = adultClientInfos[3]!;
+      const adminApi = await api.loggedInAs(STAFF_ADMIN);
+      const roomId = await createMeetingResource(adminApi, facilityId, "E2E Room");
+      await adminApi.patchMeeting(facilityId, groupMeeting.id, {
+        notes: "To be cleared",
+        isRemote: true,
+        resources: [{resourceDictId: roomId}],
+      });
+      await login(page, STAFF);
+      const form = await openMeeting(page, groupMeeting);
+      const notes = form.locator('[data-field-box="notes"]');
+      await expect(notes).toContainText("To be cleared");
+      await expect(formSelect(form, "resources")).toContainText("E2E Room");
+      await expect(formField(form, "isRemote")).toBeChecked();
+      await expect(form.getByRole("link", {name: diana.name})).toBeVisible();
+
+      await startEditing(page);
+      await form.locator('textarea[name="notes"]').fill("");
+      await formField(form, "isRemote").uncheck();
+      await formSelectClearButton(form, "resources").click();
+      await expect(formSelect(form, "resources")).not.toContainText("E2E Room");
+      for (let left = 3; left > 0; left--) {
+        await attendantRow(form, "clients", 0).locator("title=actions.delete").click();
+        await expect(form.locator(`[name="clients.${left}.userId"]`)).toHaveCount(0);
+      }
+      await expect(formSelect(form, "clients.0.userId")).toHaveText("");
+      await saveEdit(page);
+
+      expect(await getMeeting(adminApi, facilityId, groupMeeting.id)).toMatchObject({
+        notes: null,
+        isRemote: false,
+        resources: [],
+        clients: [],
+        staff: [{}, {}],
+      });
+      await reopenMeeting(page, groupMeeting);
+      await expect(notes).toHaveText(/—$/);
+      await expect(formSelect(form, "resources")).not.toContainText("E2E Room");
+      await expect(formField(form, "isRemote")).not.toBeChecked();
+      await expect(
+        form.getByText("forms.meeting.field_names.clients__interval{postProcess:interval,count:0}"),
+      ).toBeVisible();
+      await expect(form.getByRole("link", {name: diana.name})).toHaveCount(0);
+    },
+  );
+
+  test("the urgent notes of a client are shown at the client in the meeting", {tag: "@ui"}, async ({page, api}) => {
+    const {facilityId, todayMeeting, adultClientInfos} = artifact();
+    const [adam, bea] = adultClientInfos;
+    const staffApi = await api.loggedInAs(STAFF);
+    await staffApi.patch(`facility/${facilityId}/user/client/${bea!.id}`, {
+      client: {urgentNotes: ["Allergic to cats", "* speaks quietly"]},
+    });
+    await login(page, STAFF);
+    const form = await openMeeting(page, todayMeeting);
+
+    await test.step("the view mode and the edit form of the meeting", async () => {
+      await expect(form.getByText("Allergic to cats")).toBeVisible();
+      await expectSectionShown(form.getByText("Allergic to cats"), true);
+      // A note of low priority has the star it was entered with as a mark of its own.
+      await expect(form.getByText(/^\*?speaks quietly$/)).toBeVisible();
+      await expectSectionShown(form.getByText(/^\*?speaks quietly$/), true);
+      await startEditing(page);
+      await expect(form.getByText("Allergic to cats")).toBeVisible();
+      await expectSectionShown(form.getByText("Allergic to cats"), true);
+      // They follow the client chosen in the row.
+      await chooseInFormSelect(page, "clients.0.userId", new RegExp(adam!.name));
+      await expect(form.getByText("Allergic to cats")).toHaveCount(0);
+      await form.getByRole("button", {name: "actions.cancel"}).click();
+      await expect(viewHeading(page)).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(viewHeading(page)).toHaveCount(0);
+    });
+
+    await test.step("the hover card of the meeting in the calendar", async () => {
+      const card = page.locator('[data-role="meeting-hover-card"]');
+      await meetingBlocks(page, todayMeeting.id).hover();
+      await expect(card).toContainText("Allergic to cats");
+      await expect(card).toContainText("speaks quietly");
+    });
+  });
+
+  test(
+    "a disabled meeting type is offered last and marked, and can still be chosen",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, futureMeeting, customTypeIds} = artifact();
+      const adminApi = await api.loggedInAs(STAFF_ADMIN);
+      await adminApi.patch(`facility/${facilityId}/admin/position/${customTypeIds.therapy}`, {isDisabled: true});
+      await login(page, STAFF);
+      const form = await openMeeting(page, futureMeeting);
+      await startEditing(page);
+      await formSelect(form, "typeDictId").click();
+      const options = page.getByRole("option");
+      await expect(options.last()).toContainText("Integration Test Therapy");
+      await expect(options.last()).toContainText("position_disabled_suffix");
+      await expect(options.filter({hasText: "position_disabled_suffix"})).toHaveCount(1);
+      await options.last().click();
+      await expect(formSelect(form, "typeDictId")).toContainText("Integration Test Therapy");
+      await saveEdit(page);
+      expect(await getMeeting(adminApi, facilityId, futureMeeting.id)).toMatchObject({
+        typeDictId: customTypeIds.therapy,
+      });
+    },
+  );
+
+  test(
+    "a meeting keeps a resource that was disabled since, also through an edit",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, futureMeeting} = artifact();
+      const adminApi = await api.loggedInAs(STAFF_ADMIN);
+      const roomId = await createMeetingResource(adminApi, facilityId, "E2E Room");
+      const oldRoomId = await createMeetingResource(adminApi, facilityId, "E2E Old Room");
+      await adminApi.patchMeeting(facilityId, futureMeeting.id, {
+        resources: [{resourceDictId: roomId}, {resourceDictId: oldRoomId}],
+      });
+      await adminApi.patch(`facility/${facilityId}/admin/position/${oldRoomId}`, {isDisabled: true});
+      const resourceIds = async () =>
+        (
+          await adminApi.list<{resources: readonly {resourceDictId: string}[]}>(
+            `facility/${facilityId}/meeting`,
+            futureMeeting.id,
+          )
+        )[0]!.resources
+          .map(({resourceDictId}) => resourceDictId)
+          .toSorted();
+      expect(await resourceIds()).toEqual([roomId, oldRoomId].toSorted());
+      await login(page, STAFF);
+      const form = await openMeeting(page, futureMeeting);
+      // The disabled resource is not shown on the meeting, and the form does not have it either.
+      await expect(formSelect(form, "resources")).toHaveText("E2E Room");
+      await startEditing(page);
+      await expect(formSelect(form, "resources")).toHaveText("E2E Room");
+      await formField(form, "isRemote").check();
+      await saveEdit(page);
+      test.fail(
+        true,
+        "The resources select of the meeting form leaves the disabled positions out, also those the meeting has: " +
+          "a save of any other change takes the disabled resource off the meeting.",
+      );
+      expect(await resourceIds()).toEqual([roomId, oldRoomId].toSorted());
     },
   );
 

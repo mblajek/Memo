@@ -130,6 +130,48 @@ facilityLayer.describe((artifact) => {
     expect(body).toHaveLength(0);
   });
 
+  // The staff and the admins pages offer these columns to a facility admin only; the server gives
+  // them to any staff member who asks. Pinned as it is, not as it should be.
+  readOnlyTest(
+    "the columns of the account that the pages keep for admins are given to any staff member",
+    async ({api}) => {
+      const {facilityId, staffAdminUserId} = artifact();
+      const staffApi = await api.loggedInAs(STAFF);
+      const columns = [
+        "hasEmailVerified",
+        "passwordExpireAt",
+        "lastPasswordChangeAt",
+        "isOtpRequired",
+        "otpRequiredAt",
+        "hasOtpConfigured",
+        "lastLoginFailureAt",
+        "managedByFacility.name",
+      ];
+      const account = {
+        "hasEmailVerified": true,
+        "passwordExpireAt": null,
+        "lastPasswordChangeAt": null,
+        "isOtpRequired": false,
+        "otpRequiredAt": null,
+        "hasOtpConfigured": false,
+        "lastLoginFailureAt": null,
+        "managedByFacility.name": null,
+      };
+      const filter = {type: "column", column: "id", op: "=", val: staffAdminUserId};
+      const staff = await staffApi.tquery(`facility/${facilityId}/user/staff/tquery`, {
+        columns: [...columns, "staff.isActive", "staff.deactivatedAt"],
+        filter,
+      });
+      expect(staff.rows).toEqual([{...account, "staff.isActive": true, "staff.deactivatedAt": null}]);
+      // The members: also the facilities of a user, by name, whichever they are.
+      const members = await staffApi.tquery(`facility/${facilityId}/user/tquery`, {
+        columns: [...columns, "facilities.*.name", "facilities.count"],
+        filter,
+      });
+      expect(members.rows).toEqual([{...account, "facilities.*.name": [FACILITY.name], "facilities.count": 1}]);
+    },
+  );
+
   readOnlyTest("ADMIN sees the staff page rendering with a known staff name", {tag: "@ui"}, async ({page}) => {
     await openPage(page, `/${FACILITY.url}/staff`, ADMIN);
     await expect(page.getByText(STAFF.name).first()).toBeVisible();

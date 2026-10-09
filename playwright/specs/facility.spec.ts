@@ -81,6 +81,24 @@ facilityLayer.describe(() => {
     },
   );
 
+  readOnlyTest(
+    "About page of a facility user has the version of the app, not the state of the server",
+    {tag: "@ui"},
+    async ({page}) => {
+      await openPage(page, "/help/about", STAFF);
+      const main = page.locator("main");
+      for (const key of ["app_version", "app_env", "commit_info"]) {
+        await expect(main.getByText(`about_page.${key}`, {exact: true}), key).toBeVisible();
+      }
+      await expect(main.getByText(/app_version\{/)).toBeVisible();
+      for (const key of ["last_dump", "cpu_load", "free_disk_space"]) {
+        await expect(main.getByText(`about_page.${key}`, {exact: true}), key).toHaveCount(0);
+      }
+      // The menu of the facility stays next to the help pages.
+      await expect(page.getByRole("navigation").locator(`a[href="/${FACILITY.url}/calendar"]`)).toBeVisible();
+    },
+  );
+
   readOnlyTest("theme toggle in the user-settings popover persists across reloads", {tag: "@ui"}, async ({page}) => {
     await openPage(page, `/${FACILITY.url}/calendar`, STAFF);
     const html = page.locator("html");

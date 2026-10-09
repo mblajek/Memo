@@ -1,13 +1,25 @@
 import {DateTime} from "luxon";
 import type {Page} from "@playwright/test";
-import {openMeetingModal} from "../helpers/calendar.ts";
+import {clickSlotBelowMeeting, meetingBlocks, openCalendar, openMeetingModal} from "../helpers/calendar.ts";
 import {addDays, dateOffset} from "../lib/dates.ts";
-import {ADMIN, FACILITY, STAFF} from "../lib/layers/facility.ts";
+import {ADMIN, FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
 import {notificationsLayer} from "../lib/layers/notifications.ts";
-import {chooseInFormSelect, expectFormSuccess, formField, submitButton, tableRows} from "../helpers/selectors.ts";
+import {
+  chooseInFormSelect,
+  expectFormSuccess,
+  formField,
+  formSelect,
+  showTableColumns,
+  submitButton,
+  tableCellTexts,
+  tableRows,
+} from "../helpers/selectors.ts";
 import {expect, login, MemoAPI, openPage, readOnlyTest, test} from "../lib/test.ts";
 import {expectValidationErrors, responseData} from "../lib/responses.ts";
 import {meetingClients} from "../helpers/queries.ts";
+import {EXPORTED_TIME, SHOWN_TABLE_TIME, shownTableDate} from "../helpers/dates.ts";
+import {viewHeading} from "../helpers/meetings.ts";
+import {exportTable, exportedRecords, stubSaveFilePicker} from "../helpers/saved_file.ts";
 
 /**
  * Notifications of meetings: the records made for the clients of a meeting, and what happens to
@@ -76,6 +88,8 @@ async function openMeeting(page: Page, meeting: {readonly id: string; readonly d
   await login(page, STAFF);
   await openMeetingModal(page, FACILITY.url, meeting, STAFF.name);
 }
+
+const MIXED_MEETING_NOTES = "Statuses and notifications";
 
 const TEMPLATE_PLACEHOLDER = "{{meeting_facility_template_subject}}";
 
@@ -346,6 +360,75 @@ notificationsLayer.describe((artifact) => {
   });
 
   readOnlyTest(
+    "the notifications table has a value in each column, and leads to the client and to the meeting",
+    {tag: "@ui"},
+    async ({page}) => {
+      const {notifiedMeeting, adultClientInfos} = artifact();
+      const [adam, bea] = adultClientInfos;
+      await openPage(page, `/${FACILITY.url}/admin/notifications`, ADMIN);
+      const main = page.locator("main");
+      const row = tableRows(main, adam!.name);
+      const hidden = ["service", "createdAt", "createdBy.name"];
+      await showTableColumns(page, main, "notification", hidden);
+      const columns = ["scheduledAt", "status", "errorMessage", "user.id", "address", "subject", ...hidden];
+      await expect
+        .poll(() => tableCellTexts(row, columns))
+        .toEqual({
+          // Two days before the meeting; the hour is the matter of another test.
+          "scheduledAt": expect.stringContaining(`${shownTableDate(addDays(notifiedMeeting.date, -2))}, `),
+          "status": "scheduled",
+          "errorMessage": "—",
+          "user.id": adam!.name,
+          // Neither is known before the sending.
+          "address": "—",
+          "subject": "tables.tables.notification.default_subject",
+          "service": "—",
+          "createdAt": expect.stringMatching(SHOWN_TABLE_TIME),
+          "createdBy.name": STAFF_ADMIN.name,
+        });
+      expect((await tableCellTexts(row, ["scheduledAt"])).scheduledAt).toMatch(SHOWN_TABLE_TIME);
+      await expect(row.locator("title=tables.tables.notification.no_address_hint")).toBeVisible();
+
+      await test.step("the details button opens the meeting", async () => {
+        await row.getByRole("button", {name: "actions.details"}).click();
+        await expect(viewHeading(page)).toBeVisible();
+        const form = page.locator("#meeting_edit");
+        await expect(form.getByRole("link", {name: adam!.name})).toBeVisible();
+        await expect(form.getByRole("link", {name: bea!.name})).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(viewHeading(page)).toHaveCount(0);
+      });
+
+      await test.step("the client leads to the client's page", async () => {
+        await row.getByRole("link", {name: adam!.name}).click();
+        await expect(page).toHaveURL(new RegExp(`/${FACILITY.url}/clients/${adam!.id}$`));
+      });
+    },
+  );
+
+  readOnlyTest("the export of the notifications table names the client", {tag: "@ui"}, async ({page}) => {
+    const {adultClientInfos} = artifact();
+    await stubSaveFilePicker(page);
+    await openPage(page, `/${FACILITY.url}/admin/notifications`, ADMIN);
+    const main = page.locator("main");
+    await expect(tableRows(main, adultClientInfos[0]!.name)).toHaveCount(1);
+    const column = (name: string) => `Tables.tables.notification.column_names.${name}`;
+    expect(exportedRecords(await exportTable(page, main))).toEqual([
+      {
+        [column("scheduledAt")]: expect.stringMatching(EXPORTED_TIME),
+        [column("status")]: "scheduled",
+        [column("errorMessage")]: "",
+        [column("user.id")]: adultClientInfos[0]!.name,
+        [column("address")]: "",
+        // Pinned: as the server has it, not as the table words it.
+        [column("subject")]: "{{meeting_facility_template_subject}}",
+        // Pinned: a column the table does not have.
+        [column("meetingId")]: expect.stringMatching(/^[0-9a-f-]{36}$/),
+      },
+    ]);
+  });
+
+  readOnlyTest(
     "meeting details show who is notified, and the state of the notification",
     {tag: "@ui"},
     async ({page}) => {
@@ -407,6 +490,148 @@ notificationsLayer.describe((artifact) => {
       expect.objectContaining({notificationMethodDictId: smsMethodId, status: "scheduled"}),
     ]);
   });
+
+  test(
+    "a meeting is created with several staff and clients, each with a status and a notification of their own",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, staffUserId, staffAdminUserId, notifiedMeeting, adultClientInfos, customTypeIds} = artifact();
+      const [adam, bea, carl] = adultClientInfos;
+      const staffApi = await api.loggedInAs(STAFF);
+      const {attendanceStatus} = await staffApi.dictionaries();
+      const statusOption = (status: string) => new RegExp(`^dictionary\\.attendanceStatus\\.${status}`);
+      await login(page, STAFF);
+      await openCalendar(page, FACILITY.url, {mode: "day", date: notifiedMeeting.date, resources: [STAFF.name]});
+      // The seeded meeting is 10:00–11:00; the new one starts at 11:15.
+      await clickSlotBelowMeeting(page, meetingBlocks(page, notifiedMeeting.id), {
+        durationMinutes: 60,
+        minutesAfterEnd: 15,
+      });
+      const form = page.locator("#meeting_create");
+      await chooseInFormSelect(page, "typeDictId", /Integration Test Therapy/);
+      await form.locator("title=forms.meeting.add_attendant.staff").click();
+      await chooseInFormSelect(page, "staff.1.userId", new RegExp(STAFF_ADMIN.name));
+      await chooseInFormSelect(page, "staff.1.attendanceStatusDictId", statusOption("late_present"));
+      await chooseInFormSelect(page, "clients.0.userId", new RegExp(adam!.name));
+      await form.locator("title=forms.meeting.add_attendant.clients").click();
+      await chooseInFormSelect(page, "clients.1.userId", new RegExp(bea!.name));
+      // From the second client on, the next empty row is there.
+      await chooseInFormSelect(page, "clients.2.userId", new RegExp(carl!.name));
+      await chooseInFormSelect(page, "clients.1.attendanceStatusDictId", statusOption("cancelled"));
+      await chooseInFormSelect(page, "clients.2.attendanceStatusDictId", statusOption("no_show"));
+
+      await test.step("the notifications: one turned on, one off, against the clients' own settings", async () => {
+        await form.getByRole("button", {name: /^forms\.meeting_create\.field_names\.notifications$/i}).click();
+        const toggles = page.locator("button[aria-checked]");
+        const nonStandard = page.locator("title=meetings.notification_methods.non_standard");
+        // Adam and Carl have the SMS method set, Bea has not.
+        await expect(toggles).toHaveCount(3);
+        await expect(toggles.nth(0)).toHaveAttribute("aria-checked", "true");
+        await expect(toggles.nth(1)).toHaveAttribute("aria-checked", "false");
+        await expect(toggles.nth(2)).toHaveAttribute("aria-checked", "true");
+        await expect(nonStandard).toHaveCount(0);
+        await toggles.nth(1).click();
+        await toggles.nth(2).click();
+        await expect(toggles.nth(1)).toHaveAttribute("aria-checked", "true");
+        await expect(toggles.nth(2)).toHaveAttribute("aria-checked", "false");
+        await expect(nonStandard).toHaveCount(2);
+        await page.getByRole("heading", {name: "forms.meeting_create.form_name"}).click();
+        await expect(toggles).toHaveCount(0);
+      });
+
+      await form.locator('textarea[name="notes"]').fill(MIXED_MEETING_NOTES);
+      await form.getByRole("button", {name: "forms.meeting_create.submit"}).click();
+      await expectFormSuccess(page, "meeting_create");
+      await expect(form).toHaveCount(0);
+
+      const {rows} = await staffApi.tquery<{id: string}>(`facility/${facilityId}/meeting/tquery`, {
+        columns: ["id"],
+        filter: {type: "column", column: "notes", op: "%v%", val: MIXED_MEETING_NOTES},
+      });
+      expect(rows).toHaveLength(1);
+      const meetingId = rows[0]!.id;
+      const [meeting] = await staffApi.list<{
+        typeDictId: string;
+        startDayminute: number;
+        staff: readonly {userId: string; attendanceStatusDictId: string}[];
+      }>(`facility/${facilityId}/meeting`, meetingId);
+      expect(meeting).toMatchObject({
+        typeDictId: customTypeIds.therapy,
+        startDayminute: 11 * 60 + 15,
+        staff: [
+          {userId: staffUserId, attendanceStatusDictId: attendanceStatus!.ok},
+          {userId: staffAdminUserId, attendanceStatusDictId: attendanceStatus!.late_present},
+        ],
+      });
+      expect(
+        (await meetingClients(staffApi, facilityId, meetingId)).map((client) => [
+          client.userId,
+          client.attendanceStatusDictId,
+          client.notifications.map(({status}) => status),
+        ]),
+      ).toEqual([
+        [adam!.id, attendanceStatus!.ok, ["scheduled"]],
+        // No notification is to be sent to a client who cancelled.
+        [bea!.id, attendanceStatus!.cancelled, ["skipped"]],
+        [carl!.id, attendanceStatus!.no_show, []],
+      ]);
+
+      await test.step("the view mode of the modal", async () => {
+        await meetingBlocks(page, meetingId).first().click();
+        const view = page.locator("#meeting_edit");
+        await expect(view.getByRole("link", {name: STAFF_ADMIN.name})).toBeVisible();
+        // Pins an app problem: the label counts the empty row too, so three clients are four.
+        await expect(
+          view.getByText("forms.meeting.field_names.clients__interval{postProcess:interval,count:4}"),
+        ).toBeVisible();
+        for (const [field, status] of [
+          ["staff.0", "ok"],
+          ["staff.1", "late_present"],
+          ["clients.0", "ok"],
+          ["clients.1", "cancelled"],
+          ["clients.2", "no_show"],
+        ] as const) {
+          await expect(formSelect(view, `${field}.attendanceStatusDictId`), field).toContainText(
+            `dictionary.attendanceStatus.${status}`,
+          );
+        }
+        await page.getByRole("button", {name: /^forms\.meeting_edit\.field_names\.notifications$/i}).click();
+        const toggles = page.locator("button[aria-checked]");
+        await expect(toggles).toHaveCount(3);
+        await expect(toggles.nth(0)).toHaveAttribute("aria-checked", "true");
+        await expect(toggles.nth(1)).toHaveAttribute("aria-checked", "true");
+        await expect(toggles.nth(2)).toHaveAttribute("aria-checked", "false");
+        await expect(page.locator("title=meetings.notification_methods.non_standard")).toHaveCount(2);
+      });
+
+      await test.step("the row of the meetings list", async () => {
+        await openPage(page, `/${FACILITY.url}/meetings`);
+        const main = page.locator("main");
+        const row = tableRows(main, MIXED_MEETING_NOTES);
+        await expect(row).toHaveCount(1);
+        const columns = [
+          "staff.*.attendanceStatusDictId",
+          "staff.count",
+          "clients.*.attendanceStatusDictId",
+          "clients.count",
+        ];
+        await showTableColumns(page, main, "meeting", columns);
+        const status = (name: string) => `dictionary.attendanceStatus.${name}`;
+        await expect
+          .poll(() => tableCellTexts(row, ["staff.*.userId", "clients.*.userId", ...columns]))
+          .toEqual({
+            // A status other than "present" is given next to the attendant.
+            "staff.*.userId": `${STAFF.name} ${STAFF_ADMIN.name} — ${status("late_present")}`,
+            "clients.*.userId":
+              `${adam!.name} ${bea!.name} — ${status("cancelled")} ` + `${carl!.name} — ${status("no_show")}`,
+            "staff.*.attendanceStatusDictId": `${status("ok")}, ${status("late_present")}`,
+            "staff.count": "2",
+            "clients.*.attendanceStatusDictId": `${status("ok")}, ${status("cancelled")}, ${status("no_show")}`,
+            "clients.count": "3",
+          });
+      });
+    },
+  );
 
   test(
     "a copy keeps the notifications of the original; a client added to it gets the default ones",
