@@ -457,7 +457,10 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                           show={!isFolded() && isAttributeShown(attributeInfo)}
                           class="col-span-full grid grid-cols-subgrid"
                         >
-                          <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
+                          <div
+                            class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted"
+                            data-attribute={attribute.apiName}
+                          >
                             <label
                               class="font-semibold flex items-center gap-1"
                               for={
