@@ -157,12 +157,12 @@ export async function expectFormSuccess(page: Page, formKey: string) {
 }
 
 /**
- * Asserts that the `HideableSection` holding the given content is unfolded, or folded. A folded
- * section keeps its content in the DOM with its own size, so `toBeVisible` / `toBeHidden` cannot
- * tell the two states apart.
+ * Asserts that the `HideableSection` holding the given content, or being it, is unfolded, or
+ * folded. A folded section keeps its content in the DOM with its own size, so `toBeVisible` /
+ * `toBeHidden` cannot tell the two states apart.
  */
 export async function expectSectionShown(content: Locator, shown: boolean) {
-  const section = content.locator('xpath=ancestor::div[contains(@class, "overflow-y-hidden")][1]');
+  const section = content.locator('xpath=ancestor-or-self::div[contains(@class, "overflow-y-hidden")][1]');
   await expect(section).toHaveCSS("max-height", shown ? "none" : "0px");
 }
 

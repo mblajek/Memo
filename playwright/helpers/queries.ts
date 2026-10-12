@@ -1,5 +1,6 @@
 import type {MemoAPI} from "../lib/api.ts";
 import {createdId, responseData} from "../lib/responses.ts";
+import {Totp} from "../lib/totp.ts";
 
 /** Reads of the server state, and requests, that several specs use. */
 
@@ -153,4 +154,15 @@ export function attributeToCreate(apiName: string, type: string, extra: Readonly
     description: null,
     ...extra,
   };
+}
+
+/**
+ * Configures OTP for the user of the session, who has the given password. Returns the generator
+ * of the codes, one code used.
+ */
+export async function configureOtp(userApi: MemoAPI, password: string) {
+  const res = await userApi.post("user/otp/generate", {password});
+  const otp = new Totp((await responseData<{otpSecret: string}>(res)).otpSecret);
+  await userApi.post("user/otp/configure", {otp: otp.next()});
+  return otp;
 }

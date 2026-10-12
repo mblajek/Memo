@@ -4,7 +4,7 @@ import {loadConfig} from "../lib/config.ts";
 import {ADMIN, BARE_MEMBER, FACILITY, STAFF, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
 import {createdId} from "../lib/responses.ts";
 import {EXPORTED_TIME, SHOWN_TABLE_TIME, daysFromNow} from "../helpers/dates.ts";
-import {userAccount, userName, type UserAccountMember} from "../helpers/queries.ts";
+import {userAccount, userName, type UserAccountMember, configureOtp} from "../helpers/queries.ts";
 import {exportTable, exportedRecords, stubSaveFilePicker} from "../helpers/saved_file.ts";
 import {
   allTableRows,
@@ -382,6 +382,76 @@ facilityLayer.describe((artifact) => {
       expect(daysFromNow(created.passwordExpireAt!)).toBeCloseTo(12, 0);
       expect(daysFromNow(created.otpRequiredAt!)).toBeCloseTo(7, 1);
       expect((await MemoAPI.attemptLogin(user)).status).toBe(200);
+    },
+  );
+
+  test(
+    "the global admin resets the OTP of a user, who then logs in with no code",
+    {tag: "@ui"},
+    async ({page, api, globalAdminApi}) => {
+      const user = {name: "OTP Reset User", email: "otp-reset-user@test.pl", password: "OtpResetUser1!"};
+      const userId = await createdId(await globalAdminApi.createUser({...user, hasEmailVerified: true}));
+      await configureOtp(await api.loggedInAs(user), user.password);
+      expect((await MemoAPI.attemptLogin(user)).errors).toContainEqual({field: "otp", code: "validation.present"});
+
+      const form = await openUserEdit(page, user.email);
+      const configured = form.getByText("forms.user.otp_configured_info.when_configured");
+      await expect(configured).toBeVisible();
+      await expectSectionShown(configured, true);
+      const resetOtp = formField(form, "resetOtp");
+      await expect(resetOtp).not.toBeChecked();
+
+      await test.step("a save with the box not ticked leaves the OTP", async () => {
+        await formField(form, "name").fill("OTP Reset User, renamed");
+        await submitButton(page, "user_edit").click();
+        await expect(form).toBeHidden();
+        expect(await userAccount(globalAdminApi, userId)).toMatchObject({
+          name: "OTP Reset User, renamed",
+          hasOtpConfigured: true,
+        });
+      });
+
+      await test.step("a save with the box ticked takes the OTP off", async () => {
+        await openUserEdit(page, user.email);
+        await resetOtp.check();
+        await submitButton(page, "user_edit").click();
+        await expect(form).toBeHidden();
+        expect((await userAccount(globalAdminApi, userId)).hasOtpConfigured).toBe(false);
+        expect((await MemoAPI.attemptLogin(user)).status).toBe(200);
+      });
+
+      await test.step("the form then has nothing of the OTP: it is neither required nor configured", async () => {
+        await openUserEdit(page, user.email);
+        await expect(formField(form, "isOtpRequired")).not.toBeChecked();
+        await expect(resetOtp).toHaveCount(0);
+        await expectSectionShown(form.getByText("forms.user.otp_configured_info.when_not_configured"), false);
+      });
+    },
+  );
+
+  test(
+    "the OTP reset of a user whose time to configure it has passed locks the user out, as the form warns",
+    {tag: "@ui"},
+    async ({page, api, globalAdminApi}) => {
+      const user = {name: "OTP Late User", email: "otp-late-user@test.pl", password: "OtpLateUser1!"};
+      const userId = await createdId(await globalAdminApi.createUser({...user, hasEmailVerified: true}));
+      await configureOtp(await api.loggedInAs(user), user.password);
+      // To the minute, as the form has the time.
+      const otpRequiredAt = isoTime(DateTime.now().minus({hours: 1}).startOf("minute"));
+      await globalAdminApi.patch(`admin/user/${userId}`, {otpRequiredAt});
+
+      const form = await openUserEdit(page, user.email);
+      await expect(formField(form, "isOtpRequired")).toBeChecked();
+      const expired = form.getByText("forms.user.otp_required_expired");
+      // No warning while the OTP is configured.
+      await expectSectionShown(expired, false);
+      await formField(form, "resetOtp").check();
+      await expectSectionShown(expired, true);
+      await submitButton(page, "user_edit").click();
+      await expect(form).toBeHidden();
+      // The reset leaves the requirement and its time.
+      expect(await userAccount(globalAdminApi, userId)).toMatchObject({hasOtpConfigured: false, otpRequiredAt});
+      expect((await MemoAPI.attemptLogin(user)).status).toBe(401);
     },
   );
 

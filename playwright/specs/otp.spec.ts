@@ -1,5 +1,6 @@
 import {DateTime} from "luxon";
 import {loadConfig} from "../lib/config.ts";
+import {configureOtp} from "../helpers/queries.ts";
 import {disableTranslations} from "../helpers/lang.ts";
 import {createdId, expectValidationError, responseData} from "../lib/responses.ts";
 import {expectFormSuccess, expectSectionShown, formField} from "../helpers/selectors.ts";
@@ -42,13 +43,6 @@ async function createUser(api: MemoAPI, creds: ReturnType<typeof userCreds>, fie
 async function generateSecret(userApi: MemoAPI) {
   const res = await userApi.post("user/otp/generate", {password: PASSWORD});
   return await responseData<{otpSecret: string; validUntil: string}>(res);
-}
-
-/** Configures OTP for the user of the session. Returns the generator of the codes, one code used. */
-async function configureOtp(userApi: MemoAPI) {
-  const otp = new Totp((await generateSecret(userApi)).otpSecret);
-  await userApi.post("user/otp/configure", {otp: otp.next()});
-  return otp;
 }
 
 /** Returns the time the given number of hours from now, in the format of the API (no milliseconds). */
@@ -98,7 +92,7 @@ test("OTP is configured with a valid code of a generated secret, once", async ({
 test("login of a user with OTP needs a code, a newer one than the last code used", async ({api}) => {
   const creds = userCreds("login");
   await createUser(api, creds);
-  const otp = await configureOtp(await api.loggedInAs(creds));
+  const otp = await configureOtp(await api.loggedInAs(creds), PASSWORD);
 
   const noCode = await MemoAPI.attemptLogin(creds);
   expect(noCode.status).toBe(400);
@@ -136,7 +130,7 @@ test("global admin removes a user's OTP; it cannot be set for the user by the ad
   const setByAdmin = await globalAdminApi.patch(`admin/user/${userId}`, {hasOtpConfigured: true}, {allowFailure: true});
   await expectValidationError(setByAdmin, {field: "hasOtpConfigured", code: "validation.declined"});
 
-  await configureOtp(userApi);
+  await configureOtp(userApi, PASSWORD);
   expect((await MemoAPI.attemptLogin(creds)).status).toBe(400);
 
   await globalAdminApi.patch(`admin/user/${userId}`, {hasOtpConfigured: false});

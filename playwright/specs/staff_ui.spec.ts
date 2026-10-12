@@ -1,5 +1,5 @@
 import {SHOWN_TABLE_TIME, daysFromNow, shownDateTime} from "../helpers/dates.ts";
-import {storageKeys, storageValue, userAccount, userName} from "../helpers/queries.ts";
+import {storageKeys, storageValue, userAccount, userName, configureOtp} from "../helpers/queries.ts";
 import {DateTime} from "luxon";
 import {ADMIN, BARE_MEMBER, FACILITY, STAFF, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
 import {disableTranslations} from "../helpers/lang.ts";
@@ -285,6 +285,32 @@ facilityLayer.describe((artifact) => {
       await expect(inactive).toHaveCount(0);
       const [staff] = await adminApi.list<{staff: {deactivatedAt: string | null}}>(staffPath, staffUserId);
       expect(staff!.staff.deactivatedAt).toBeNull();
+    },
+  );
+
+  test(
+    "an admin resets the OTP of a staff member managed by the facility",
+    {tag: "@ui"},
+    async ({page, api, globalAdminApi}) => {
+      const {facilityId} = artifact();
+      const managed = {name: "OTP Staff", email: "otp-staff-ui@test.pl", password: "OtpStaffPass1!"};
+      const userId = await createdId(
+        await globalAdminApi.createUser({...managed, hasEmailVerified: true, managedByFacilityId: facilityId}),
+      );
+      await globalAdminApi.createMember({userId, facilityId, isFacilityStaff: true, isActiveFacilityStaff: true});
+      await configureOtp(await api.loggedInAs(managed), managed.password);
+
+      await openPage(page, `/${FACILITY.url}/staff/${userId}`, ADMIN);
+      const form = page.locator("form#staff_edit");
+      await form.getByRole("button", {name: "actions.edit"}).click();
+      const configured = form.getByText("forms.user.otp_configured_info.when_configured");
+      await expect(configured).toBeVisible();
+      await expectSectionShown(configured, true);
+      await formField(form, "resetOtp").check();
+      await submitButton(page, "staff_edit").click();
+      await expectFormSuccess(page, "staff_edit");
+      expect((await userAccount(globalAdminApi, userId)).hasOtpConfigured).toBe(false);
+      expect((await MemoAPI.attemptLogin(managed)).status).toBe(200);
     },
   );
 

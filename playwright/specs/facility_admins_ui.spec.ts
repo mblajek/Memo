@@ -2,7 +2,7 @@ import type {Page} from "@playwright/test";
 import {ADMIN, BARE_MEMBER, FACILITY, STAFF, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
 import {createdId} from "../lib/responses.ts";
 import {SHOWN_TABLE_TIME} from "../helpers/dates.ts";
-import {userName, userAccount} from "../helpers/queries.ts";
+import {userName, userAccount, configureOtp} from "../helpers/queries.ts";
 import {
   columnChooserBox,
   columnHeader,
@@ -15,7 +15,7 @@ import {
   tableCellTexts,
   tableRows,
 } from "../helpers/selectors.ts";
-import {expect, openPage, readOnlyTest, test} from "../lib/test.ts";
+import {MemoAPI, expect, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 /**
  * The facility admins page and its edit modal. The user's own data is editable there only for
@@ -237,6 +237,30 @@ facilityLayer.describe((artifact) => {
         managedByFacilityId: facilityId,
       });
       expect(account.members).toHaveLength(1);
+    },
+  );
+
+  test(
+    "an admin resets the OTP of an admin managed by the facility",
+    {tag: "@ui"},
+    async ({page, api, globalAdminApi}) => {
+      const {facilityId} = artifact();
+      const managed = {name: "OTP Admin", email: "otp-admin-ui@test.pl", password: "OtpAdminPass1!"};
+      const userId = await createdId(
+        await globalAdminApi.createUser({...managed, hasEmailVerified: true, managedByFacilityId: facilityId}),
+      );
+      await globalAdminApi.createMember({userId, facilityId, hasFacilityAdmin: true});
+      await configureOtp(await api.loggedInAs(managed), managed.password);
+
+      const form = await openAdminEdit(page, managed.name);
+      const configured = form.getByText("forms.user.otp_configured_info.when_configured");
+      await expect(configured).toBeVisible();
+      await expectSectionShown(configured, true);
+      await formField(form, "resetOtp").check();
+      await submitButton(page, "facility_admin_edit").click();
+      await expect(form).toBeHidden();
+      expect((await userAccount(globalAdminApi, userId)).hasOtpConfigured).toBe(false);
+      expect((await MemoAPI.attemptLogin(managed)).status).toBe(200);
     },
   );
 
