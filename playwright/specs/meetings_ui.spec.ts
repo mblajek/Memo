@@ -711,7 +711,7 @@ meetingsLayer.describe((artifact) => {
   );
 
   test(
-    "a meeting keeps a resource that was disabled since, also through an edit",
+    "a meeting keeps a resource that was disabled since, until it is taken off in the form",
     {tag: "@ui"},
     async ({page, api}) => {
       const {facilityId, futureMeeting} = artifact();
@@ -734,18 +734,35 @@ meetingsLayer.describe((artifact) => {
       expect(await resourceIds()).toEqual([roomId, oldRoomId].toSorted());
       await login(page, STAFF);
       const form = await openMeeting(page, futureMeeting);
-      // The disabled resource is not shown on the meeting, and the form does not have it either.
-      await expect(formSelect(form, "resources")).toHaveText("E2E Room");
-      await startEditing(page);
-      await expect(formSelect(form, "resources")).toHaveText("E2E Room");
-      await formField(form, "isRemote").check();
-      await saveEdit(page);
-      test.fail(
-        true,
-        "The resources select of the meeting form leaves the disabled positions out, also those the meeting has: " +
-          "a save of any other change takes the disabled resource off the meeting.",
-      );
-      expect(await resourceIds()).toEqual([roomId, oldRoomId].toSorted());
+      const select = formSelect(form, "resources");
+      const options = page.getByRole("option");
+      await expect(select).toContainText("E2E Room");
+      await expect(select).toContainText("E2E Old Room");
+
+      await test.step("an edit of another field keeps the disabled resource", async () => {
+        await startEditing(page);
+        await expect(select).toContainText("E2E Old Room");
+        await formField(form, "isRemote").check();
+        await saveEdit(page);
+        expect(await resourceIds()).toEqual([roomId, oldRoomId].toSorted());
+      });
+
+      await test.step("taken off and saved, the disabled resource is not offered any more", async () => {
+        await openMeeting(page, futureMeeting);
+        await startEditing(page);
+        await select.click();
+        await expect(options.filter({hasText: "position_disabled_suffix"})).toHaveText(/^E2E Old Room/);
+        await options.filter({hasText: "position_disabled_suffix"}).click();
+        await expect(select).not.toContainText("E2E Old Room");
+        await editHeading(page).click();
+        await saveEdit(page);
+        expect(await resourceIds()).toEqual([roomId]);
+        await openMeeting(page, futureMeeting);
+        await startEditing(page);
+        await select.click();
+        await expect(options.filter({hasText: "E2E Room"})).toHaveCount(1);
+        await expect(options.filter({hasText: "E2E Old Room"})).toHaveCount(0);
+      });
     },
   );
 

@@ -3,8 +3,15 @@ import {Position} from "data-access/memo-api/dictionaries";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {useLangFunc} from "components/utils/lang";
-import {VoidComponent, createMemo, mergeProps, splitProps} from "solid-js";
-import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSelectPropsPart} from "./Select";
+import {VoidComponent, createMemo, createSignal, mergeProps, splitProps} from "solid-js";
+import {
+  MultipleSelectPropsPart,
+  ReplacementItems,
+  Select,
+  SelectBaseProps,
+  SelectItem,
+  SingleSelectPropsPart,
+} from "./Select";
 import {mergeSelectProps} from "./select_helper";
 
 interface BaseProps extends Pick<
@@ -18,7 +25,8 @@ interface BaseProps extends Pick<
    * What to do with disabled dictionary positions. Default: hide.
    * - "showSameAsActive": indistinguishable from the active positions,
    * - "deprecate": greyed out, at the bottom of the list, but still selectable,
-   * - "hide": not shown at all.
+   * - "hide": not shown, except for the ones that are selected: these are shown as in "deprecate",
+   *   and stay on the list also when deselected.
    */
   readonly disabledItemsMode?: "showSameAsActive" | "deprecate" | "hide";
   readonly positionsSorter?: (a: Position, b: Position) => number;
@@ -51,17 +59,22 @@ export const DictionarySelect: VoidComponent<Props> = (allProps) => {
   ]);
   const dictionaries = useDictionaries();
   const {getGroupName} = usePositionsGrouping();
+  /** The disabled positions kept on the list in the "hide" mode: the ones that were selected. */
+  const [keptDisabledIds, setKeptDisabledIds] = createSignal<ReadonlySet<string>>(new Set());
+  const dict = () => dictionaries()?.get(props.dictionary);
   const items = createMemo<SelectItem[] | undefined>(() => {
-    const dicts = dictionaries();
-    if (!dicts) {
+    const dictionary = dict();
+    if (!dictionary) {
       return undefined;
     }
-    const dict = dicts.get(props.dictionary);
-    let positions = props.disabledItemsMode === "hide" ? dict.activePositions : dict.allPositions;
+    let positions =
+      props.disabledItemsMode === "hide"
+        ? dictionary.allPositions.filter((pos) => !pos.disabled || keptDisabledIds().has(pos.id))
+        : dictionary.allPositions;
     if (props.positionsSorter) {
       positions = positions.toSorted(props.positionsSorter);
     }
-    const deprecate = props.disabledItemsMode === "deprecate";
+    const deprecate = props.disabledItemsMode !== "showSameAsActive";
     if (deprecate) {
       positions = [...positions.filter((pos) => !pos.disabled), ...positions.filter((pos) => pos.disabled)];
     }
@@ -73,18 +86,37 @@ export const DictionarySelect: VoidComponent<Props> = (allProps) => {
           text: pos.label,
           label: deprecate && pos.disabled ? () => <DeprecatedPositionItem position={pos} /> : undefined,
           groupName: useGrouping
-            ? getGroupName({dictId: dict.id, pos, mode: selectProps.getGroupHeader ? "id" : "label"})
+            ? getGroupName({dictId: dictionary.id, pos, mode: selectProps.getGroupHeader ? "id" : "label"})
             : undefined,
         });
         return props.itemFunc(pos, defItem);
       })
       .filter(NON_NULLABLE);
   });
-  const mergedSelectProps = mergeSelectProps<"items" | "isLoading" | "onFilterChange">(selectProps, {
-    items: () => items() || [],
-    isLoading: () => !items(),
-    onFilterChange: () => (props.filterable ? "internal" : undefined),
-  });
+  /** A selected value missing from the items is a hidden disabled position: puts it on the list. */
+  function getReplacementItems(missingValues: readonly string[]) {
+    const missing = new Set(missingValues);
+    const disabledIds = dict()
+      ?.allPositions.filter((pos) => pos.disabled && missing.has(pos.id))
+      .map((pos) => pos.id);
+    if (disabledIds?.length) {
+      setKeptDisabledIds((ids) => new Set([...ids, ...disabledIds]));
+    }
+    // eslint-disable-next-line solid/reactivity
+    return (): ReplacementItems => ({
+      isLoading: false,
+      items: items()?.filter((item) => missing.has(item.value)) || [],
+    });
+  }
+  const mergedSelectProps = mergeSelectProps<"items" | "isLoading" | "getReplacementItems" | "onFilterChange">(
+    selectProps,
+    {
+      items: () => items() || [],
+      isLoading: () => !items(),
+      getReplacementItems: () => getReplacementItems,
+      onFilterChange: () => (props.filterable ? "internal" : undefined),
+    },
+  );
   return <Select {...mergedSelectProps} />;
 };
 

@@ -1,6 +1,6 @@
 import type {Locator, Page} from "@playwright/test";
 import {DateTime} from "luxon";
-import {shownDateTime} from "../helpers/dates.ts";
+import {BROWSER_LOCALE, shownDateTime} from "../helpers/dates.ts";
 import {attributeToCreate, clientAttributes} from "../helpers/queries.ts";
 import {savedFile, stubSaveFilePicker, exportTable} from "../helpers/saved_file.ts";
 import {
@@ -12,6 +12,7 @@ import {
   chooseInFormSelect,
   clearAllFiltersButton,
   clearFilterButton,
+  closeFormSelectList,
   columnHeader,
   expectFormErrors,
   expectFormSuccess,
@@ -78,6 +79,12 @@ const FILLED_VIEW: Readonly<Record<string, string | RegExp>> = {
 };
 
 const editButton = (form: Locator) => form.getByRole("button", {name: "actions.edit"});
+
+/** Saves the client edit form, and waits for it to turn back into the details. */
+async function saveEdit(page: Page, form: Locator) {
+  await submitButton(page, "client_edit").click();
+  await expect(editButton(form)).toBeVisible();
+}
 
 async function expectLevelMark(form: Locator, apiName: string, level: string) {
   await expect(attributeRow(form, apiName).locator(`title=attributes.requirement_level.${level}`)).toBeVisible();
@@ -856,7 +863,7 @@ attributeValuesLayer.describe((artifact) => {
   });
 
   test(
-    "a client keeps the values whose dictionary positions were disabled since, through an edit",
+    "a client keeps the values whose dictionary positions were disabled since, until they are taken off in the form",
     {tag: "@ui"},
     async ({page, api}) => {
       const {facilityId, sizeIds, adultClientInfos, filledClientId} = artifact();
@@ -868,26 +875,64 @@ attributeValuesLayer.describe((artifact) => {
       }
       await login(page, STAFF);
       const form = await openDetails(page, adultClientInfos[0]!);
-      // The details still show the values.
+      const options = page.getByRole("option");
+      const disabledOptions = options.filter({hasText: "position_disabled_suffix"});
       await expect(attributeValue(form, "e2eSize")).toHaveText("Medium");
       await expect(attributeValue(form, "e2eSizes")).toHaveText("Large, Small");
-      await editButton(form).click();
-      // The form has lost them: the selects leave the disabled positions out.
-      await expect(formSelect(form, "client.e2eSize")).toHaveText("");
-      await expect(formSelect(form, "client.e2eSizes")).toHaveText("Small");
-      await formField(form, "client.e2eCount").fill("43");
-      await submitButton(page, "client_edit").click();
-      // The required one has to be given anew for anything to be saved.
-      await expectFormErrors(form, {"client.e2eSize": "required"});
-      await chooseInFormSelect(page, "client.e2eSize", "Small");
-      await submitButton(page, "client_edit").click();
-      await expectFormSuccess(page, "client_edit");
-      test.fail(
-        true,
-        "The selects of the dictionary attributes leave the disabled positions out, also those the client has: " +
-          "a save of any other change takes them off the client.",
-      );
-      expect((await e2eValues(staffApi, filledClientId)).e2eSizes).toEqual([sizeIds.large, sizeIds.small]);
+
+      await test.step("an edit of another field keeps the disabled positions", async () => {
+        await editButton(form).click();
+        await expect(formSelect(form, "client.e2eSize")).toContainText("Medium");
+        await expect(formSelect(form, "client.e2eSizes")).toContainText("Large");
+        await expect(formSelect(form, "client.e2eSizes")).toContainText("Small");
+        await formField(form, "client.e2eCount").fill("43");
+        await saveEdit(page, form);
+        expect(await e2eValues(staffApi, filledClientId)).toMatchObject({
+          e2eCount: 43,
+          e2eSize: sizeIds.medium,
+          e2eSizes: [sizeIds.large, sizeIds.small],
+        });
+      });
+
+      await test.step("each select offers the disabled position it has, marked, and no other", async () => {
+        await editButton(form).click();
+        await formSelect(form, "client.e2eSize").click();
+        await expect(options).toHaveText([/^Small$/, /^Medium\s*position_disabled_suffix$/]);
+        await page.keyboard.press("Escape");
+        await formSelect(form, "client.e2eSizes").click();
+        await expect(options).toHaveText([/^Small$/, /^Large\s*position_disabled_suffix$/]);
+      });
+
+      await test.step("a disabled position taken off stays on the list, and can be put back", async () => {
+        await disabledOptions.click();
+        await expect(formSelect(form, "client.e2eSizes")).not.toContainText("Large");
+        await expect(disabledOptions).toHaveText(/^Large/);
+        await disabledOptions.click();
+        await expect(formSelect(form, "client.e2eSizes")).toContainText("Large");
+        await closeFormSelectList(form);
+        await saveEdit(page, form);
+        // Put back, it is the last of the list.
+        expect((await e2eValues(staffApi, filledClientId)).e2eSizes).toEqual([sizeIds.small, sizeIds.large]);
+      });
+
+      await test.step("once saved without them, the disabled positions are not offered any more", async () => {
+        await editButton(form).click();
+        await chooseInFormSelect(page, "client.e2eSize", "Small");
+        await formSelect(form, "client.e2eSizes").click();
+        await disabledOptions.click();
+        await closeFormSelectList(form);
+        await saveEdit(page, form);
+        expect(await e2eValues(staffApi, filledClientId)).toMatchObject({
+          e2eSize: sizeIds.small,
+          e2eSizes: [sizeIds.small],
+        });
+        await editButton(form).click();
+        for (const fieldName of ["client.e2eSize", "client.e2eSizes"]) {
+          await formSelect(form, fieldName).click();
+          await expect(options).toHaveText(["Small"]);
+          await page.keyboard.press("Escape");
+        }
+      });
     },
   );
 
@@ -907,16 +952,12 @@ attributeValuesLayer.describe((artifact) => {
       await login(page, STAFF);
       const form = await openDetails(page, adultClientInfos[0]!);
       const input = attributeRow(form, "e2eMoment").locator('input[type="datetime-local"]');
-      const save = async () => {
-        await submitButton(page, "client_edit").click();
-        await expect(editButton(form)).toBeVisible();
-      };
 
       await test.step("an edit of another field keeps the time", async () => {
         await editButton(form).click();
         await expect(input).toHaveValue(DateTime.fromISO(FILLED_VALUES.e2eMoment).toFormat("yyyy-MM-dd'T'HH:mm"));
         await formField(form, "client.e2eLabel").fill("Saved");
-        await save();
+        await saveEdit(page, form);
         expect(await e2eValues(staffApi, filledClientId)).toMatchObject({
           e2eLabel: "Saved",
           e2eMoment: FILLED_VALUES.e2eMoment,
@@ -927,7 +968,7 @@ attributeValuesLayer.describe((artifact) => {
         await editButton(form).click();
         await input.fill(TYPED_MOMENT);
         await addToList(form, "e2eMoments", TYPED_MOMENT);
-        await save();
+        await saveEdit(page, form);
         expect(await moment()).toBe(apiTime(TYPED_MOMENT));
         expect(await clientAttributes(staffApi, facilityId, filledClientId)).toMatchObject({
           e2eMoments: [apiTime(TYPED_MOMENT)],
@@ -951,8 +992,78 @@ attributeValuesLayer.describe((artifact) => {
       await test.step("the time is cleared", async () => {
         await editButton(form).click();
         await input.fill("");
-        await save();
+        await saveEdit(page, form);
         expect(await moment()).toBeNull();
+      });
+    },
+  );
+
+  test(
+    "a list of times is edited item by item: one changed, one removed, one added, then all removed",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {facilityId, adultClientInfos, filledClientId} = artifact();
+      const staffApi = await api.loggedInAs(STAFF);
+      await (
+        await api.loggedInAs(ADMIN)
+      ).post(
+        `facility/${facilityId}/admin/attribute`,
+        attributeToCreate("e2eMoments", "datetime", {isMultiValue: true}),
+      );
+      // Not in the order of time: the list keeps the order it was given in.
+      const [later, earlier, last, changed, added] = [
+        "2024-06-15T08:45",
+        "2023-01-02T23:10",
+        "2025-11-30T12:00",
+        "2023-01-03T00:20",
+        "2022-02-28T06:05",
+      ];
+      const moments = async () => (await clientAttributes(staffApi, facilityId, filledClientId)).e2eMoments;
+      await staffApi.patch(`facility/${facilityId}/user/client/${filledClientId}`, {
+        client: {e2eMoments: [later, earlier, last].map(apiTime)},
+      });
+      await login(page, STAFF);
+      const form = await openDetails(page, adultClientInfos[0]!);
+      const inputs = listInputs(form, "e2eMoments");
+      const inputValues = () =>
+        inputs.evaluateAll((elements) => elements.map((element) => (element as HTMLInputElement).value));
+      // The times of a list are shown one under another, each after the name of its weekday.
+      const shown = (times: readonly string[]) =>
+        times
+          .map((time) => `${DateTime.fromISO(time).setLocale(BROWSER_LOCALE).toFormat("cccc")}, ${shownDateTime(time)}`)
+          .join("");
+      await expect(attributeValue(form, "e2eMoments")).toHaveText(shown([later, earlier, last]));
+
+      await test.step("the inputs show the local times, in the order of the list", async () => {
+        await editButton(form).click();
+        await expect.poll(inputValues).toEqual([later, earlier, last]);
+      });
+
+      await test.step("the first removed, the next changed, one added", async () => {
+        await removeFirstFromList(form, "e2eMoments");
+        // The inputs left take over the times left.
+        await expect.poll(inputValues).toEqual([earlier, last]);
+        await inputs.first().fill(changed);
+        await addToList(form, "e2eMoments", added);
+        await saveEdit(page, form);
+        expect(await moments()).toEqual([changed, last, added].map(apiTime));
+        await expect(attributeValue(form, "e2eMoments")).toHaveText(shown([changed, last, added]));
+      });
+
+      await test.step("an item left empty is refused", async () => {
+        await editButton(form).click();
+        await inputs.nth(1).fill("");
+        await submitButton(page, "client_edit").click();
+        await expectFormErrors(form, {"client.e2eMoments.1": "required"});
+      });
+
+      await test.step("all removed: the attribute has no value", async () => {
+        for (let count = 0; count < 3; count++) {
+          await removeFirstFromList(form, "e2eMoments");
+        }
+        await saveEdit(page, form);
+        expect(await moments()).toBeUndefined();
+        await expectSectionShown(attributeRow(form, "e2eMoments"), false);
       });
     },
   );

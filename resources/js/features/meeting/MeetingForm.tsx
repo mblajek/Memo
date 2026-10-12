@@ -186,13 +186,21 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
               itemFunc={(pos, defItem) => ({
                 ...defItem(),
                 label: () => (
-                  <span class={occupiedResourceIds()?.has(pos.id) ? "text-red-600" : undefined}>
+                  <span
+                    class={
+                      occupiedResourceIds()?.has(pos.id) ? "text-red-600" : pos.disabled ? "text-grey-text" : undefined
+                    }
+                  >
                     {defItem().text}
                     <Show when={occupiedResourceIds()?.has(pos.id)}>
                       {" "}
                       <span use:title={t("meetings.resource_conflicts.conflicting_resource")}>
                         <calendarIcons.Conflict class="inlineIcon" />
                       </span>
+                    </Show>
+                    <Show when={pos.disabled}>
+                      {" "}
+                      <span class="text-sm text-grey-text whitespace-nowrap">{t("position_disabled_suffix")}</span>
                     </Show>
                   </span>
                 ),

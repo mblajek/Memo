@@ -36,17 +36,21 @@ export async function chooseInFormSelect(page: Page, fieldName: string, optionTe
 }
 
 /**
- * Picks the options in the multiple form `Select` of the form, and closes its list. The list is
- * closed with a click on the first label of the form, so that must be the label of a text field:
- * the click focuses the label's control (and would toggle a checkbox).
+ * Closes the open list of a `Select` of the form, with a click on the first label of the form.
+ * That must be the label of a text field: the click focuses the label's control (and would toggle
+ * a checkbox). Escape may do more than close the list.
  */
+export async function closeFormSelectList(form: Locator) {
+  await form.locator("label").first().click();
+}
+
+/** Picks the options in the multiple form `Select` of the form, and closes its list. */
 export async function chooseAllInFormSelect(page: Page, form: Locator, fieldName: string, options: readonly string[]) {
   await formSelect(form, fieldName).click();
   for (const option of options) {
     await page.getByRole("option", {name: option}).click();
   }
-  // Escape may do more than close the list.
-  await form.locator("label").first().click();
+  await closeFormSelectList(form);
 }
 
 /**

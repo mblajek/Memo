@@ -69,6 +69,10 @@ trait AttributeValidation
      * Escalating an existing attribute to required is not allowed — rows created before the
      * change would silently violate the requirement. Any other level change is always valid.
      *
+     * TODO: Creating an attribute as required is not checked this way: objects that already
+     * exist are left without the value. Allow the required level, on create and on update, only
+     * when every object in the scope of the attribute has a value.
+     *
      * @throws ApiException
      */
     protected function assertRequirementLevelChangeAllowed(Attribute $attribute, ?string $target): void
