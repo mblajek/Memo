@@ -1,0 +1,81 @@
+name: E2E happy path
+
+# One long E2E test of an ordinary day of a facility (see playwright/TESTS.md), on servers the
+# tests start for themselves in containers. Run on the release branches, and by hand on any branch.
+on:
+  push:
+    branches:
+      - master
+      - RC-**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e_happy_path:
+    name: E2E happy path
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # The app's container runs as a user with the id of the owner of the checkout.
+      - name: Prepare .env
+        run: |
+          cp .env.example .env
+          echo "ME_USER_UID=$(id -u)" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v4
+      - name: Build the image of the app's container
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/php.dockerfile
+          build-args: |
+            ME_USER_UID=${{ env.ME_USER_UID }}
+            XDEBUG=0
+          tags: memo-memo-php
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v6
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+      - name: Install the PHP dependencies and prepare the app, in its container
+        run: |
+          in_app() {
+            docker run --rm --user me --volume "$PWD:/var/www" --entrypoint "" memo-memo-php "$@"
+          }
+          in_app composer install --prefer-dist --no-progress --no-interaction
+          in_app php artisan key:generate
+          in_app php artisan fz:create-integration-events-db
+
+      # pnpm version comes from the packageManager field in package.json
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - run: pnpm install
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Install the MariaDB client programs
+        run: sudo apt-get update && sudo apt-get install --yes mariadb-client
+
+      # The time zone of the app's users: the tests and the app have to agree on what day it is.
+      - run: pnpm :playwright-happy
+        env:
+          TZ: Europe/Warsaw
+
+      - name: Upload the report and the results of a failed or timed out run
+        if: ${{ failure() || cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-happy-path-results
+          path: |
+            playwright/playwright-report
+            playwright/test-results
+          retention-days: 7
