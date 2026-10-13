@@ -29,6 +29,10 @@ jobs:
       - uses: docker/setup-buildx-action@v4
       - name: Build the image of the app's container
         uses: docker/build-push-action@v7
+        env:
+          # No record of the build among the artifacts of the run, and no summary of it.
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
         with:
           context: .
           file: docker/php.dockerfile
