@@ -83,24 +83,24 @@ meetingsLayer.describe((artifact) => {
       });
 
       await test.step("date range filter", async () => {
-        await formField(main, "table.filter.from_date").fill(seededDay(0));
+        await formField(main, "table__filter__from__date").fill(seededDay(0));
         await expectRows(carl!, diana!, bea!);
-        await formField(main, "table.filter.to_date").fill(seededDay(1));
+        await formField(main, "table__filter__to__date").fill(seededDay(1));
         await expectRows(diana!, bea!);
       });
 
       await test.step("type filter, on top of the date range", async () => {
-        await chooseInFormSelect(page, "table.filter.val_typeDictId", /Integration Test Therapy/);
+        await chooseInFormSelect(page, "table__filter__val__typeDictId", /Integration Test Therapy/);
         await expectRows(diana!);
         await clearFilterButton(main, "date").click();
-        await expect(formField(main, "table.filter.from_date")).toHaveValue("");
+        await expect(formField(main, "table__filter__from__date")).toHaveValue("");
         await expectRows(diana!);
         await clearFilterButton(main, "typeDictId").click();
         await expectRows(carl!, diana!, bea!, adam!);
       });
 
       await test.step("staff filter", async () => {
-        await chooseInFormSelect(page, "table.filter.val_staff.*.userId", new RegExp(STAFF_ADMIN.name));
+        await chooseInFormSelect(page, "table__filter__val__staff.*.userId", new RegExp(STAFF_ADMIN.name));
         await expectRows(diana!);
         await clearFilterButton(main, "staff.*.userId").click();
         await expectRows(carl!, diana!, bea!, adam!);
@@ -263,7 +263,7 @@ meetingsLayer.describe((artifact) => {
     await expect(attendantCell(adultClientInfos[4]!.name)).toHaveCount(0);
 
     await test.step("filter by the kind of attendant", async () => {
-      await chooseInFormSelect(page, "table.filter.val_attendant.attendanceTypeDictId", /attendanceType\.client/);
+      await chooseInFormSelect(page, "table__filter__val__attendant.attendanceTypeDictId", /attendanceType\.client/);
       await expect(summary(6)).toBeVisible();
       await expect(rows).toHaveCount(6);
       await expect(attendantCell(STAFF.name)).toHaveCount(0);
@@ -272,7 +272,7 @@ meetingsLayer.describe((artifact) => {
     });
 
     await test.step("filter by the attendant", async () => {
-      await chooseInFormSelect(page, "table.filter.val_attendant.userId", new RegExp(STAFF_ADMIN.name));
+      await chooseInFormSelect(page, "table__filter__val__attendant.userId", new RegExp(STAFF_ADMIN.name));
       await expect(summary(1)).toBeVisible();
       await expect(rows).toHaveCount(1);
       await expect(rows).toContainText("Integration Test Therapy");
@@ -298,7 +298,7 @@ meetingsLayer.describe((artifact) => {
       await expect(tableRows(main, "Warszawa")).toContainText(carl);
 
       await test.step("filter by the client type", async () => {
-        await chooseInFormSelect(page, "table.filter.val_client.typeDictId", /clientType\.child/);
+        await chooseInFormSelect(page, "table__filter__val__client.typeDictId", /clientType\.child/);
         await expect(summary(2)).toBeVisible();
         for (const child of childClientInfos.slice(0, 2)) {
           await expect(rows.filter({hasText: child.name})).toHaveCount(2);
@@ -310,7 +310,7 @@ meetingsLayer.describe((artifact) => {
       });
 
       await test.step("filter by the client's city", async () => {
-        await formField(main, "table.filter.val_client.addressCity").fill("warsz");
+        await formField(main, "table__filter__val__client.addressCity").fill("warsz");
         await expect(summary(1)).toBeVisible();
         await expect(rows).toContainText(carl);
       });
@@ -483,7 +483,7 @@ meetingsLayer.describe((artifact) => {
       });
 
       await test.step("a filter that leaves one page takes the page buttons away", async () => {
-        await formField(main, "table.filter.to_date").fill(dates[1]!);
+        await formField(main, "table__filter__to__date").fill(dates[1]!);
         await expect(main.getByText("tables.tables.meeting.summary{count:6}")).toBeVisible();
         await expect(rows).toHaveCount(6);
         await expect(pageButton(main, 1)).toHaveCount(0);

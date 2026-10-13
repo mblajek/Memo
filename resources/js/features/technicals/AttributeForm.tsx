@@ -150,6 +150,7 @@ export const AttributeForm: VoidComponent<Props> = (allProps) => {
               <Show when={props.facilityMode}>
                 <div class="flex justify-end">
                   <CheckboxInput
+                    id="advanced_view"
                     checked={advancedViewChecked()}
                     onChecked={setAdvancedViewChecked}
                     labelBefore={<span class="font-normal">{t("forms.generic.advanced_view")} </span>}

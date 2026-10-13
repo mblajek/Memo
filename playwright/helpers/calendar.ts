@@ -40,7 +40,7 @@ export async function expectCalendarMode(page: Page, mode: CalendarMode) {
   const main = page.locator("main");
   const todayKey = mode === "month" ? "this_month" : "today";
   await expect(main.getByRole("button", {name: new RegExp(`^calendar\\.${todayKey}$`, "i")})).toBeVisible();
-  const resourceInputs = (type: string) => main.locator(`input[type="${type}"][id^="resourceSelected_"]`);
+  const resourceInputs = (type: string) => main.locator(`input[type="${type}"][id^="resourceSelected__"]`);
   await expect(resourceInputs(mode === "day" ? "checkbox" : "radio")).not.toHaveCount(0);
   await expect(resourceInputs(mode === "day" ? "radio" : "checkbox")).toHaveCount(0);
 }

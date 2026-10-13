@@ -554,9 +554,9 @@ attributeValuesLayer.describe((artifact) => {
         }
       };
       const field = (kind: "val" | "from" | "to", apiName: string) =>
-        formField(main, `table.filter.${kind}_client.${apiName}`);
+        formField(main, `table__filter__${kind}__client.${apiName}`);
       const select = (kind: "val" | "op", apiName: string, option: string | RegExp) =>
-        chooseInFormSelect(page, `table.filter.${kind}_client.${apiName}`, option);
+        chooseInFormSelect(page, `table__filter__${kind}__client.${apiName}`, option);
       const clear = async (apiName: string) => {
         await clearFilterButton(main, `client.${apiName}`).click();
         await expectClients(10);

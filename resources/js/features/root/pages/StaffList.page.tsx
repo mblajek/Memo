@@ -93,6 +93,7 @@ export default (() => {
         isFacilityAdmin() ? (
           <div class="flex items-center ml-2">
             <CheckboxInput
+              name="show_inactive"
               checked={showInactive()}
               onChecked={setShowInactive}
               label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}

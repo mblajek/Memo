@@ -107,7 +107,7 @@ export const SelectFilterModeControl: VoidComponent<ModeControlProps> = (props) 
   return (
     <div class="text-sm">
       <SegmentedControl
-        name={filterFieldNames.get(`mode_${props.columnName}`)}
+        name={filterFieldNames.get("mode", props.columnName)}
         items={SELECT_FILTER_MODES.map((m) => ({
           value: m,
           label: () => (

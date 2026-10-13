@@ -54,7 +54,7 @@ export const DictFilterControl: VoidComponent<DictFilterControlProps> = (props) 
   return (
     <div class={cx(s.filter, "min-w-24")}>
       <Select
-        name={filterFieldNames.get(`val_${schema().name}`)}
+        name={filterFieldNames.get("val", schema().name)}
         items={items()}
         value={value()}
         onValueChange={(newValue) => {

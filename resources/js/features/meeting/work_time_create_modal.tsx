@@ -81,13 +81,23 @@ export const createWorkTimeCreateModal = registerGlobalPageElement<Params>((args
                   <Show when={params().availableStaff}>
                     {(staff) => (
                       <label class="flex gap-1 items-center">
-                        <input type="radio" checked={!facilityWide()} onClick={[setFacilityWide, false]} />{" "}
+                        <input
+                          type="radio"
+                          name="facility_wide"
+                          checked={!facilityWide()}
+                          onClick={[setFacilityWide, false]}
+                        />{" "}
                         <UserLink type="staff" userId={staff()} link={false} />
                       </label>
                     )}
                   </Show>
                   <label class="flex gap-1 items-center">
-                    <input type="radio" checked={facilityWide()} onClick={[setFacilityWide, true]} />
+                    <input
+                      type="radio"
+                      name="facility_wide"
+                      checked={facilityWide()}
+                      onClick={[setFacilityWide, true]}
+                    />
                     <div class="flex gap-0.5">
                       <facilityIcons.Facility size="20" />
                       {t("meetings.facility_wide")}

@@ -239,13 +239,13 @@ facilityLayer.describe((artifact) => {
 
         // The list may get closed by the table still settling after the refresh.
         await expect(async () => {
-          await formSelect(main, "table.filter.val_iconSvg").click();
+          await formSelect(main, "table__filter__val__iconSvg").click();
           await expect(page.getByRole("option")).toHaveCount(3, {timeout: 2000});
           await page.getByRole("option", {name: "tables.filter.non_null_value"}).click({timeout: 2000});
         }).toPass();
         await expect(tableRows(main, FACILITY.name)).toHaveCount(1);
         await expect(tableRows(main, "Facility with no icon")).toHaveCount(0);
-        await chooseInFormSelect(page, "table.filter.val_iconSvg", "tables.filter.null_value");
+        await chooseInFormSelect(page, "table__filter__val__iconSvg", "tables.filter.null_value");
         await expect(tableRows(main, "Facility with no icon")).toHaveCount(1);
         await expect(tableRows(main, FACILITY.name)).toHaveCount(0);
         await clearFilterButton(main, "iconSvg").click();

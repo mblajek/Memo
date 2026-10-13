@@ -910,7 +910,7 @@ timeTablesLayer.describe((artifact) => {
       // The page has the month view only.
       await expect(main.getByRole("button", {name: /^calendar\.this_month$/i})).toBeVisible();
       await expect(main.getByText("calendar.units.week")).toHaveCount(0);
-      await expect(main.locator('input[id^="resourceSelected_"]')).toHaveCount(0);
+      await expect(main.locator('input[id^="resourceSelected__"]')).toHaveCount(0);
 
       const staffLeave = main.getByText(STAFF_LEAVE_NOTES);
       const staffAdminLeave = main.getByText(new RegExp(`12:00–14:00\\s+${STAFF_ADMIN_LEAVE_NOTES}`));

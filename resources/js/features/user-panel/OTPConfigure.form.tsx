@@ -143,6 +143,7 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
         <div class="flex justify-between gap-2">
           <div>{t("otp.configure.time_left", {time: qrCodeTimeLeft()?.toFormat("m:ss")})}</div>
           <CheckboxInput
+            name="hide_qr_code"
             checked={hideQRCode()}
             onChecked={setHideQRCode}
             label={<span class="font-normal">{t("actions.hide")}</span>}

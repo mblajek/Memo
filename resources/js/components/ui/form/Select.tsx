@@ -769,8 +769,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                       <input
                         ref={input}
                         {...inputProps}
-                        // This is just for user entry, and not the actual form value.
-                        name=""
+                        // Only for user entry, not the actual form value, so it has no name.
+                        id={`${props.name}__input`}
                         class="grow shrink basis-0 px-1 w-8 bg-inherit outline-hidden rounded-sm"
                         value={filterText()}
                         onInput={(e) => setFilterText(e.currentTarget.value)}
@@ -811,8 +811,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                       <input
                         ref={input}
                         {...inputProps}
-                        // This is just for user entry, and not the actual form value.
-                        name=""
+                        // Only for user entry, not the actual form value, so it has no name.
+                        id={`${props.name}__input`}
                         class="col-start-1 row-start-1 min-w-0 bg-transparent rounded-sm"
                         style={{padding: paddingStyle()}}
                         value={filterText()}
@@ -829,7 +829,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
               }
               floating={(posStyle) => {
                 function elemId(value: string) {
-                  return `${props.name}__item_${value}`;
+                  return `${props.name}__item__${value}`;
                 }
                 return (
                   <Show when={isOpen()}>

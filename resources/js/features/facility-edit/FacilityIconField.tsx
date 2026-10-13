@@ -44,7 +44,7 @@ export const FacilityIconField: VoidComponent<Props> = (props) => {
     <FieldBox name={props.name}>
       <input
         ref={fileInput}
-        id={`${props.name}_file`}
+        id={`${props.name}__file`}
         type="file"
         class="hidden"
         accept=".svg,image/svg+xml"
@@ -70,7 +70,7 @@ export const FacilityIconField: VoidComponent<Props> = (props) => {
               </Button>
             </div>
             <CheckboxInput
-              id={`${props.name}_edit_svg`}
+              id={`${props.name}__edit_svg`}
               label={<span class="font-normal">{t("forms.facility_icon.edit_svg")}</span>}
               checked={editing()}
               onChecked={setEditing}

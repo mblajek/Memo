@@ -112,7 +112,7 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
           component={props.contents}
           hovered={hovered()}
           coloring={coloring()}
-          class="overflow-clip outline outline-0 outline-memo-active"
+          class="overflow-clip outline-0 outline-memo-active"
           data-entity-id={props.entityId}
           {...hoverEvents(setHovered)}
         />

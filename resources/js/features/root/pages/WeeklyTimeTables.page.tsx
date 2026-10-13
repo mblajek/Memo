@@ -517,6 +517,7 @@ export default (() => {
                 <div class="flex justify-between gap-1 items-center">
                   <div class={weekdaySelected() ? undefined : "text-grey-text"}>{header}</div>
                   <CheckboxInput
+                    name={`weekday_active__${weekday}`}
                     checked={weekdaySelected()}
                     onChecked={setWeekdaySelected}
                     onDblClick={() => {
@@ -726,6 +727,7 @@ export default (() => {
             <TextInput
               class="w-52 px-2"
               type="month"
+              name="from_month"
               data-role="from-month"
               value={fromMonth()}
               onInput={({target: {value}}) => setFromMonth(value)}
@@ -734,6 +736,7 @@ export default (() => {
             <TextInput
               class="w-52 px-2"
               type="month"
+              name="to_month"
               data-role="to-month"
               value={toMonth()}
               onInput={({target: {value}}) => setToMonth(value)}

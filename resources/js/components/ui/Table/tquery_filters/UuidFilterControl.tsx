@@ -42,7 +42,7 @@ export const UuidFilterControl: FilterControl<Filter> = (props) => {
       <div class={cx(s.wideEdit, "min-h-small-input flex items-baseline")}>
         <span class="w-1.5 text-center font-semibold">=</span>
         <input
-          name={filterFieldNames.get(`val_${props.schema.name}`)}
+          name={filterFieldNames.get("val", props.schema.name)}
           type="text"
           autocomplete="off"
           class="h-full w-full border border-input-border rounded-sm font-mono"

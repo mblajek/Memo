@@ -220,6 +220,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                       </Show>
                     </div>
                     <TextInput
+                      name="table_saved_view_name"
                       class="min-h-big-input px-2"
                       autofocus
                       value={getNewName()}
@@ -450,6 +451,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                           <div class="flex items-center">
                             <actionIcons.Search class="px-0.5" size="24" />
                             <SearchInput
+                              name="table_saved_view_columns_search"
                               divClass="grow"
                               placeholder={t("tables.columns_search.placeholder")}
                               value={search()}
@@ -656,6 +658,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                 return (
                                   <div class="flex items-center gap-1">
                                     <CheckboxInput
+                                      name={`table_saved_view_include__${view.name}`}
                                       checked={isIncluded(view.name)}
                                       onChecked={(checked) => setIncluded((i) => new Map(i).set(view.name, checked))}
                                     />
@@ -752,6 +755,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 <span class="font-normal text-xs">{t("tables.saved_views.advanced_view.abbreviation")} </span>
               }
               title={t("tables.saved_views.advanced_view")}
+              name="table_saved_views_advanced_view"
               checked={advancedView()}
               onChecked={setAdvancedView}
             />
@@ -769,7 +773,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                         <Button
                           data-view-name={state().name}
                           class={cx(
-                            "w-full minimal px-1! text-start outline outline-0 outline-memo-active flex flex-wrap justify-between gap-x-2",
+                            "w-full minimal px-1! text-start outline-0 outline-memo-active flex flex-wrap justify-between gap-x-2",
                             summary().modifiesBaseSummary?.any ? undefined : "bg-select!",
                             state().default ? "text-grey-text" : undefined,
                           )}
@@ -932,6 +936,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
           </div>
           <div class="max-w-md grid gap-x-1" style={{"grid-template-columns": "1fr min(6rem)"}}>
             <SearchInput
+              name="table_saved_view_new_name"
               placeholder={t("tables.saved_views.new_placeholder")}
               value={newName()}
               onValueChange={setNewName}
@@ -1006,6 +1011,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
               <CopyToClipboard text={currentInputViewCode()} showDisabledOnEmpty />
             </div>
             <TextInput
+              name="table_saved_view_code"
               class="grow w-full min-h-small-input px-1 font-mono text-xs"
               aria-invalid={!!codeErrorMessage()}
               value={inputCode()}

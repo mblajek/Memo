@@ -58,7 +58,7 @@ export const BoolFilterControl: FilterControl<Filter> = (props) => {
     <div class={cx(s.filter, s.filterLine)}>
       <div class="grow flex flex-col items-stretch">
         <Select
-          name={filterFieldNames.get(`val_${props.schema.name}`)}
+          name={filterFieldNames.get("val", props.schema.name)}
           items={items()}
           value={value()}
           onValueChange={(value) => {

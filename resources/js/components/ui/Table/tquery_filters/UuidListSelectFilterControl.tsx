@@ -42,7 +42,7 @@ export const UuidListSelectFilterControl: VoidComponent<Props> = (allProps) => {
     <div class={cx(s.filter, "min-w-24 flex flex-col items-stretch gap-0.5")}>
       <SelectFilterModeControl columnName={schema().name} mode={mode()} onModeChange={setMode} />
       <TQuerySelect
-        name={filterFieldNames.get(`val_${schema().name}`)}
+        name={filterFieldNames.get("val", schema().name)}
         {...selectProps}
         value={value()}
         onValueChange={setValue}

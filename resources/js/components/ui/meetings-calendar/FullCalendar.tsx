@@ -296,6 +296,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
         <div class="px-2 py-1 flex flex-col gap-1">
           <Show when={userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"])}>
             <CheckboxInput
+              name="show_inactive_staff"
               checked={showInactiveStaff()}
               onChecked={(checked) =>
                 batch(() => {
@@ -315,6 +316,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
             />
           </Show>
           <CheckboxInput
+            name="alt_staff_sort"
             checked={altStaffSort()}
             onChecked={setAltStaffSort}
             label={<span class="font-normal">{t("facility_user.staff.list_alt_sort")}</span>}

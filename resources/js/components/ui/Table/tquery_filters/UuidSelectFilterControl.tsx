@@ -31,7 +31,7 @@ export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
   return (
     <div class={cx(s.filter, "min-w-24")}>
       <TQuerySelect
-        name={filterFieldNames.get(`val_${props.schema.name}`)}
+        name={filterFieldNames.get("val", props.schema.name)}
         {...selectProps}
         topItems={topItems()}
         value={value()}

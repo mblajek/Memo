@@ -228,7 +228,12 @@ export function useWeeklyTimeTablesActions() {
       );
 
       const SkipHolidaysControl: VoidComponent = () => (
-        <CheckboxInput checked={skipHolidays()} onChecked={setSkipHolidays} label={tt("target_weeks.skip_holidays")} />
+        <CheckboxInput
+          name="skip_holidays"
+          checked={skipHolidays()}
+          onChecked={setSkipHolidays}
+          label={tt("target_weeks.skip_holidays")}
+        />
       );
 
       return confirmation
@@ -259,6 +264,7 @@ export function useWeeklyTimeTablesActions() {
                     <ActiveWeekdaysInfo />
                     <div class="flex flex-col">
                       <CheckboxInput
+                        name="delete_existing"
                         checked={deleteExisting()}
                         onChecked={setDeleteExisting}
                         label={tt("target_weeks.delete_existing")}

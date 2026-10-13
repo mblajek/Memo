@@ -109,7 +109,7 @@ export const IntFilterControl: FilterControl<Filter> = (props) => {
       </Show>
       <div class={s.wideEdit}>
         <TextInput
-          name={filterFieldNames.get(`from_${props.schema.name}`)}
+          name={filterFieldNames.get("from", props.schema.name)}
           type="number"
           class="w-full min-h-small-input"
           max={getInputsData().conflict ? undefined : upper()}
@@ -124,7 +124,7 @@ export const IntFilterControl: FilterControl<Filter> = (props) => {
       <div>{t("range.max")}</div>
       <div class={s.wideEdit}>
         <TextInput
-          name={filterFieldNames.get(`to_${props.schema.name}`)}
+          name={filterFieldNames.get("to", props.schema.name)}
           type="number"
           class="w-full min-h-small-input"
           min={lower()}

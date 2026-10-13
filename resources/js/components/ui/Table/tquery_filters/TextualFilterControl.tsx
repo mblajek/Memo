@@ -137,7 +137,7 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
     <div class={cx(s.filter, s.filterLine)}>
       <div class="w-10">
         <Select
-          name={filterFieldNames.get(`op_${props.schema.name}`)}
+          name={filterFieldNames.get("op", props.schema.name)}
           items={items()}
           value={mode()}
           onValueChange={(value) => setMode(value! as Mode)}
@@ -147,7 +147,7 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
       </div>
       <div class={s.wideEdit}>
         <SearchInput
-          name={filterFieldNames.get(`val_${props.schema.name}`)}
+          name={filterFieldNames.get("val", props.schema.name)}
           autocomplete="off"
           class="h-full w-full min-h-small-input"
           value={inputUsed() ? inputText() : ""}

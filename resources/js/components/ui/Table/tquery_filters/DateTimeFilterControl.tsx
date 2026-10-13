@@ -170,7 +170,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       </Show>
       <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <DateInput
-          name={filterFieldNames.get(`from_${props.schema.name}`)}
+          name={filterFieldNames.get("from", props.schema.name)}
           type={inputsType()}
           outerClass="w-full"
           class="min-h-small-input"
@@ -186,7 +186,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.to")}</div>
       <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <DateInput
-          name={filterFieldNames.get(`to_${props.schema.name}`)}
+          name={filterFieldNames.get("to", props.schema.name)}
           type={inputsType()}
           outerClass="w-full"
           class="min-h-small-input"

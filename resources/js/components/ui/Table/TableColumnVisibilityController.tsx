@@ -77,6 +77,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             <actionIcons.Search class="shrink-0 px-0.5" size="24" />
             <SearchInput
               ref={searchInput}
+              name="table_columns_search"
               divClass="grow"
               class="outline-hidden"
               value={search()}
@@ -112,7 +113,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                     <div class="flex gap-2 items-baseline">
                       <input
                         class={column.getCanHide() ? undefined : "invisible"}
-                        name={`column_visibility_${column.id}`}
+                        name={`column_visibility__${column.id}`}
                         checked={visibility()?.[column.id]}
                         onChange={({target}) => setVisibility((v) => ({...v, [column.id]: target.checked}))}
                         type="checkbox"

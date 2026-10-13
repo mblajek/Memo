@@ -39,7 +39,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
     <div {...htmlAttributes.merge(divProps, {class: "flex flex-col gap-2"})}>
       <For each={props.resourceGroups}>
         {({label, resources}, i) => {
-          const checkboxId = () => (props.mode === "checkbox" ? `resourceGroup_${i()}` : undefined);
+          const checkboxId = () => (props.mode === "checkbox" ? `resourceGroup__${i()}` : undefined);
           const [checkbox, setCheckbox] = createSignal<HTMLInputElement>();
           const state = createMemo(() => {
             if (!checkboxId()) {
@@ -95,7 +95,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
               <div class="flex flex-col">
                 <For each={resources} fallback={<EmptyValueSymbol class="px-1" />}>
                   {({id, label}) => {
-                    const inputId = `resourceSelected_${id}`;
+                    const inputId = `resourceSelected__${id}`;
                     const checked = () => props.selection.has(id);
                     return (
                       <label
