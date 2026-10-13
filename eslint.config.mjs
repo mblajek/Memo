@@ -112,4 +112,11 @@ export default defineConfig([
       reportUnusedDisableDirectives: "error",
     },
   },
+  {
+    files: ["**/*.tsx"],
+    rules: {
+      // Does not see that `ref={v}` in JSX assigns the variable.
+      "no-unassigned-vars": "off",
+    },
+  },
 ]);

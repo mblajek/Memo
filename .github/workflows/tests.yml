@@ -21,10 +21,7 @@ jobs:
           node-version: "latest"
           cache: "pnpm"
       - run: pnpm install
-      - run: pnpm run typecheck
-      - run: pnpm run lint
-      - run: pnpm run playwright-typecheck
-      - run: pnpm run playwright-lint
+      - run: pnpm run checks
       - run: LARAVEL_BYPASS_ENV_CHECK=1 pnpm test
 
   backend_test:

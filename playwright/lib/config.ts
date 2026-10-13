@@ -84,6 +84,7 @@ export async function loadConfig() {
       throw new Error(
         `E2E config not found at ${p}. Copy a file from config/*.template.json to config/config.json ` +
           `and fill it in, or set MEMO_E2E_CONFIG to a different path.`,
+        {cause: e},
       );
     }
     throw e;
