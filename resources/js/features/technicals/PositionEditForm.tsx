@@ -64,7 +64,6 @@ export const PositionEditForm: VoidComponent<Props> = (props) => {
 
   async function updatePosition(values: PositionFormType) {
     await positionMutation.mutateAsync(values);
-    // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
       toastSuccess(t("forms.position_edit.success"));

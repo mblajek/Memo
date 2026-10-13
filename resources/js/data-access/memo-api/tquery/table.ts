@@ -131,7 +131,6 @@ export function createTableRequestCreator({
     }
     return map;
   });
-  // eslint-disable-next-line solid/reactivity
   return (schema) => {
     const [allInitialisedInternal, setAllInitialisedInternal] = createSignal(false);
     const [columnVisibility, setColumnVisibility] = createSignal<Readonly<VisibilityState>>(

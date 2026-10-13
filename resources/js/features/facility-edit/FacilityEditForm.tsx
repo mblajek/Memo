@@ -34,7 +34,6 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
       id: props.id,
       ...values,
     });
-    // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
       toastSuccess(t("forms.facility_edit.success"));

@@ -6,7 +6,6 @@ import {Accessor, createEffect, createSignal, on, onCleanup} from "solid-js";
 
 export const useClientGroupFetcher = createCached(() => {
   const [clientGroupsCounts, setClientGroupsCounts] = createSignal<ReadonlyMap<string, number>>(new Map());
-  // eslint-disable-next-line solid/reactivity
   const delayedClientGroups = delayedAccessor((): readonly string[] => [...clientGroupsCounts().keys()], {timeMs: 100});
   const dataQuery = useQuery(() => ({
     ...FacilityClientGroup.clientGroupsQueryOptions(delayedClientGroups()),

@@ -44,7 +44,6 @@ export const DictionaryCreateForm: VoidComponent<Props> = (props) => {
 
   async function createDictionary(values: DictionaryFormType) {
     await dictionaryMutation.mutateAsync(values);
-    // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
       toastSuccess(t("forms.dictionary_create.success"));

@@ -105,7 +105,6 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
 
   async function configureOTP(values: otpConfigure.FormType) {
     await configureMutation.mutateAsync({otp: getOTPFromFormValue(values.otp)});
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.otp_configure.success"));
       props.onSuccess?.();

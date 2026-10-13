@@ -31,7 +31,6 @@ export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
   const t = useLangFunc();
   const location = useLocation();
   const isOnThisPage = () => location.pathname === anchorProps.href;
-  // eslint-disable-next-line solid/reactivity
   const newTabAnchorProps = mergeProps(anchorProps, () => props.newTabLinkProps);
   return (
     <span class="text-current">

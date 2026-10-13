@@ -102,7 +102,6 @@ export const DictionarySelect: VoidComponent<Props> = (allProps) => {
     if (disabledIds?.length) {
       setKeptDisabledIds((ids) => new Set([...ids, ...disabledIds]));
     }
-    // eslint-disable-next-line solid/reactivity
     return (): ReplacementItems => ({
       isLoading: false,
       items: items()?.filter((item) => missing.has(item.value)) || [],

@@ -161,7 +161,6 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
     const [getNewName, setNewName] = createSignal("");
     const newName = () => getNewName().trim();
     const newNameConflict = () => persistedState().states.some((st) => st.name === newName());
-    // eslint-disable-next-line solid/reactivity
     const [currentInputView, setCurrentInputView] = createSignal(currentView());
     createEffect(() => {
       if (!advancedView()) {

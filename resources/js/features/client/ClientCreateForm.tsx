@@ -30,7 +30,6 @@ export const ClientCreateForm: VoidComponent<ClientCreateFormProps> = (props) =>
         client: clientAttributesProcessor.extract(values.client),
       })
     ).data.data;
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.client_create.success"));
       props.onSuccess?.(id);

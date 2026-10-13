@@ -34,7 +34,6 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
       return;
     }
     const ids = (await meetingMutation.mutateAsync({id: props.startMeeting.id, request: params})).data.data.ids;
-    // eslint-disable-next-line solid/reactivity
     return () => {
       if (props.showToast ?? true) {
         toastSuccess(t(`forms.${props.id}.success`));

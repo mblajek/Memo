@@ -35,7 +35,6 @@ export const ClientGroupEditForm: VoidComponent<ClientGroupEditFormProps> = (pro
 
   async function updateClientGroup(values: Partial<ClientGroupFormType>) {
     await clientGroupPatchMutation.mutateAsync({id: props.staticGroupId, ...transformFormValues(values)});
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.client_group_edit.success"));
       props.onSuccess?.();

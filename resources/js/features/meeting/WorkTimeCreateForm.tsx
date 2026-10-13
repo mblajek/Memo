@@ -46,6 +46,8 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
   }
 
   async function createWorkTimes(values: WorkTimeFormType) {
+    // The values as submitted, on purpose.
+    // eslint-disable-next-line solid/reactivity
     const meeting = transformFormValues(values);
     const {id, cloneIds} = await meetingAPI.create(
       meeting,
@@ -56,7 +58,6 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
           })
         : undefined,
     );
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(
         t(cloneIds?.length ? "forms.work_time_series_create.success" : `forms.${props.subtype.formId}.success`),

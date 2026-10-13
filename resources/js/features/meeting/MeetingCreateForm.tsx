@@ -57,7 +57,6 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
           })
         : undefined,
     );
-    // eslint-disable-next-line solid/reactivity
     return () => {
       if (props.showToast ?? true) {
         toastSuccess(t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"));

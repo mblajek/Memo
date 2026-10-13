@@ -72,7 +72,6 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       password: showOTP() ? password() : values.password,
       otp: getOTPFromFormValue(values.otp),
     });
-    // eslint-disable-next-line solid/reactivity
     return () => {
       setProbablyLoggedIn(true);
       setPersistedEmail(values.email);

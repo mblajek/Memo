@@ -20,9 +20,7 @@ export function compressingEncoder(): AsyncSerialiser<string> {
     async deserialise(value: string) {
       return dec.decode(
         await readAll(
-          new Blob([Base64.toUint8Array(value) as Uint8Array<ArrayBuffer>])
-            .stream()
-            .pipeThrough(new DecompressionStream("deflate-raw")),
+          new Blob([Base64.toUint8Array(value)]).stream().pipeThrough(new DecompressionStream("deflate-raw")),
         ),
       );
     },

@@ -28,7 +28,6 @@ export const ClientGroupCreateForm: VoidComponent<ClientGroupCreateFormProps> = 
 
   async function createClientGroup(values: ClientGroupFormType) {
     const {id} = (await clientGroupCreateMutation.mutateAsync(transformFormValues(values))).data.data;
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.client_group_create.success"));
       props.onSuccess?.(id);

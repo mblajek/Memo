@@ -55,7 +55,6 @@ export const DictionaryEditForm: VoidComponent<Props> = (props) => {
 
   async function updateDictionary(values: DictionaryFormType) {
     await dictionaryMutation.mutateAsync(values);
-    // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
       toastSuccess(t("forms.dictionary_edit.success"));

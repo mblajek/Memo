@@ -106,7 +106,6 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
         hasFacilityAdmin: values.member.hasFacilityAdmin,
       },
     });
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.user_edit.success"));
       props.onSuccess?.();

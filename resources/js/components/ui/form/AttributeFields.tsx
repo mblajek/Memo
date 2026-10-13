@@ -110,6 +110,8 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
   const AttributeField: VoidComponent<{readonly attribute: Attribute}> = (aProps) => {
     const name = () => fieldName(aProps.attribute);
     const field = () => {
+      // Only read during this call of the enclosing function.
+      // eslint-disable-next-line solid/reactivity
       const nullable = compareRequirementLevels(requirementLevel(aProps.attribute), "required") < 0;
 
       function simpleAttributeField(type: SimpleAttributeType, fieldName = name()) {

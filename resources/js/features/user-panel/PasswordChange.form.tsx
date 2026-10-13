@@ -45,7 +45,6 @@ export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props
 
   async function changePassword(values: Output) {
     await mutation.mutateAsync(values);
-    // eslint-disable-next-line solid/reactivity
     return () => {
       // For better integration with password managers.
       // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/

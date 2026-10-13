@@ -80,7 +80,6 @@ export const Tabs: VoidComponent<Props> = (props) => {
           {(tab) => {
             // Delay hiding the contents by 0ms to avoid showing neither of the tabs for a moment,
             // as this might cause the page to jump up because the contents is suddenly much shorter.
-            // eslint-disable-next-line solid/reactivity
             const isActive = delayedAccessor(() => tab.id === activeId(), {
               timeMs: 0,
               outputImmediately: (active) => active,

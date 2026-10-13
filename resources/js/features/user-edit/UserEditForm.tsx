@@ -72,7 +72,6 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
       invalidateData();
       return;
     }
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.user_edit.success"));
       props.onSuccess?.();

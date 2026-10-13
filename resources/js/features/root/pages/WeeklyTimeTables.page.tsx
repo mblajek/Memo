@@ -121,7 +121,6 @@ export default (() => {
   const weekdaysSelection = new Map<WeekdayNumbers, Signal<boolean>>();
   const weekdays = getWeekdays();
   for (const {weekday} of weekdays) {
-    // eslint-disable-next-line solid/reactivity
     weekdaysSelection.set(weekday, createSignal(true));
   }
   const defaultFromMonth = createMemo(() => currentDate().minus({months: 1}).toFormat("yyyy-MM"));
@@ -157,7 +156,6 @@ export default (() => {
   const fromDate = createMemo((prev: DateTime | undefined) =>
     fromMonth()
       ? withNoThrowOnInvalid(
-          // eslint-disable-next-line solid/reactivity
           () => DateTime.fromFormat(fromMonth(), "yyyy-MM").startOf("week", {useLocaleWeeks: true}),
           () => prev,
         )
@@ -166,7 +164,6 @@ export default (() => {
   const toDate = createMemo((prev: DateTime | undefined) =>
     toMonth()
       ? withNoThrowOnInvalid(
-          // eslint-disable-next-line solid/reactivity
           () => DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month").endOf("week", {useLocaleWeeks: true}),
           () => prev,
         )

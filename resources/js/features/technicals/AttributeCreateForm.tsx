@@ -51,7 +51,6 @@ export const AttributeCreateForm: VoidComponent<Props> = (props) => {
 
   async function createAttribute(values: AttributeFormType) {
     await attributeMutation.mutateAsync(values);
-    // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
       toastSuccess(t("forms.attribute_create.success"));

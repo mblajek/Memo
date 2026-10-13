@@ -888,9 +888,9 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
   }
 
   function getCalendarColumnPart(day: DateTime, resourceId: string, marked?: boolean) {
-    const isStaff = staffById().has(resourceId);
-    const relevantBlocks = createMemo(() => blocks().filter(blocksFilter(resourceId, isStaff)));
-    const relevantEvents = createMemo(() => events().filter(eventsFilter(resourceId, isStaff)));
+    const isStaff = () => staffById().has(resourceId);
+    const relevantBlocks = createMemo(() => blocks().filter(blocksFilter(resourceId, isStaff())));
+    const relevantEvents = createMemo(() => events().filter(eventsFilter(resourceId, isStaff())));
     return {
       day,
       allDayArea: () => (
@@ -905,7 +905,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
               meetingCreateModal.show({
                 initialValues: {
                   ...meetingTimeFullDayInitialValue(day),
-                  ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
+                  ...(isStaff() ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
                 onSuccess: onMeetingsCreated,
                 showToast: false,
@@ -936,7 +936,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
               meetingCreateModal.show({
                 initialValues: {
                   ...meetingTimePartDayInitialValue(time),
-                  ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
+                  ...(isStaff() ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
                 onSuccess: onMeetingsCreated,
                 showToast: false,
@@ -969,7 +969,6 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
         if (!resource) {
           return [];
         }
-        // eslint-disable-next-line solid/reactivity
         return Array.from(daysSelection(), (day) => ({
           header: () => (
             <DayHeader

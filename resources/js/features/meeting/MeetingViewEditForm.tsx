@@ -81,7 +81,6 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         return;
     }
     await meetingUpdateMutation.mutateAsync({id: props.staticMeetingId, ...meetingPatch});
-    // eslint-disable-next-line solid/reactivity
     return () => {
       if (props.showToast ?? true) {
         toastSuccess(t("forms.meeting_edit.success"));

@@ -72,7 +72,6 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
     const origMeeting = workTime();
     const meetingPatch = transformFormValues(values);
     await meetingUpdateMutation.mutateAsync({id: props.staticMeetingId, ...meetingPatch});
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t(`forms.${props.subtype.formId}.success`));
       props.onEdited?.({

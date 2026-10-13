@@ -296,7 +296,6 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
         });
         // Give the query time to change to the new parameters.
         setTimeout(() => setReplacementEnabled(true));
-        // eslint-disable-next-line solid/reactivity
         return () =>
           ({
             isLoading: replacementData.dataQuery.isFetching || !replacementEnabled(),

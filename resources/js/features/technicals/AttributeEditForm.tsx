@@ -55,7 +55,6 @@ export const AttributeEditForm: VoidComponent<Props> = (props) => {
       description: values.description || null,
       metadata: attributeMetadataForSave(values.metadata),
     });
-    // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
       toastSuccess(t("forms.attribute_edit.success"));

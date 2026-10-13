@@ -115,7 +115,10 @@ export const Floating: VoidComponent<Props> = (props) => {
   });
   createRenderEffect(() => {
     if (referenceElement() && floatingElement()) {
+      // The effect runs again when either element changes, so capturing them here is fine.
+      // eslint-disable-next-line solid/reactivity
       const refElement = referenceElement()!;
+      // eslint-disable-next-line solid/reactivity
       const floatElement = floatingElement()!;
       function updatePosition() {
         void computePosition(refElement, floatElement, props.options).then(setComputed);

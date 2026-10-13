@@ -23,7 +23,6 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
 
   async function createFacility(values: FacilityFormType) {
     await facilityMutation.mutateAsync(values);
-    // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.facility_create.success"));
       props.onSuccess?.();

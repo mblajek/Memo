@@ -44,7 +44,6 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
   const blocksToDayMinuteRange = createMemo(() => mapToDayMinuteRange(props.blocks));
   const eventsToDayMinuteRange = createMemo(() => mapToDayMinuteRange(props.events));
   const overlapsMap = createMemo(() =>
-    // eslint-disable-next-line solid/reactivity
     calculateOverlaps([...eventsToDayMinuteRange().keys()], (event) => eventsToDayMinuteRange().get(event)!),
   );
 

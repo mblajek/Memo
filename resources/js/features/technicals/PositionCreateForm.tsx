@@ -51,7 +51,6 @@ export const PositionCreateForm: VoidComponent<Props> = (props) => {
 
   async function createPosition(values: PositionFormType) {
     await positionMutation.mutateAsync(values);
-    // eslint-disable-next-line solid/reactivity
     return () => {
       props.onSuccess?.();
       toastSuccess(t("forms.position_create.success"));

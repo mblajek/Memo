@@ -287,10 +287,7 @@ export function useWeeklyTimeTablesActions() {
               }),
           modalStyle: MODAL_STYLE_PRESETS.medium,
         })
-        .then(
-          // eslint-disable-next-line solid/reactivity
-          (confirmed) => (confirmed ? {options: options(), transaction: transaction()} : undefined),
-        );
+        .then((confirmed) => (confirmed ? {options: options(), transaction: transaction()} : undefined));
     });
   }
 
