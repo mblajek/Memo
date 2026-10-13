@@ -53,6 +53,7 @@ facility:
   _name_plural: "placówki"
   url: "adres Memo"
   meetingNotificationTemplateSubject: "treść powiadomienia SMS"
+  iconSvg: "ikona"
   members: "osoby przypisane do placówki"
   userCount: "liczba osób"
   facilityAdmins.*.name: "administratorzy"

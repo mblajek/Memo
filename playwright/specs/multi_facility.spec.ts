@@ -1,3 +1,4 @@
+import type {Page} from "@playwright/test";
 import {loadConfig} from "../lib/config.ts";
 import {FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
 import {OTHER_FACILITY, secondFacilityLayer} from "../lib/layers/second_facility.ts";
@@ -126,4 +127,42 @@ secondFacilityLayer.describe((artifact) => {
       await expect.poll(() => lastLoginFacilityId(pageApi)).toBe(otherFacilityId);
     },
   );
+
+  // Not read-only: sets an icon, and opening the other facility's URL changes `lastLoginFacilityId`.
+  test("each tab shows the icon of its own facility", {tag: "@ui"}, async ({page, globalAdminApi}) => {
+    const {facilityId, otherFacilityId} = artifact();
+    const icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 2"><circle cx="1" cy="1" r="1"/></svg>';
+    await globalAdminApi.patch(`admin/facility/${otherFacilityId}`, {iconSvg: icon});
+    const logoIcon = (ofPage: Page) => ofPage.locator('image:not([href="/img/memo_logo.svg"])').first();
+    const defaultIconHref = "/img/cpd_children_logo.svg";
+    const otherIconHref = new RegExp(`^/api/v1/system/facility/${otherFacilityId}/icon\\?h=\\w+$`);
+    /** The stored facility to take the icon from when no facility is active. */
+    const rememberedIcon = () => page.evaluate(() => localStorage.getItem("persistence:FacilityIcon"));
+
+    await openPage(page, `/${FACILITY.url}/calendar`, STAFF_ADMIN);
+    await expect(page.getByRole("banner").getByRole("combobox")).toContainText(FACILITY.name);
+    await expect(logoIcon(page)).toHaveAttribute("href", defaultIconHref);
+    await expect.poll(rememberedIcon).toContain(facilityId);
+
+    const otherPage = await page.context().newPage();
+    await openPage(otherPage, `/${OTHER_FACILITY.url}/calendar`);
+    await expect(logoIcon(otherPage)).toHaveAttribute("href", otherIconHref);
+    // The browser remembers the icon of the facility opened last, and the first tab keeps its own.
+    await expect.poll(rememberedIcon).toContain(otherFacilityId);
+    await expect(logoIcon(page)).toHaveAttribute("href", defaultIconHref);
+
+    // The facility of the tab wins over the remembered one also when the tab loads anew.
+    await page.reload();
+    await expect(page.getByRole("banner").getByRole("combobox")).toContainText(FACILITY.name);
+    await expect(logoIcon(page)).toHaveAttribute("href", defaultIconHref);
+    await expect.poll(rememberedIcon).toContain(facilityId);
+    await expect(logoIcon(otherPage)).toHaveAttribute("href", otherIconHref);
+
+    // Switching the facility in the selector brings its icon.
+    const selector = page.getByRole("banner").getByRole("combobox");
+    await selector.click();
+    await page.getByRole("option", {name: OTHER_FACILITY.name}).click();
+    await expect(page).toHaveURL(new RegExp(`/${OTHER_FACILITY.url}/calendar$`));
+    await expect(logoIcon(page)).toHaveAttribute("href", otherIconHref);
+  });
 });

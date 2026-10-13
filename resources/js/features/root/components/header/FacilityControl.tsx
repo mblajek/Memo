@@ -1,16 +1,18 @@
 import {useParams} from "@solidjs/router";
 import {useQuery} from "@tanstack/solid-query";
+import {setIconFacility} from "components/ui/FacilityIcon";
 import {Select} from "components/ui/form/Select";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {System} from "data-access/memo-api/groups/System";
 import {User} from "data-access/memo-api/groups/User";
-import {Match, Show, Switch, VoidComponent, createMemo} from "solid-js";
-import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
+import {Match, Show, Switch, VoidComponent, createEffect, createMemo} from "solid-js";
+import {activeFacilityId, setActiveFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 
 export const FacilityControl: VoidComponent = () => {
   const params = useParams();
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const statusQuery = useQuery(User.statusQueryOptions);
+  const activeFacility = useActiveFacility();
   const userFacilities = createMemo(() =>
     facilitiesQuery.data
       ?.filter((facility) =>
@@ -41,6 +43,12 @@ export const FacilityControl: VoidComponent = () => {
         void User.setLastLoginFacilityId(facilityId);
       }
     },
+  });
+  createEffect(() => {
+    const facility = activeFacility();
+    if (facility) {
+      setIconFacility(facility);
+    }
   });
   return (
     <Show when={userFacilities()}>

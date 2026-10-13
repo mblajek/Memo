@@ -15,6 +15,7 @@ final readonly class AdminFacilityTquery extends TqService
         $config->addBase();
         $config->addSimple(TqDataTypeEnum::string, 'name');
         $config->addSimple(TqDataTypeEnum::string, 'url');
+        $config->addSimple(TqDataTypeEnum::text_nullable, 'icon_svg');
         $config->addSimple(TqDataTypeEnum::string_nullable, 'meeting_notification_template_subject');
         $config->addSimple(TqDataTypeEnum::text_nullable, 'meeting_notification_template_message');
         $config->addQuery(

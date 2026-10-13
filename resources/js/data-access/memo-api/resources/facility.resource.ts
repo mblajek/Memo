@@ -6,4 +6,6 @@ export interface FacilityResource {
   readonly name: string;
   readonly url: string;
   readonly hasMeetingNotification: boolean;
+  /** A short hash of the facility's icon, null if the facility has no icon. */
+  readonly iconHash: string | null;
 }

@@ -18,6 +18,7 @@ class CreateFacilityService
             'name',
             'url',
             'contact_phone',
+            'icon_svg',
             'meeting_notification_template_subject',
             'meeting_notification_template_message',
         ]);

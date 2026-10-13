@@ -223,4 +223,39 @@ class AdminFacilityTqueryTest extends TqueryTestCase
         $countRows = array_values(array_filter($data, fn($r) => $r['meetingNotificationTemplateSubject'] === 'aaa-subject'));
         $this->assertEquals(4, $countRows[0]['_count']);
     }
+
+    public function testIconColumn(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg"/>';
+        Facility::factory()->create(['name' => 'FTQ icon', 'url' => 'ftq-icon', 'icon_svg' => $svg]);
+        Facility::factory()->create(['name' => 'FTQ no icon', 'url' => 'ftq-no-icon']);
+
+        $columns = array_column($this->tpiGet(self::URL)['columns'], null, 'name');
+        $this->assertSame('text', $columns['iconSvg']['type']);
+        $this->assertTrue($columns['iconSvg']['nullable']);
+
+        $query = fn(bool $inv) => $this->tpiPost(self::URL, [
+            'columns' => self::columns('name', 'iconSvg'),
+            'filter' => self::filterGroup('&', [
+                self::filterColumn('name', 'v%', 'FTQ'),
+                self::filterColumn('iconSvg', 'null') + ($inv ? ['inv' => true] : []),
+            ]),
+            'paging' => self::paging(50),
+        ]);
+        $this->assertSame(
+            [['name' => 'FTQ no icon', 'iconSvg' => null]],
+            $this->assertTqueryData($query(inv: false), 1),
+        );
+        $this->assertSame(
+            [['name' => 'FTQ icon', 'iconSvg' => $svg]],
+            $this->assertTqueryData($query(inv: true), 1),
+        );
+
+        // The text of an image is nothing to sort by.
+        $this->post(self::URL, [
+            'columns' => self::columns('name'),
+            'sort' => [self::sort('iconSvg')],
+            'paging' => self::paging(50),
+        ])->assertBadRequest();
+    }
 }

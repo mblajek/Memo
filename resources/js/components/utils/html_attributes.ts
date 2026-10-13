@@ -45,6 +45,7 @@ export namespace htmlAttributes {
   export type pre = JSX.HTMLElementTags["pre"];
 
   export type canvas = JSX.HTMLElementTags["canvas"];
+  export type img = JSX.HTMLElementTags["img"];
 
   export type progress = JSX.HTMLElementTags["progress"];
 

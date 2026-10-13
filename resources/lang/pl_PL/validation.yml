@@ -145,6 +145,7 @@ custom:
   unique_items: "Wartość {{attribute}} nie może się powtarzać."
   trimmed: "Pole {{attribute}} nie może się zaczynać ani kończyć białymi znakami."
   regexp_is_valid: "Pole {{attribute}} musi być poprawnym wyrażeniem regularnym."
+  svg_is_valid: "Pole {{attribute}} musi być poprawnym obrazem SVG."
   position_in_dictionary: "Pole {{attribute}} musi należeć do słownika „{{dictionary}}”."
   member_exists: "Osoba {{attribute}} musi mieć w placówce rolę „{{member_type}}”."
   client_short_code: "Taka wartość pola {{attribute}} już występuje."

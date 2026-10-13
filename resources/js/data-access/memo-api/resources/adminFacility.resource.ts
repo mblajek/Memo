@@ -3,6 +3,7 @@ export interface AdminFacilityResource {
   readonly name: string;
   readonly url: string;
   readonly meetingNotificationTemplateSubject: string | null;
+  readonly iconSvg: string | null;
 }
 
 export type AdminFacilityResourceForCreate = AdminFacilityResource;

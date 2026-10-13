@@ -66,6 +66,10 @@ facility_edit:
   form_name: "Edycja placówki"
   success: "Zmodyfikowano dane placówki"
 
+facility_icon:
+  load_from_file: "Wczytaj z pliku"
+  edit_svg: "Edytuj jako SVG"
+
 attribute_form:
   name_info: "Nazwa wyświetlana atrybutu. Zostanie zapisana z wiodącym znakiem „+” (nazwa dosłowna, nietłumaczona) — wpisz ją bez tego znaku."
   field_names:

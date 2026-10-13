@@ -1,7 +1,9 @@
 import {Button, EditButton} from "components/ui/Button";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui/Table/Table";
+import {NullFilterControl} from "components/ui/Table/tquery_filters/NullFilterControl";
 import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
+import {svgDataURL} from "components/ui/FacilityIcon";
 import {facilityIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils/lang";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -25,6 +27,20 @@ export default (() => {
       columns={[
         {name: "id", initialVisible: false},
         {name: "name", columnDef: {enableHiding: false}},
+        {
+          name: "iconSvg",
+          initialVisible: false,
+          columnDef: {
+            cell: cellFunc<string>((props) => (
+              <PaddedCell>
+                <ShowCellVal v={props.v}>{(v) => <img class="h-10" src={svgDataURL(v())} alt="" />}</ShowCellVal>
+              </PaddedCell>
+            )),
+            size: 100,
+          },
+          filterControl: NullFilterControl,
+          globalFilterable: false,
+        },
         {
           name: "url",
           columnDef: {

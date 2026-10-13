@@ -113,6 +113,9 @@ All in `otp.spec.ts`, each test on a user created in it. The codes are computed 
 - ✅ **The users table shows the account, the roles and the facilities of each user** — the seeded users of each role and the global admin, found by the search: booleans, empty times, the list and the count of the facilities, the creator by name; sorted by the name both ways; the list column cannot be sorted by. _(M)_ `(admin_user_edit_ui.spec.ts)`
 - ✅ **The export of the users table has the values of each kind as texts** — Chromium only, as all the exports. _(E)_ `(admin_user_edit_ui.spec.ts)`
 - ✅ **The facilities table shows the URL, the admins and the notification template of a facility** _(E)_ `(admin_facility_edit_ui.spec.ts)`
+- ✅ **The icon of a facility is set in the modal, shown beside the logo also after logging out, and removed again** — an invalid SVG is refused at the field; the preview follows the text; the table shows the icon in a column hidden at first, not sortable, filtered by the presence only and left out of the search; a member of the facility gets it beside the logo, served by the public icon endpoint, and it stays on the login screen after the session ends; once removed, the default icon is back in both places. _(M)_ `(admin_facility_edit_ui.spec.ts)`
+- ✅ **The logo follows the icon of the facility, and falls back to the default icon when it is gone** — the collapsed menu shows the same icon; a changed icon arrives with the refreshed data; an icon removed while the browser remembers it gives the default one on the login screen. _(M)_ `(admin_facility_edit_ui.spec.ts)`
+- ✅ **A facility is created with an icon loaded from a file** — loaded without opening the text of the image, which then holds it; loaded again after clearing. _(E)_ `(admin_facility_edit_ui.spec.ts)`
 
 ---
 
@@ -149,6 +152,7 @@ The Second Facility layer (parent: Test Facility; `layers/second_facility.ts`) a
 - ✅ **Switching facilities reloads onto the new facility's URL** — also checks that `lastLoginFacilityId` follows, and that `/` then leads to the newly chosen facility. _(M)_ `(multi_facility.spec.ts)`
 - ✅ **Opening the other facility's URL directly makes it the active facility** — bonus; the selector, the sidebar (no admin section: not an admin there) and `lastLoginFacilityId` follow the URL. _(M)_ `(multi_facility.spec.ts)`
 - ✅ **Permissions follow the facility in the URL** — bonus; STAFF_ADMIN (admin in the first facility only) gets `no_permissions_to_view` on the other facility's admin page, and its calendar normally. _(E)_ `(multi_facility.spec.ts)`
+- ✅ **Each tab shows the icon of its own facility** — two tabs of a member of two facilities, one of them with an icon; the browser remembers the facility opened last, and a tab loading anew keeps the icon of its own; switching the facility brings its icon. _(M)_ `(multi_facility.spec.ts)`
 - ✅ **Client / staff details of an unknown id, or of a user of another kind, show "resource not found"** — a staff member's id under `clients/`, a bare member's under `staff/`; the header and the menu stay. _(E)_ `(not_found_ui.spec.ts)`
 - ✅ **A client of the other facility is not found under this facility's URL** — for a member of both facilities and for a member of this one only; the name is not on the page. _(M)_ `(not_found_ui.spec.ts)`
 - ✅ **An unknown page is not found, with its path named** — in a facility, under a client, under the facility admin's pages (where a user who is not one gets the denial instead) and under the global admin's pages. _(E)_ `(not_found_ui.spec.ts)`

@@ -57,6 +57,7 @@ class AdminFacilityController extends ApiController
                     new OA\Property(property: 'name', type: 'string', example: 'Test'),
                     new OA\Property(property: 'url', type: 'string', example: 'test-123'),
                     new OA\Property(property: 'contactPhone', type: 'string'),
+                    new OA\Property(property: 'iconSvg', type: 'string', nullable: true),
                     new OA\Property(property: 'meetingNotificationTemplateSubject', type: 'string'),
                     new OA\Property(property: 'meetingNotificationTemplateMessage', type: 'string'),
                 ],
@@ -79,6 +80,7 @@ class AdminFacilityController extends ApiController
             'name',
             'url',
             'contact_phone',
+            'icon_svg',
             'meeting_notification_template_subject',
             'meeting_notification_template_message',
         ]));
@@ -98,6 +100,7 @@ class AdminFacilityController extends ApiController
                     new OA\Property(property: 'name', type: 'string', example: 'Test'),
                     new OA\Property(property: 'url', type: 'string', example: 'test-123'),
                     new OA\Property(property: 'contactPhone', type: 'string'),
+                    new OA\Property(property: 'iconSvg', type: 'string', nullable: true),
                     new OA\Property(property: 'meetingNotificationTemplateSubject', type: 'string'),
                     new OA\Property(property: 'meetingNotificationTemplateMessage', type: 'string'),
                 ],
@@ -126,6 +129,7 @@ class AdminFacilityController extends ApiController
             'name',
             'url',
             'contact_phone',
+            'icon_svg',
             'meeting_notification_template_subject',
             'meeting_notification_template_message',
         ], $facility));

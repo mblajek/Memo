@@ -22,7 +22,7 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
   }));
 
   async function createFacility(values: FacilityFormType) {
-    await facilityMutation.mutateAsync(values);
+    await facilityMutation.mutateAsync({...values, iconSvg: values.iconSvg.trim() || null});
     return () => {
       toastSuccess(t("forms.facility_create.success"));
       props.onSuccess?.();
@@ -44,7 +44,13 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
   }
 
   return (
-    <FacilityForm id="facility_create" onSubmit={createFacility} onCancel={props.onCancel} onFormCreated={initForm} />
+    <FacilityForm
+      id="facility_create"
+      initialValues={{iconSvg: ""}}
+      onSubmit={createFacility}
+      onCancel={props.onCancel}
+      onFormCreated={initForm}
+    />
   );
 };
 

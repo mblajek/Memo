@@ -41,6 +41,7 @@ Route::prefix('/v1')->group(function () {
         });
         Route::prefix('/facility')->group(function () {
             Route::get('/list', [SystemController::class, 'facilityList']);
+            Route::get('/{facility}/icon', [SystemController::class, 'facilityIcon']);
         });
         Route::prefix('/dictionary')->group(function () {
             Route::get('/list', [SystemController::class, 'dictionaryList']);

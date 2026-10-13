@@ -29,18 +29,18 @@ export const translationsLoadedPromise = new Promise<void>((resolve) =>
     }),
 );
 
-const [getTranslationsLoaded, setTranslationsLoaded] = createSignal(false);
+const [translationsLoaded, setTranslationsLoaded] = createSignal(false);
 void translationsLoadedPromise.then(() => setTranslationsLoaded(true));
 
-export const translationsLoaded = getTranslationsLoaded;
+export {translationsLoaded};
 
-const [getCurrentLanguage, setCurrentLanguage] = createSignal(i18next.resolvedLanguage);
+const [currentLanguage, setCurrentLanguage] = createSignal(i18next.resolvedLanguage);
 i18next.on("languageChanged", (lang) => {
   updateTranslationsVersion();
   setCurrentLanguage(lang);
 });
 
-export const currentLanguage = getCurrentLanguage;
+export {currentLanguage};
 
 import.meta.hot?.on("translationsFileChange", () => void i18next.reloadResources());
 

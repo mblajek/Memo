@@ -33,6 +33,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
     await facilityMutation.mutateAsync({
       id: props.id,
       ...values,
+      iconSvg: values.iconSvg.trim() || null,
     });
     return () => {
       props.onSuccess?.();
@@ -51,6 +52,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
           name: facility.name,
           url: facility.url,
           meetingNotificationTemplateSubject: facility.meetingNotificationTemplateSubject || "",
+          iconSvg: facility.iconSvg || "",
         } satisfies FacilityFormType)
       : {};
   };

@@ -8,7 +8,7 @@ const preloadTimer = new Timeout({permanent: true});
 
 const [modulesInfo, setModulesInfo] = createSignal<ReadonlyMap<string, ModuleInfo>>(new Map());
 
-export const getPreloadedModulesInfo = modulesInfo;
+export {modulesInfo as getPreloadedModulesInfo};
 
 interface ModuleInfo {
   preload(): void;

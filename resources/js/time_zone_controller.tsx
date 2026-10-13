@@ -4,9 +4,9 @@ import {System} from "data-access/memo-api/groups/System";
 import {DateTime, IANAZone, Settings, SystemZone, Zone} from "luxon";
 import {createEffect, createSignal, ParentComponent} from "solid-js";
 
-const [getTimeZone, setTimeZone] = createSignal<Zone>(SystemZone.instance);
+const [timeZone, setTimeZone] = createSignal<Zone>(SystemZone.instance);
 
-export const timeZone = getTimeZone;
+export {timeZone};
 
 /**
  * Sets time timeZone signal based on the current facility time zone,

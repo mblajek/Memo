@@ -1,3 +1,4 @@
+import {FacilityIcon, FacilityIconSVGImage} from "components/ui/FacilityIcon";
 import {hoverSignal} from "components/ui/hover_signal";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -11,7 +12,7 @@ export const FullLogo: VoidComponent<htmlAttributes.div> = (props) => (
   <div {...props}>
     <svg viewBox="12 0 96 30" class="w-full h-full dark:brightness-150" preserveAspectRatio="xMidYMid">
       <image x="10" y="0" width="70" height="30" href="/img/memo_logo.svg" />
-      <image x="82" y="0" width="25" height="30" href="/img/cpd_children_logo.svg" />
+      <FacilityIconSVGImage x="82" y="2.5" width="25" height="25" />
     </svg>
   </div>
 );
@@ -19,12 +20,6 @@ export const FullLogo: VoidComponent<htmlAttributes.div> = (props) => (
 export const ShortLogo: VoidComponent<htmlAttributes.div> = (props) => (
   <div {...props}>
     <img class="w-full h-full" src="/img/memo_logo_short.svg" />
-  </div>
-);
-
-export const CPDChildrenLogo: VoidComponent<htmlAttributes.div> = (props) => (
-  <div {...props}>
-    <img class="w-full h-full" src="/img/cpd_children_logo.svg" />
   </div>
 );
 
@@ -63,7 +58,9 @@ export const ShortChangingLogo: VoidComponent<htmlAttributes.div> = (props) => {
   }
   return (
     <div {...htmlAttributes.merge(props, {class: "grid"})} onPointerEnter={() => scheduleTimeHover(0)}>
-      <CPDChildrenLogo {...variantProps(false)} />
+      <div {...variantProps(false)}>
+        <FacilityIcon class="w-full h-full" />
+      </div>
       <ShortLogo {...variantProps(true)} />
     </div>
   );

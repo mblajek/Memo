@@ -10,6 +10,7 @@ use OpenApi\Attributes as OA;
     schema: 'AdminFacilityResource',
     properties: [
         new OA\Property(property: 'contactPhone', type: 'string'),
+        new OA\Property(property: 'iconSvg', type: 'string', nullable: true),
         new OA\Property(property: 'meetingNotificationTemplateSubject', type: 'string'),
         new OA\Property(property: 'meetingNotificationTemplateMessage', type: 'string'),
     ],
@@ -24,6 +25,7 @@ class AdminFacilityResource extends FacilityResource
     {
         return array_merge(parent::getMappedFields(), [
             'contactPhone' => true,
+            'iconSvg' => true,
             'meetingNotificationTemplateSubject' => true,
             'meetingNotificationTemplateMessage' => true,
         ]);

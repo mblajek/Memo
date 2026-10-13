@@ -64,13 +64,13 @@ export const useResizeObserver = createCached(() => {
   return {observe, observeTarget, observeClientSize, observeBoundingClientRect};
 });
 
-const [getWindowSize, setWindowSize] = createSignal<Size>([window.innerWidth, window.innerHeight]);
+const [windowSize, setWindowSize] = createSignal<Size>([window.innerWidth, window.innerHeight]);
 
 addEventListener("resize", () => setWindowSize([window.innerWidth, window.innerHeight]));
 
-export const windowSize = getWindowSize;
+export {windowSize};
 
 /** A function that creates a dependence on the window size when used in a computation. */
 export function reactToWindowResize() {
-  getWindowSize();
+  windowSize();
 }

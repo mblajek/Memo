@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
+use App\Exceptions\ExceptionFactory;
 use App\Http\Middleware\SendIntegrationEvents;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
@@ -25,6 +27,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
@@ -41,6 +44,7 @@ class SystemController extends ApiController
     {
         $this->permissionOneOf(Permission::loggedIn)->except(
             'translationList',
+            'facilityIcon',
             'dictionaryList',
             'attributeList',
             'status',
@@ -92,6 +96,49 @@ class SystemController extends ApiController
     public function facilityList(): JsonResource
     {
         return FacilityResource::collection(Facility::query()->get());
+    }
+
+    #[OA\Get(
+        path: '/api/v1/system/facility/{facility}/icon',
+        description: new PermissionDescribe(Permission::any),
+        summary: 'Facility icon',
+        tags: ['System'],
+        parameters: [
+            new OA\Parameter(
+                name: 'facility',
+                description: 'Facility id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
+            ),
+            new OA\Parameter(
+                name: 'h',
+                description: 'Hash of the icon, makes the response cacheable',
+                in: 'query',
+                schema: new OA\Schema(type: 'string'),
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'OK', content: new OA\MediaType(mediaType: 'image/svg+xml')),
+            new OA\Response(response: 404, description: 'Not Found'),
+        ]
+    )] /** @throws ApiException */
+    public function facilityIcon(Facility $facility, Request $request): Response
+    {
+        if ($facility->icon_svg === null) {
+            ExceptionFactory::notFound()->throw();
+        }
+        return new Response($facility->icon_svg, headers: [
+            'Content-Type' => 'image/svg+xml',
+            // The image is admin-provided, and it must not act as a document of this origin when
+            // opened directly.
+            'Content-Security-Policy' => "sandbox; default-src 'none'; style-src 'unsafe-inline'",
+            'X-Content-Type-Options' => 'nosniff',
+            // The URL with the hash of the icon always gives that icon. Any other URL gives the
+            // current icon, which may change.
+            'Cache-Control' => ($request->query('h') === $facility->iconHash())
+                ? 'private, max-age=31536000, immutable' : 'private, no-cache',
+        ]);
     }
 
     #[OA\Get(

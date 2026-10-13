@@ -12,6 +12,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'name', type: 'string', example: 'Test'),
         new OA\Property(property: 'url', type: 'string', example: 'test'),
         new OA\Property(property: 'hasMeetingNotification', type: 'bool'),
+        new OA\Property(property: 'iconHash', type: 'string', nullable: true),
     ],
 )]
 /**
@@ -28,6 +29,7 @@ class FacilityResource extends AbstractOpenApiResource
             'url' => true,
             'hasMeetingNotification' => fn(self $facility)
                 => $facility->hasMeetingNotification(),
+            'iconHash' => fn(self $facility) => $facility->iconHash(),
         ];
     }
 }

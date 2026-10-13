@@ -5,12 +5,14 @@ import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {TextField} from "components/ui/form/TextField";
 import {VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
+import {FacilityIconField} from "./FacilityIconField";
 
 const getSchema = () =>
   z.object({
     name: z.string(),
     url: z.string(),
     meetingNotificationTemplateSubject: z.string(),
+    iconSvg: z.string(),
   });
 
 export type FacilityFormType = z.infer<ReturnType<typeof getSchema>>;
@@ -45,6 +47,7 @@ export const FacilityForm: VoidComponent<Props> = (allProps) => {
             </>
           )}
         />
+        <FacilityIconField name="iconSvg" />
       </div>
       <FelteSubmit cancel={props.onCancel} />
     </FelteForm>
