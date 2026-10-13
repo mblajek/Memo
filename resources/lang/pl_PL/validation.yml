@@ -119,7 +119,7 @@ size:
   file: "Pole {{attribute}} musi mieć {{size, number}} kilobajtów."
   numeric: "Pole {{attribute}} musi mieć {{size, number}}."
   string: "Pole {{attribute}} musi mieć {{size, number}} znaków."
-  starts_with: "Pole {{attribute}} musi zaczynać się jedną z następujących wartości: {{values, list(type: disjunction)}}."
+starts_with: "Pole {{attribute}} musi zaczynać się jedną z następujących wartości: {{values, list(type: disjunction)}}."
 string: "Pole {{attribute}} musi być ciągiem znaków."
 timezone: "Pole {{attribute}} musi być prawidłową strefą czasową."
 unique: "Taka wartość pola {{attribute}} już występuje."

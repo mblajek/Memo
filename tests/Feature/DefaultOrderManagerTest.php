@@ -44,7 +44,7 @@ class DefaultOrderManagerTest extends TestCase
         $data = [
             'facilityId' => null,
             'dictionaryId' => $dictionaryId,
-            'name' => 'pos-' . Str::random(8),
+            'name' => '+pos-' . Str::random(8),
             'isFixed' => false,
             'isDisabled' => false,
         ] + ($order === null ? [] : ['defaultOrder' => $order]);

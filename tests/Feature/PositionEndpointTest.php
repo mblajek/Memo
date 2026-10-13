@@ -47,7 +47,7 @@ class PositionEndpointTest extends TestCase
         $data = [
             'facilityId' => null,
             'dictionaryId' => $dictionaryId,
-            'name' => 'pos-' . Str::random(8),
+            'name' => '+pos-' . Str::random(8),
             'isFixed' => false,
             'isDisabled' => false,
         ] + ($order === null ? [] : ['defaultOrder' => $order]) + $extra;
@@ -94,7 +94,7 @@ class PositionEndpointTest extends TestCase
         $result = $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'pos',
+            'name' => '+pos',
             'isFixed' => false,
             'isDisabled' => false,
         ]);
@@ -111,7 +111,7 @@ class PositionEndpointTest extends TestCase
         ]);
 
         $this->prepareAdminUser();
-        $patch = $this->patch(self::GLOBAL_URL . "/{$position->id}", ['name' => 'changed']);
+        $patch = $this->patch(self::GLOBAL_URL . "/{$position->id}", ['name' => '+changed']);
         $patch->assertBadRequest();
         self::assertContains('validation.not_editable', $this->fieldCodes($patch, 'id'));
 
@@ -160,7 +160,7 @@ class PositionEndpointTest extends TestCase
         $this->prepareFacilityAdmin($facility);
         $result = $this->post("/api/v1/facility/{$facility->id}/admin/position", [
             'dictionaryId' => $dictionary->id,
-            'name' => 'facility pos',
+            'name' => '+facility pos',
             'isDisabled' => false,
         ]);
         $result->assertCreated();
@@ -176,7 +176,7 @@ class PositionEndpointTest extends TestCase
         $this->prepareFacilityAdmin($facility);
         $result = $this->post("/api/v1/facility/{$facility->id}/admin/position", [
             'dictionaryId' => $dictionary->id,
-            'name' => 'pos',
+            'name' => '+pos',
             'isDisabled' => false,
         ]);
         $result->assertBadRequest();
@@ -191,7 +191,7 @@ class PositionEndpointTest extends TestCase
         $result = $this->post(self::GLOBAL_URL, [
             'facilityId' => $facility->id,
             'dictionaryId' => $dictionary->id,
-            'name' => 'pos',
+            'name' => '+pos',
             'isFixed' => false,
             'isDisabled' => false,
         ]);
@@ -207,7 +207,7 @@ class PositionEndpointTest extends TestCase
         $this->prepareFacilityAdmin($facility);
         $base = "/api/v1/facility/{$facility->id}/admin/position";
         foreach ([$global, $foreign] as $position) {
-            $this->patch("$base/{$position->id}", ['name' => 'x'])->assertNotFound();
+            $this->patch("$base/{$position->id}", ['name' => '+x'])->assertNotFound();
             $this->delete("$base/{$position->id}")->assertNotFound();
             self::assertNotNull(Position::query()->find($position->id));
         }
@@ -304,7 +304,7 @@ class PositionEndpointTest extends TestCase
         $result = $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'pos',
+            'name' => '+pos',
             'isFixed' => false,
             'isDisabled' => false,
         ]);
@@ -325,7 +325,7 @@ class PositionEndpointTest extends TestCase
         $result->assertBadRequest();
         self::assertContains('validation.required', $this->fieldCodes($result, $attribute->api_name));
 
-        $this->patch(self::GLOBAL_URL . "/$positionId", ['name' => 'renamed'])->assertOk();
+        $this->patch(self::GLOBAL_URL . "/$positionId", ['name' => '+renamed'])->assertOk();
     }
 
     /** Creates a dict-type position attribute referencing the given dictionary. */
@@ -350,7 +350,7 @@ class PositionEndpointTest extends TestCase
         $result = $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'pos',
+            'name' => '+pos',
             'isFixed' => false,
             'isDisabled' => false,
             $attribute->api_name => $foreignPosition->id,
@@ -381,7 +381,7 @@ class PositionEndpointTest extends TestCase
         $result = $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'pos',
+            'name' => '+pos',
             'isFixed' => false,
             'isDisabled' => false,
             $attribute->api_name => $facilityPosition->id,
@@ -396,7 +396,7 @@ class PositionEndpointTest extends TestCase
         $this->prepareFacilityAdmin($facility);
         $this->post("/api/v1/facility/{$facility->id}/admin/position", [
             'dictionaryId' => $dictionary->id,
-            'name' => 'facility pos',
+            'name' => '+facility pos',
             'isDisabled' => false,
             $attribute->api_name => $facilityPosition->id,
         ])->assertCreated();
@@ -417,6 +417,27 @@ class PositionEndpointTest extends TestCase
         self::assertContains('validation.not_in', $this->fieldCodes($result, 'name'));
     }
 
+    public function testNameWithoutPlusPrefixIsRejected(): void
+    {
+        $dictionary = $this->makeDictionary();
+        $this->prepareAdminUser();
+        $result = $this->post(self::GLOBAL_URL, [
+            'facilityId' => null,
+            'dictionaryId' => $dictionary->id,
+            'name' => 'translatable_name',
+            'isFixed' => false,
+            'isDisabled' => false,
+        ]);
+        $result->assertBadRequest();
+        self::assertContains('validation.starts_with', $this->fieldCodes($result, 'name'));
+
+        $positionId = $this->createPosition($dictionary->id);
+        $patch = $this->patch(self::GLOBAL_URL . "/$positionId", ['name' => 'translatable_name']);
+        $patch->assertBadRequest();
+        self::assertContains('validation.starts_with', $this->fieldCodes($patch, 'name'));
+        $this->patch(self::GLOBAL_URL . "/$positionId", ['isDisabled' => true])->assertOk();
+    }
+
     public function testIsFixedCannotBeSetViaApi(): void
     {
         $dictionary = $this->makeDictionary();
@@ -424,7 +445,7 @@ class PositionEndpointTest extends TestCase
         $result = $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'pos',
+            'name' => '+pos',
             'isFixed' => true,
             'isDisabled' => false,
         ]);
@@ -452,7 +473,7 @@ class PositionEndpointTest extends TestCase
         $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => Str::uuid()->toString(),
-            'name' => 'x',
+            'name' => '+x',
             'isFixed' => false,
             'isDisabled' => false,
         ])->assertBadRequest();
@@ -465,7 +486,7 @@ class PositionEndpointTest extends TestCase
         $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'x',
+            'name' => '+x',
             'isFixed' => false,
             'isDisabled' => false,
             'defaultOrder' => 0,
@@ -479,7 +500,7 @@ class PositionEndpointTest extends TestCase
         $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'x',
+            'name' => '+x',
             'isFixed' => false,
             'isDisabled' => false,
         ])->assertUnauthorized();
@@ -492,7 +513,7 @@ class PositionEndpointTest extends TestCase
         $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'dictionaryId' => $dictionary->id,
-            'name' => 'x',
+            'name' => '+x',
             'isFixed' => false,
             'isDisabled' => false,
         ])->assertForbidden();
