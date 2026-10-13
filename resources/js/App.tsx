@@ -128,12 +128,12 @@ const App: VoidComponent = () => {
               <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
               <LeafRoute routeKey="admin.db_dumps" path="/db-dumps" component={AdminDB} />
               <Route path="/technicals">
-                <Route path="/" component={() => <Navigate href="attributes" />} />
-                <LeafRoute routeKey="admin.attributes" path="/attributes" component={AdminAttributesPage} />
+                <Route path="/" component={() => <Navigate href="dictionaries" />} />
                 <Route path="/dictionaries">
                   <LeafRoute routeKey="admin.dictionaries" path="/" component={AdminDictionariesPage} />
                   <LeafRoute routeKey="admin.dictionary" path="/:dictionaryId" component={AdminDictionaryPage} />
                 </Route>
+                <LeafRoute routeKey="admin.attributes" path="/attributes" component={AdminAttributesPage} />
               </Route>
             </Route>
             <Route path="/__facility/*facilityPath" component={RedirectFacilityPlaceholderToFacility} />
@@ -201,12 +201,7 @@ const App: VoidComponent = () => {
                   component={NotificationsListPage}
                 />
                 <Route path="/technicals">
-                  <Route path="/" component={() => <Navigate href="attributes" />} />
-                  <LeafRoute
-                    routeKey="facility.facility_admin.attributes"
-                    path="/attributes"
-                    component={FacilityAttributesPage}
-                  />
+                  <Route path="/" component={() => <Navigate href="dictionaries" />} />
                   <Route path="/dictionaries">
                     <LeafRoute
                       routeKey="facility.facility_admin.dictionaries"
@@ -219,6 +214,11 @@ const App: VoidComponent = () => {
                       component={FacilityDictionaryPage}
                     />
                   </Route>
+                  <LeafRoute
+                    routeKey="facility.facility_admin.attributes"
+                    path="/attributes"
+                    component={FacilityAttributesPage}
+                  />
                 </Route>
               </Route>
             </Route>

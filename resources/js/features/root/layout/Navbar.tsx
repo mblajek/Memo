@@ -237,15 +237,15 @@ export const Navbar: VoidComponent = () => {
                     routeKey="facility.facility_admin.technicals"
                   >
                     <NavigationItem
-                      icon={FaSolidList}
-                      href={`/${facilityUrl()}/admin/technicals/attributes`}
-                      routeKey="facility.facility_admin.attributes"
-                      small
-                    />
-                    <NavigationItem
                       icon={TiSortAlphabetically}
                       href={`/${facilityUrl()}/admin/technicals/dictionaries`}
                       routeKey="facility.facility_admin.dictionaries"
+                      small
+                    />
+                    <NavigationItem
+                      icon={FaSolidList}
+                      href={`/${facilityUrl()}/admin/technicals/attributes`}
+                      routeKey="facility.facility_admin.attributes"
                       small
                     />
                   </NavigationItem>
@@ -262,15 +262,15 @@ export const Navbar: VoidComponent = () => {
               </Show>
               <NavigationItem icon={FiTool} href="/admin/technicals" routeKey="admin.technicals">
                 <NavigationItem
-                  icon={FaSolidList}
-                  href="/admin/technicals/attributes"
-                  routeKey="admin.attributes"
-                  small
-                />
-                <NavigationItem
                   icon={TiSortAlphabetically}
                   href="/admin/technicals/dictionaries"
                   routeKey="admin.dictionaries"
+                  small
+                />
+                <NavigationItem
+                  icon={FaSolidList}
+                  href="/admin/technicals/attributes"
+                  routeKey="admin.attributes"
                   small
                 />
               </NavigationItem>

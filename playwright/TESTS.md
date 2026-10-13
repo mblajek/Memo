@@ -152,7 +152,7 @@ The Second Facility layer (parent: Test Facility; `layers/second_facility.ts`) a
 - ✅ **Client / staff details of an unknown id, or of a user of another kind, show "resource not found"** — a staff member's id under `clients/`, a bare member's under `staff/`; the header and the menu stay. _(E)_ `(not_found_ui.spec.ts)`
 - ✅ **A client of the other facility is not found under this facility's URL** — for a member of both facilities and for a member of this one only; the name is not on the page. _(M)_ `(not_found_ui.spec.ts)`
 - ✅ **An unknown page is not found, with its path named** — in a facility, under a client, under the facility admin's pages (where a user who is not one gets the denial instead) and under the global admin's pages. _(E)_ `(not_found_ui.spec.ts)`
-- ✅ **The paths that only lead on** — a link that names no facility (`/__facility/…`, as the help pages have them) leads to the facility of the user; the root of a facility to its calendar; the roots of the technicals pages, of a facility and of the global admin, to the attributes. _(E)_ `(not_found_ui.spec.ts)`
+- ✅ **The paths that only lead on** — a link that names no facility (`/__facility/…`, as the help pages have them) leads to the facility of the user; the root of a facility to its calendar; the roots of the technicals pages, of a facility and of the global admin, to the dictionaries. _(E)_ `(not_found_ui.spec.ts)`
 - ✅ **Client details of a malformed (non-UUID) id are not found** — the id is recognised in the frontend, with no request sent. _(E)_ `(not_found_ui.spec.ts)`
 
 ### User panel

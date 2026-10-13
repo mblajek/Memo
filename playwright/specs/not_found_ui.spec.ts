@@ -73,10 +73,10 @@ secondFacilityLayer.describe((artifact) => {
     await openPage(page, `/${FACILITY.url}`);
     await expect(page).toHaveURL(new RegExp(`/${FACILITY.url}/calendar$`));
     await openPage(page, `/${FACILITY.url}/admin/technicals`);
-    await expect(page).toHaveURL(new RegExp(`/${FACILITY.url}/admin/technicals/attributes$`));
+    await expect(page).toHaveURL(new RegExp(`/${FACILITY.url}/admin/technicals/dictionaries$`));
     await switchUser(page, (await loadConfig()).ui.admin);
     await openPage(page, "/admin/technicals");
-    await expect(page).toHaveURL(/\/admin\/technicals\/attributes$/);
+    await expect(page).toHaveURL(/\/admin\/technicals\/dictionaries$/);
   });
 
   readOnlyTest("client details of a malformed id are not found", {tag: "@ui"}, async ({page}) => {
