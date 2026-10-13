@@ -3,7 +3,7 @@ import {loadConfig, type Credentials} from "../lib/config.ts";
 import {FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
 import {OTHER_FACILITY, secondFacilityLayer} from "../lib/layers/second_facility.ts";
 import {createdId} from "../lib/responses.ts";
-import {expect, login, openPage, readOnlyTest, test} from "../lib/test.ts";
+import {dropSession, expect, login, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 /**
  * Details pages opened with an id that is unknown, of a wrong kind, or of another facility: the
@@ -20,13 +20,9 @@ async function expectNotFound(page: Page, path: string) {
   await expect(page.getByRole("navigation").getByText("routes.facility.clients", {exact: true})).toBeVisible();
 }
 
-/**
- * Logs the page in as another user. The page is left first: a request of it still in flight would
- * bring the old session back with its answer.
- */
+/** Logs the page in as another user. */
 async function switchUser(page: Page, creds: Credentials) {
-  await page.goto("about:blank");
-  await page.context().clearCookies();
+  await dropSession(page);
   await login(page, creds);
 }
 

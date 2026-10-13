@@ -19,6 +19,7 @@ import {
   tableCell,
   tableCellTexts,
   tableRows,
+  tableRowsWithLink,
   collapseSpaces,
   columnChooserBox,
   clickOutside,
@@ -253,10 +254,7 @@ meetingsLayer.describe((artifact) => {
     // Three meetings of one staff member and one client; the group meeting of two and three.
     await expect(summary(11)).toBeVisible();
     await expect(rows).toHaveCount(11);
-    const attendantCell = (name: string) =>
-      rows.filter({
-        has: page.locator('[role="cell"][data-column="attendant.userId"]').getByRole("link", {name, exact: true}),
-      });
+    const attendantCell = (name: string) => tableRowsWithLink(main, "attendant.userId", name);
     await expect(attendantCell(STAFF.name)).toHaveCount(4);
     await expect(attendantCell(STAFF_ADMIN.name)).toHaveCount(1);
     for (const client of [...adultClientInfos.slice(0, 4), ...childClientInfos.slice(0, 2)]) {
@@ -385,7 +383,7 @@ meetingsLayer.describe((artifact) => {
       [column("date")]: shownDate(groupMeeting.date),
       [column("startDayminute")]: "12:00-13:30",
       [column("isClone")]: "bool_values.no",
-      [column("typeDictId")]: expect.stringContaining("Integration Test Therapy"),
+      [column("typeDictId")]: "Integration Test Therapy",
       [column("statusDictId")]: "dictionary.meetingStatus.planned",
       [column("staff.*.userId")]: `${STAFF.name}, ${STAFF_ADMIN.name}`,
       [column("clients.*.userId")]: groupClients,

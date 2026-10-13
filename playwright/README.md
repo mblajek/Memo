@@ -40,7 +40,8 @@ cp playwright/config/config.local.template.json playwright/config/config.local.j
 MEMO_E2E_CONFIG=playwright/config/config.local.json pnpm :playwright
 ```
 
-The config files can hold passwords and are ignored by git.
+The config files can hold passwords and are ignored by git — but for the templates and
+`config.happy.json` (see "More commands"), which hold none.
 
 ## Targets
 
@@ -127,6 +128,10 @@ pnpm :playwright --grep @ui
 
 # Everything once: no test repeated in a second browser
 pnpm :playwright --project=api --project=chromium
+
+# The happy path alone: one long test of an ordinary day of a facility, in Chromium. It always
+# runs on the docker target, with the config of its own (config/config.happy.json)
+pnpm :playwright-happy
 
 # Watching the browser, or stepping through a test
 pnpm :playwright specs/clients_ui.spec.ts:14 --project=chromium --headed

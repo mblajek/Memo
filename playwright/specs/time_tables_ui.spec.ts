@@ -1,6 +1,7 @@
 import {checkedSeriesDates} from "../helpers/meetings.ts";
 import type {Locator, Page} from "@playwright/test";
 import {expectCalendarMode} from "../helpers/calendar.ts";
+import {entrySummary, openTimeTablesCalendar} from "../helpers/time_tables.ts";
 import {addDays, firstAppHolidayFrom, isAppHoliday, mondayOf} from "../lib/dates.ts";
 import {ADMIN, FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
 import {
@@ -132,34 +133,6 @@ function weeklyDialog(page: Page, kind: "paste" | "delete") {
     checkbox: (subkey: string) => page.getByRole("checkbox", {name: `${prefix}.target_weeks.${subkey}`}),
     confirm: page.getByRole("button", {name: `${prefix}.confirm`}),
     success: page.getByText(`${WEEKLY}.success`),
-  };
-}
-
-/**
- * The summaries of the calendar entries of the type with the given hours ("9:00–15:00"). Whether
- * an hour before 10 gets a leading zero is up to the browser.
- */
-function entrySummary(main: Locator, type: "work_time" | "facility_work_time", hours: string) {
-  return main.locator(
-    [hours, hours.replace(/\b\d:/g, "0$&")].map((h) => `[aria-description$="${type}} ${h}" i]`).join(", "),
-  );
-}
-
-/** The admin's time tables calendar, on the view (by default of the week) of the given staff member. */
-async function openTimeTablesCalendar(
-  page: Page,
-  date: string,
-  staffId: string,
-  mode: "day" | "week" | "month" = "week",
-) {
-  await openPage(page, `/${FACILITY.url}/admin/time-tables?${new URLSearchParams({mode, date, resources: staffId})}`);
-  const main = page.locator("main");
-  return {
-    main,
-    /** The summaries (in the area above the hours) of the entries with the given hours. */
-    summary: (type: "work_time" | "facility_work_time", hours: string) => entrySummary(main, type, hours),
-    /** The "add" buttons, one per day column: Monday to Friday. */
-    add: (weekday: number) => main.locator("title=actions.add").nth(weekday),
   };
 }
 

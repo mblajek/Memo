@@ -79,6 +79,14 @@ export function tableRowsWithCell(root: Page | Locator, columnId: string, text: 
   });
 }
 
+/** The data rows of a table whose cell in the column of the given id has a link of that name. */
+export function tableRowsWithLink(root: Page | Locator, columnId: string, name: string): Locator {
+  const page = "page" in root ? root.page() : root;
+  return allTableRows(root).filter({
+    has: page.locator(`[role="cell"][data-column="${columnId}"]`).getByRole("link", {name, exact: true}),
+  });
+}
+
 /** The cell of a table row in the column of the given id. */
 export function tableCell(row: Locator, columnId: string): Locator {
   return row.locator(`> [role="cell"][data-column="${columnId}"]`);

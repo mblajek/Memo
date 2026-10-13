@@ -1,4 +1,4 @@
-import {createMeetingResource} from "../helpers/queries.ts";
+import {createMeetingResource, meetingsMatching} from "../helpers/queries.ts";
 import {checkedSeriesDates, seededDays, viewHeading} from "../helpers/meetings.ts";
 import {DateTime} from "luxon";
 import {BROWSER_LOCALE, shownTableDate} from "../helpers/dates.ts";
@@ -14,7 +14,6 @@ import {
 import {FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
 import {meetingsLayer} from "../lib/layers/meetings.ts";
 import {disableTranslations} from "../helpers/lang.ts";
-import {responseData} from "../lib/responses.ts";
 import {
   chooseInFormSelect,
   expectFormErrors,
@@ -48,27 +47,15 @@ interface Meeting {
 }
 
 /** The facility's meetings starting at the given time of day, from the given date on, by date. */
-async function meetingsStartingAt(api: MemoAPI, facilityId: string, startDayminute: number, fromDate: string) {
-  const ids = (
-    await api.tquery<{id: string}>(`facility/${facilityId}/meeting/tquery`, {
-      columns: ["id"],
-      filter: {
-        type: "op",
-        op: "&",
-        val: [
-          {type: "column", column: "startDayminute", op: "=", val: startDayminute},
-          {type: "column", column: "date", op: ">=", val: fromDate},
-        ],
-      },
-      sort: [{column: "date"}],
-    })
-  ).rows.map(({id}) => id);
-  if (!ids.length) {
-    return [];
-  }
-  const listRes = await api.get(`facility/${facilityId}/meeting/list?in=${ids.join(",")}`);
-  const data = await responseData<readonly Meeting[]>(listRes);
-  return data.toSorted((a, b) => a.date.localeCompare(b.date));
+function meetingsStartingAt(api: MemoAPI, facilityId: string, startDayminute: number, fromDate: string) {
+  return meetingsMatching<Meeting>(api, facilityId, {
+    type: "op",
+    op: "&",
+    val: [
+      {type: "column", column: "startDayminute", op: "=", val: startDayminute},
+      {type: "column", column: "date", op: ">=", val: fromDate},
+    ],
+  });
 }
 
 // The seeded meeting of today is 10:00–11:00; the slot clicked in the create tests is 11:15.
@@ -446,7 +433,7 @@ meetingsLayer.describe((artifact) => {
           .toEqual({
             "date": shownTableDate(seededDay(0)),
             "startDayminute": "11:15 – 13:00",
-            "typeDictId": expect.stringContaining("Integration Test Therapy"),
+            "typeDictId": "Integration Test Therapy",
             "statusDictId": "dictionary.meetingStatus.completed",
             "staff.*.userId": STAFF.name,
             "clients.*.userId": "",

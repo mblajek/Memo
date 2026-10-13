@@ -42,6 +42,23 @@ export interface MeetingClient {
   }[];
 }
 
+/** The facility's meetings matching the tquery filter, by date. */
+export async function meetingsMatching<M extends {readonly date: string}>(
+  api: MemoAPI,
+  facilityId: string,
+  filter: Readonly<Record<string, unknown>>,
+) {
+  const ids = (
+    await api.tquery<{id: string}>(`facility/${facilityId}/meeting/tquery`, {
+      columns: ["id"],
+      filter,
+      sort: [{column: "date"}],
+    })
+  ).rows.map(({id}) => id);
+  const meetings = ids.length ? await api.list<M>(`facility/${facilityId}/meeting`, ids) : [];
+  return meetings.toSorted((a, b) => a.date.localeCompare(b.date));
+}
+
 /** The clients of the meeting, in the order of the meeting. */
 export async function meetingClients(api: MemoAPI, facilityId: string, meetingId: string) {
   const [meeting] = await api.list<{clients: readonly MeetingClient[]}>(`facility/${facilityId}/meeting`, meetingId);

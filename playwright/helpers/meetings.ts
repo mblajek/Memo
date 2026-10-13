@@ -54,6 +54,19 @@ export function meetingsListTab(page: Page, name: "planned" | "completed" | "all
   return page.getByRole("tab", {name: new RegExp(`facility_user\\.meetings_lists\\.${name}`, "i")});
 }
 
+/**
+ * Expects the counts in the labels of the tabs of a person's meetings: of the planned and of the
+ * completed ones.
+ */
+export async function expectMeetingsListCounts(page: Page, {planned, completed}: {planned: number; completed: number}) {
+  await expect(meetingsListTab(page, "planned")).toContainText(
+    new RegExp(`meetings_lists\\.planned — ${planned}(\\D|$)`, "i"),
+  );
+  await expect(meetingsListTab(page, "completed")).toContainText(
+    new RegExp(`meetings_lists\\.completed — ${completed}(\\D|$)`, "i"),
+  );
+}
+
 /** The rows of the table of the selected tab. The tables of the tabs seen before stay in the DOM. */
 export function shownTableRows(page: Page) {
   return tableRows(page.locator("main"), /\S/).locator("visible=true");

@@ -15,7 +15,7 @@ import {
   tableCellTexts,
   tableRows,
 } from "../helpers/selectors.ts";
-import {MemoAPI, expect, openPage, readOnlyTest, test} from "../lib/test.ts";
+import {MemoAPI, dropSession, expect, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 /**
  * The facility admins page and its edit modal. The user's own data is editable there only for
@@ -84,8 +84,7 @@ facilityLayer.describe((artifact) => {
       });
 
       await test.step("an admin", async () => {
-        await page.goto("about:blank");
-        await page.context().clearCookies();
+        await dropSession(page);
         await openAdmins(page);
         await showTableColumns(page, main, "facility_admin", [...ADMIN_ONLY, ...HIDDEN_AT_FIRST]);
         const columns = [...SHOWN_AT_FIRST, ...ADMIN_ONLY, ...HIDDEN_AT_FIRST];

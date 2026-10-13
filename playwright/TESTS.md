@@ -4,7 +4,7 @@
 >
 > - `docker` — the tests start an app server and a DB server of their own, in containers, and leave the checkout's `.env` and any server running on it alone. The DB starts either `empty` (the migrations only; needs nothing else) or as a `copy` of the DB the checkout's `.env` points at; on either, the tests create the global admin they log in as (`DOCKER_ADMIN` of `lib/config.ts`, logged at the start of a run), so the config has no `ui.admin`. The suite has to pass on both: on `empty` to show the tests rely on nothing but themselves, on `copy` to show they hold next to real data, as on an rc server. Its DB is in memory, which makes a restore about three times as fast.
 > - `local` — an app server that runs already, with its DB snapshotted and restored directly. The global admin of the config (`ui.admin`) has to exist there; no user is created in a DB the tests do not own.
-> - `rc` — a deployed server, its DB handled through the DB dump API of the deployment that manages it. Each run leaves its dumps on that server (eleven for all the layers, and one for each failed test): the API has no way to delete them. The server names the file of a dump by the second it was asked for, so the tests ask for one at a time, at least 1.5 s apart, and stop if another dump of that second turns up.
+> - `rc` — a deployed server, its DB handled through the DB dump API of the deployment that manages it. Each run leaves its dumps on that server (twelve for all the layers, and one for each failed test): the API has no way to delete them. The server names the file of a dump by the second it was asked for, so the tests ask for one at a time, at least 1.5 s apart, and stop if another dump of that second turns up.
 >
 > **Not on a DB in real use.** A start on the `local` or `rc` target is refused if the server reports the `production` environment; on `local` also if the `.env` is of that environment or points at a DB other than the config's `expectedDB`; on `rc` also if the server under test is the one with the DB dump API (`lib/guards.ts`).
 >
@@ -32,8 +32,8 @@ Where a test needs something out-of-the-ordinary, it's called out in the notes.
 
 ## Current state (2026-10-12)
 
-- **Size:** 407 tests: 155 that talk to the server alone (the project `api`) and 252 that drive a page (the projects `chromium` and `firefox`, each running all of them). On the `docker` target, with either base, a few minutes for `api`, about 34 for `chromium` and 32 for `firefox`; 45–50 minutes without Firefox on the `local` target against a remote DB. One worker. One test is a `fixme` (the "Excel CSV" encoding, see Reports / attendants).
-- **Last verified:** on the `docker` target, a full run of all three projects on 2026-10-08, before the tests of the attribute values were added (so of 325 tests): 506 passed, 6 skipped, 2 failed — both on trace files deleted under the run by a Playwright UI started next to it, and both passing in a rerun of their specs. The 82 tests added since (the values of attributes, the fields of the forms, the pages and the tables) were run with their spec files as they were written; then, on 2026-10-09, with the browsers switched to the Polish locale and the expectations of dates and times rewritten for it, the whole `firefox` project passed (235 passed, 12 skipped: the CSV exports and the `fixme`), and in `chromium` a whole run (223 passed, 1 skipped, 23 failed on the formats of the old locale) was followed by the nine spec files of those failures passing whole. The `api` project was last run whole before the locale change, which does not reach it. The `local` target was last run on a few tests only. The `rc` target was run for the first time, on a few tests: the dumps, the restores and the layers work there; the server at hand ran an older version of the app than its DB, so most tests could not pass on it.
+- **Size:** 411 tests: 155 that talk to the server alone (the project `api`) and 256 that drive a page (the projects `chromium` and `firefox`, each running all of them). On the `docker` target, with either base, a few minutes for `api`, about 34 for `chromium` and 32 for `firefox`; 45–50 minutes without Firefox on the `local` target against a remote DB. One worker. One test is a `fixme` (the "Excel CSV" encoding, see Reports / attendants).
+- **Last verified:** on the `docker` target, a full run of all three projects on 2026-10-08, before the tests of the attribute values were added (so of 325 tests): 506 passed, 6 skipped, 2 failed — both on trace files deleted under the run by a Playwright UI started next to it, and both passing in a rerun of their specs. The 86 tests added since were run with their spec files as they were written. Of them, the first 77 (the values of attributes, the fields of the forms, the pages and the tables) were there when, on 2026-10-09, with the browsers switched to the Polish locale and the expectations of dates and times rewritten for it, the whole `firefox` project passed (235 passed, 12 skipped: the CSV exports and the `fixme`), and in `chromium` a whole run (223 passed, 1 skipped, 23 failed on the formats of the old locale) was followed by the nine spec files of those failures passing whole. The `api` project was last run whole before the locale change, which does not reach it. The `local` target was last run on a few tests only. The `rc` target was run for the first time, on a few tests: the dumps, the restores and the layers work there; the server at hand ran an older version of the app than its DB, so most tests could not pass on it.
 - **Entries without ✅** are either not written (the reason and the difficulty are in the entry), not applicable (_n/a_), or deliberately left out (see Anti-tests). What is missing or weak is summed up in "Gaps and weak spots" at the end.
 - **App fixes the tests led to**, merged: the denial for a non-member on a facility URL, the `resources` parameter of a calendar link, the facility edit toast, `notification/method` for a client with no methods, "not found" for a malformed id, `PATCH /user` refusing a foreign facility, the calendar's "today" in another time zone, the redirect from `/` while the facilities list is loading, `otpConfigure` recording the time step of its code, the log-out button of the forced password change form, the session race (a request in flight undoing a logout or a password change), a table that stopped storing its settings (shown columns, widths) once its columns were configured again — after a change of the language, or of the attributes (`TQueryTable.tsx`; seen in Firefox only because of the order things load in), `meeting/conflicts` returning the ids of attendance rows where the ids of the users were meant, a client added to a meeting before the client groups were loaded getting no group (`MeetingAttendantsFields.tsx`), a list-of-booleans attribute blanking the client form (its row now says that editing it is not supported; `AttributeFields.tsx`), a `datetime` attribute having no control in the forms and coming back from the API in a format the API refused (`AttributeFields.tsx`, `AbstractJsonResource.php`), an `int` attribute value outside the range of its 32-bit column answered with a 500 instead of a validation error (`AttributeType.php`), a disabled dictionary position left out of the selects of the forms also where it was the value, and so lost with the next save (`DictionarySelect.tsx`).
 
@@ -470,7 +470,7 @@ The two custom types are added inside the layer setup via `POST /facility/{id}/a
 - ✅ **The notes, the resources and the clients of a meeting are cleared in the edit form** — also the "remote" box; the view mode then shows none of them. _(E)_ `(meetings_ui.spec.ts)`
 - ✅ **The urgent notes of a client are shown at the client in the meeting** — in the view mode and the edit form of the modal (following the client chosen in the row) and in the hover card of the calendar; a normal note and one of low priority. _(E)_ `(meetings_ui.spec.ts)`
 - ✅ **A disabled meeting type is offered last and marked, and can still be chosen** _(E)_ `(meetings_ui.spec.ts)`
-- ✅ **A meeting keeps a resource that was disabled since, until it is taken off in the form** — the meeting shows it, and an edit of another field keeps it; the list of the form has it marked as disabled; taken off and saved, it is not offered any more. _(E)_ `(meetings_ui.spec.ts)`
+- ✅ **A meeting keeps a resource that was disabled since, until it is taken off in the form** — the block of the meeting in the calendar and its hover card mark the resource as disabled; the meeting shows it, and an edit of another field keeps it; the list of the form has it marked as disabled; taken off and saved, it is not offered any more. _(E)_ `(meetings_ui.spec.ts)`
 
 ### Meeting validation
 
@@ -545,6 +545,9 @@ The two custom types are added inside the layer setup via `POST /facility/{id}/a
   entering edit mode** _(M)_ `(meetings_ui.spec.ts)`
 - ✅ **Mark attendance per-attendant via UI (dropdown per row in meeting detail view)** — in the edit mode, for a client and a staff member. _(M)_ `(meetings_ui.spec.ts)`
 - ✅ **"Mark as cancelled" by the client** — bonus; saved at once with one client, through the edit form (statuses pre-set, adjustable) with more. _(M)_ `(meetings_ui.spec.ts)`
+- ✅ **The canned status buttons are there for a planned meeting in the view mode, with the options that fit it** — the options of the "mark as cancelled" menu for seven meetings: "by staff" only with staff, "by client" only with clients, "no show" only once the meeting has begun; an option saves at once (no ellipsis) when the only attendant of its kind is "ok", and opens the form otherwise (more attendants, or a status already set); "other" always opens the form, "undetermined" never. "Completed" is the main button once the meeting has begun. No buttons in the edit mode, nor for a completed meeting. _(M)_ `(meetings_ui.spec.ts)`
+- ✅ **"Mark as cancelled": the options that save at once, and what each of them sets** — by the only staff member (the clients stay "ok"), the only client not showing up, and with no reason given (nobody's status changes). _(M)_ `(meetings_ui.spec.ts)`
+- ✅ **"Mark as cancelled": the options that open the form, what they set in it, and that nothing is saved until it is** — by staff, by client, no show and "other": the meeting cancelled, the new status given only to the attendants who were "ok"; dropping the edit leaves the meeting planned, with the buttons; a form opened by an option, changed and saved. _(M)_ `(meetings_ui.spec.ts)`
 
 ### Meetings + Client Groups (Test Meetings with Groups layer)
 
@@ -647,6 +650,28 @@ All in `meeting_notifications.spec.ts`:
 - ✅ **Meeting details show who is notified, and the state of the notification** _(M)_
 - ✅ **Notification is turned on for a client in the meeting's edit form** — the "non-standard" mark, the missing phone number warning. _(M)_
 - ✅ **A copy keeps the notifications of the original; a client added to it gets the default ones** _(M)_
+
+---
+
+## Layer: Happy Path (parent: Test Meetings)
+
+Adds two meeting resources ("E2E Room", "E2E Projector") and seven optional client attributes (a text, a date, a yes/no, a number, a text of several lines, a list of texts and a list of dates) to the meetings layer (`layers/happy_path.ts`).
+
+- ✅ **A day of a facility** — one long test, tagged `@happy` and run alone with `pnpm :playwright-happy` (on the `docker` target, with `config/config.happy.json`), as a first check that nothing big is broken; each step does an everyday thing and looks for its result where the staff would. The variants of each are in the specs of their own. _(H)_ `(happy_path_ui.spec.ts)`
+  1. The global admin logs in through the login form, and has the users and the facilities pages.
+  2. A staff member logs in through the form, lands on the calendar, and has the meeting of today.
+  3. A client is created with a phone and a value of each of the seven attributes, the lists with two items each; the details show them.
+  4. The client is found by the search of the clients table, opened from its row, and edited: a field, an attribute, an item removed from a list and items added to both lists.
+  5. A group is made for the client with another client; a third client is added to it from their own page.
+  6. A meeting is created from a slot of the calendar, with the client and a resource; the calendar and the meetings list have it.
+  7. The meeting is edited: moved, with a second client, a second staff member, a second resource and new notes.
+  8. Two more meetings are created, and a weekly series; one meeting of the series is deleted.
+  9. The meetings are resolved: one completed and one cancelled by the client with the canned buttons, one completed in the form with a client marked as a no-show.
+  10. The details of the client count the planned and the completed meetings, list the completed ones, and have the cancelled one only among all.
+  11. A facility admin logs in through the form, and enters a leave day and a work time of the staff member in the time tables.
+  12. The admin has the staff list, the details of the staff member with their completed meetings, and the admins list.
+  13. The attendants report, searched for a meeting, has a row for each of its four attendants; the CSV export has them (not in Firefox).
+  14. The calendar has the meetings of the day, the cancelled one as cancelled; the week view has them too; the series is on its day, and the leave in its week.
 
 ---
 

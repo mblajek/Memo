@@ -1,5 +1,5 @@
 import {loadConfig} from "../lib/config.ts";
-import {expect, MemoAPI, openPage, readOnlyTest, submitLoginFormWithThrottleRetry, test} from "../lib/test.ts";
+import {expect, logInThroughForm, MemoAPI, openPage, readOnlyTest, test} from "../lib/test.ts";
 import type {Page} from "@playwright/test";
 import {formField} from "../helpers/selectors.ts";
 
@@ -24,12 +24,6 @@ async function createUser(globalAdminApi: MemoAPI, email: string, password: stri
   });
 }
 
-async function logInViaUI(page: Page, email: string, password: string) {
-  await openPage(page, "/login");
-  await submitLoginFormWithThrottleRetry(page, email, password);
-  await expect(page.locator("title=user_settings")).toBeVisible();
-}
-
 async function logInAsAdminAndOpenAnyPage(page: Page) {
   const cfg = await loadConfig();
   await openPage(page, "/help", cfg.ui.admin);
@@ -43,7 +37,7 @@ async function openPasswordChangeModal(page: Page) {
 test("change password via UI: happy path; new password works", {tag: "@ui"}, async ({page, globalAdminApi}) => {
   const email = "pw-happy@test.pl";
   await createUser(globalAdminApi, email, ORIGINAL);
-  await logInViaUI(page, email, ORIGINAL);
+  await logInThroughForm(page, {email, password: ORIGINAL}, "/login");
 
   await openPasswordChangeModal(page);
   await formField(page, "current").fill(ORIGINAL);

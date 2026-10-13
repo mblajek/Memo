@@ -15,7 +15,7 @@ import {
   tableRows,
 } from "../helpers/selectors.ts";
 import {createdId} from "../lib/responses.ts";
-import {MemoAPI, expect, openPage, readOnlyTest, test} from "../lib/test.ts";
+import {MemoAPI, dropSession, expect, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 /** The staff list and the staff details form, which only a facility admin can edit. */
 
@@ -182,8 +182,7 @@ facilityLayer.describe((artifact) => {
       });
 
       await test.step("an admin", async () => {
-        await page.goto("about:blank");
-        await page.context().clearCookies();
+        await dropSession(page);
         await openPage(page, `/${FACILITY.url}/staff`, ADMIN);
         await showTableColumns(page, main, "staff", [...ADMIN_ONLY, ...HIDDEN_AT_FIRST]);
         const columns = [...SHOWN_AT_FIRST, ...ADMIN_ONLY, ...HIDDEN_AT_FIRST];

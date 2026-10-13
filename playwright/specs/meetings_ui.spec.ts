@@ -1,4 +1,4 @@
-import {cloneMeeting, createMeetingResource} from "../helpers/queries.ts";
+import {cloneMeeting, createMeetingResource, meetingsMatching} from "../helpers/queries.ts";
 import {
   checkedSeriesDates,
   editHeading,
@@ -9,8 +9,8 @@ import {
   startEditing,
   viewHeading,
 } from "../helpers/meetings.ts";
-import type {Locator} from "@playwright/test";
-import {meetingBlocks, resourceInput} from "../helpers/calendar.ts";
+import type {Locator, Page} from "@playwright/test";
+import {meetingBlocks, openCalendar, resourceInput} from "../helpers/calendar.ts";
 import {FACILITY, STAFF, STAFF_ADMIN} from "../lib/layers/facility.ts";
 import {meetingsLayer} from "../lib/layers/meetings.ts";
 import {createdId, responseData} from "../lib/responses.ts";
@@ -63,16 +63,14 @@ async function getMeeting(api: MemoAPI, facilityId: string, id: string) {
   return meetings[0]!;
 }
 
-/** The ids of the meetings of the series started from the given meeting, ordered by date. */
-async function seriesMeetings(api: MemoAPI, facilityId: string, fromMeetingId: string) {
-  const ids = (
-    await api.tquery<{id: string}>(`facility/${facilityId}/meeting/tquery`, {
-      columns: ["id"],
-      filter: {type: "column", column: "fromMeetingId", op: "=", val: fromMeetingId},
-      sort: [{column: "date"}],
-    })
-  ).rows.map(({id}) => id);
-  return ids.length ? getMeetings(api, facilityId, ids) : [];
+/** The meetings of the series started from the given meeting, by date. */
+function seriesMeetings(api: MemoAPI, facilityId: string, fromMeetingId: string) {
+  return meetingsMatching<Meeting>(api, facilityId, {
+    type: "column",
+    column: "fromMeetingId",
+    op: "=",
+    val: fromMeetingId,
+  });
 }
 
 /** The meeting's data without the fields that every update changes. */
@@ -263,6 +261,231 @@ meetingsLayer.describe((artifact) => {
         expect(saved.statusDictId).toBe(meetingStatus!.cancelled!);
         expect(saved.clients.map((a) => a.attendanceStatusDictId)).toEqual([cancelled, ok, cancelled]);
         expect(saved.staff.map((a) => a.attendanceStatusDictId)).toEqual([ok, ok]);
+      });
+    },
+  );
+
+  /** The attendance status of an attendant of a meeting to make, by its name; "ok" if not given. */
+  type AttendantStatuses = readonly (string | undefined)[];
+
+  /**
+   * Makes a planned meeting `dayOffset` days from the seeded day, with the first of the staff
+   * (STAFF, STAFF_ADMIN) and of the adult clients, as many as there are statuses.
+   */
+  async function createPlanned(
+    staffApi: MemoAPI,
+    dayOffset: number,
+    {staff, clients}: {staff: AttendantStatuses; clients: AttendantStatuses},
+  ) {
+    const {facilityId, staffUserId, staffAdminUserId, adultClientInfos} = artifact();
+    const {attendanceStatus, meetingStatus, meetingType} = await staffApi.dictionaries();
+    const attendants = (userIds: readonly string[], statuses: AttendantStatuses) =>
+      statuses.map((status, index) => ({
+        userId: userIds[index]!,
+        attendanceStatusDictId: attendanceStatus![status ?? "ok"]!,
+      }));
+    const date = seededDay(dayOffset);
+    const id = await createdId(
+      await staffApi.createMeeting(facilityId, {
+        typeDictId: meetingType!.other!,
+        date,
+        startDayminute: 600,
+        durationMinutes: 60,
+        statusDictId: meetingStatus!.planned!,
+        staff: attendants([staffUserId, staffAdminUserId], staff),
+        clients: attendants(
+          adultClientInfos.map((client) => client.id),
+          clients,
+        ),
+      }),
+    );
+    return {id, date};
+  }
+
+  /** The status of the meeting and of its attendants, by the names of the statuses. */
+  async function statuses(staffApi: MemoAPI, meetingId: string) {
+    const {attendanceStatus, meetingStatus} = await staffApi.dictionaries();
+    const nameOf = (dictionary: Readonly<Record<string, string>>, id: string) =>
+      Object.entries(dictionary).find(([, positionId]) => positionId === id)?.[0];
+    const meeting = await getMeeting(staffApi, artifact().facilityId, meetingId);
+    return {
+      meeting: nameOf(meetingStatus!, meeting.statusDictId),
+      staff: meeting.staff.map((attendant) => nameOf(attendanceStatus!, attendant.attendanceStatusDictId)),
+      clients: meeting.clients.map((attendant) => nameOf(attendanceStatus!, attendant.attendanceStatusDictId)),
+    };
+  }
+
+  const cancelMenuButton = (page: Page) => page.getByRole("button", {name: "meetings.mark_as_cancelled.text"});
+  const completedButton = (page: Page) => page.getByRole("button", {name: "meetings.mark_as_completed"});
+  /** The options of the open "mark as cancelled" menu; one opening the form ends in "ellipsis". */
+  const cancelOptions = (page: Page) => page.getByRole("button", {name: /^meetings\.mark_as_cancelled\.(?!text)/});
+  const cancelOption = (page: Page, name: string) =>
+    page.getByRole("button", {name: `meetings.mark_as_cancelled.${name}`, exact: true});
+
+  /** The statuses the edit form has: of the meeting, and of each attendant. */
+  async function expectFormStatuses(
+    form: Locator,
+    expected: {meeting: string; staff: readonly string[]; clients: readonly string[]},
+  ) {
+    await expect(formSelect(form, "statusDictId")).toContainText(`dictionary.meetingStatus.${expected.meeting}`);
+    for (const type of ["staff", "clients"] as const) {
+      for (const [index, status] of expected[type].entries()) {
+        await expect(formSelect(form, `${type}.${index}.attendanceStatusDictId`)).toContainText(
+          `dictionary.attendanceStatus.${status}`,
+        );
+      }
+    }
+  }
+
+  test(
+    "the canned status buttons are there for a planned meeting in the view mode, with the options that fit it",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const {pastMeeting} = artifact();
+      const staffApi = await api.loggedInAs(STAFF);
+      const meetings = {
+        ahead: await createPlanned(staffApi, 3, {staff: [undefined], clients: [undefined]}),
+        begun: await createPlanned(staffApi, -1, {staff: [undefined], clients: [undefined]}),
+        noClients: await createPlanned(staffApi, -2, {staff: [undefined], clients: []}),
+        noStaff: await createPlanned(staffApi, -3, {staff: [], clients: [undefined]}),
+        crowd: await createPlanned(staffApi, -4, {staff: [undefined, undefined], clients: [undefined, undefined]}),
+        // The only attendant of a kind is not just "ok": the form is needed to say who cancelled.
+        late: await createPlanned(staffApi, -5, {staff: ["late_present"], clients: ["late_present"]}),
+        // Only one of each kind is still "ok", but there are more.
+        oneOk: await createPlanned(staffApi, -6, {staff: [undefined, "cancelled"], clients: [undefined, "no_show"]}),
+      };
+      await login(page, STAFF);
+      const prefix = "meetings.mark_as_cancelled.";
+      const expectOptions = async (meeting: keyof typeof meetings, options: readonly string[]) => {
+        await openMeeting(page, meetings[meeting]);
+        await cancelMenuButton(page).click();
+        await expect(cancelOptions(page), meeting).toHaveText(options.map((option) => `${prefix}${option}`));
+      };
+
+      // "No show" is offered once the meeting has begun.
+      await expectOptions("ahead", ["by_staff", "by_client", "otherellipsis", "undetermined"]);
+      await expectOptions("begun", ["by_staff", "by_client", "by_client_no_show", "otherellipsis", "undetermined"]);
+      await expectOptions("noClients", ["by_staff", "otherellipsis", "undetermined"]);
+      await expectOptions("noStaff", ["by_client", "by_client_no_show", "otherellipsis", "undetermined"]);
+      const throughTheForm = [
+        "by_staffellipsis",
+        "by_clientellipsis",
+        "by_client_no_showellipsis",
+        "otherellipsis",
+        "undetermined",
+      ];
+      await expectOptions("crowd", throughTheForm);
+      await expectOptions("late", throughTheForm);
+      await expectOptions("oneOk", throughTheForm);
+
+      await test.step("'completed' is the main button once the meeting has begun", async () => {
+        await openMeeting(page, meetings.begun);
+        await expect(completedButton(page)).toHaveClass(/\bprimary\b/);
+        await openMeeting(page, meetings.ahead);
+        await expect(completedButton(page)).toHaveClass(/\bsecondary\b/);
+      });
+
+      await test.step("no buttons in the edit mode, nor for a meeting that is not planned", async () => {
+        await startEditing(page);
+        await expect(completedButton(page)).toHaveCount(0);
+        await expect(cancelMenuButton(page)).toHaveCount(0);
+        await openMeeting(page, pastMeeting);
+        await expect(viewHeading(page)).toBeVisible();
+        await expect(completedButton(page)).toHaveCount(0);
+        await expect(cancelMenuButton(page)).toHaveCount(0);
+      });
+    },
+  );
+
+  test(
+    "'Mark as cancelled': the options that save at once, and what each of them sets",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const staffApi = await api.loggedInAs(STAFF);
+      await login(page, STAFF);
+      const cancelAtOnce = async (dayOffset: number, clients: AttendantStatuses, option: string) => {
+        const meeting = await createPlanned(staffApi, dayOffset, {staff: [undefined], clients});
+        await openMeeting(page, meeting);
+        await cancelMenuButton(page).click();
+        await cancelOption(page, option).click();
+        await expectFormSuccess(page, "meeting_edit");
+        await expect(editHeading(page)).toHaveCount(0);
+        return statuses(staffApi, meeting.id);
+      };
+
+      // The only staff member cancels: the clients, however many, stay as they were.
+      expect(await cancelAtOnce(3, [undefined, undefined], "by_staff")).toEqual({
+        meeting: "cancelled",
+        staff: ["cancelled"],
+        clients: ["ok", "ok"],
+      });
+      expect(await cancelAtOnce(-1, [undefined], "by_client_no_show")).toEqual({
+        meeting: "cancelled",
+        staff: ["ok"],
+        clients: ["no_show"],
+      });
+      // No reason given: nobody's status changes, also with several clients.
+      expect(await cancelAtOnce(4, [undefined, "late_present"], "undetermined")).toEqual({
+        meeting: "cancelled",
+        staff: ["ok"],
+        clients: ["ok", "late_present"],
+      });
+    },
+  );
+
+  test(
+    "'Mark as cancelled': the options that open the form, what they set in it, and that nothing is saved until it is",
+    {tag: "@ui"},
+    async ({page, api}) => {
+      const staffApi = await api.loggedInAs(STAFF);
+      const planned = {staff: [undefined, "late_present"], clients: [undefined, "late_present", undefined]} as const;
+      const asPlanned = {meeting: "planned", staff: ["ok", "late_present"], clients: ["ok", "late_present", "ok"]};
+      const meeting = await createPlanned(staffApi, -1, planned);
+      await login(page, STAFF);
+      const form = await openMeeting(page, meeting);
+      /** Picks the option, expects the form with the statuses, and drops the edit. */
+      const expectFormAfter = async (option: string, expected: Parameters<typeof expectFormStatuses>[1]) => {
+        await cancelMenuButton(page).click();
+        await cancelOption(page, option).click();
+        await expect(editHeading(page)).toBeVisible();
+        await expectFormStatuses(form, expected);
+        expect(await statuses(staffApi, meeting.id)).toEqual(asPlanned);
+        await form.getByRole("button", {name: "actions.cancel"}).click();
+        await expect(viewHeading(page)).toBeVisible();
+        // Back in the view mode the meeting is as it was, with the buttons.
+        await expectFormStatuses(form, asPlanned);
+        await expect(cancelMenuButton(page)).toBeVisible();
+      };
+
+      // Only the attendants who are "ok" get the new status.
+      await expectFormAfter("by_staffellipsis", {
+        meeting: "cancelled",
+        staff: ["cancelled", "late_present"],
+        clients: ["ok", "late_present", "ok"],
+      });
+      await expectFormAfter("by_clientellipsis", {
+        meeting: "cancelled",
+        staff: ["ok", "late_present"],
+        clients: ["cancelled", "late_present", "cancelled"],
+      });
+      await expectFormAfter("by_client_no_showellipsis", {
+        meeting: "cancelled",
+        staff: ["ok", "late_present"],
+        clients: ["no_show", "late_present", "no_show"],
+      });
+      await expectFormAfter("otherellipsis", {...asPlanned, meeting: "cancelled"});
+
+      await test.step("the form opened by an option saves what it was set to, and what was changed in it", async () => {
+        await cancelMenuButton(page).click();
+        await cancelOption(page, "by_client_no_showellipsis").click();
+        await expect(editHeading(page)).toBeVisible();
+        await chooseInFormSelect(page, "clients.2.attendanceStatusDictId", /^dictionary\.attendanceStatus\.ok/);
+        await saveEdit(page);
+        expect(await statuses(staffApi, meeting.id)).toEqual({
+          meeting: "cancelled",
+          staff: ["ok", "late_present"],
+          clients: ["no_show", "late_present", "ok"],
+        });
       });
     },
   );
@@ -733,6 +956,21 @@ meetingsLayer.describe((artifact) => {
           .toSorted();
       expect(await resourceIds()).toEqual([roomId, oldRoomId].toSorted());
       await login(page, STAFF);
+
+      await test.step("the block and the hover card of the meeting mark the resource as disabled", async () => {
+        await openCalendar(page, FACILITY.url, {mode: "day", date: futureMeeting.date, resources: [STAFF.name]});
+        const block = meetingBlocks(page, futureMeeting.id);
+        const card = page.locator('[data-role="meeting-hover-card"]');
+        await block.hover();
+        for (const place of [block, card]) {
+          await expect(place.getByText("E2E Room", {exact: true})).toBeVisible();
+          await expect(place.getByText("position_disabled_suffix")).toHaveCount(1);
+          await expect(place.locator("div").filter({hasText: /^E2E Old Room\s*position_disabled_suffix$/})).toHaveCount(
+            1,
+          );
+        }
+      });
+
       const form = await openMeeting(page, futureMeeting);
       const select = formSelect(form, "resources");
       const options = page.getByRole("option");

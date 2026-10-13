@@ -19,6 +19,7 @@
     "playwright-typecheck": "pnpm install && tsc --noEmit -p playwright/tsconfig.json",
     "playwright-lint": "pnpm install && eslint --config playwright/eslint.config.mjs playwright",
     ":playwright": "playwright test -c playwright/playwright.config.ts",
+    ":playwright-happy": "MEMO_E2E_CONFIG=playwright/config/config.happy.json playwright test -c playwright/playwright.config.ts --project=chromium --grep @happy",
     ":playwright-rep": "playwright show-report playwright/playwright-report"
   },
   "devDependencies": {

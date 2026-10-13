@@ -75,13 +75,13 @@ async function setupMeetings(api: MemoAPI, parent: ClientsArtifact): Promise<Mee
   // Two custom meeting types: "therapy" (category=other) and "consult" (category=system).
   const meetingTypeDictId = await api.dictionaryId("meetingType");
   const therapyTypeId = await createCustomMeetingType(api, parent, meetingTypeDictId, {
-    name: "Integration Test Therapy",
+    name: "+Integration Test Therapy",
     categoryDictId: meetingCategory.other!,
     durationMinutes: 60,
     defaultOrder: 100,
   });
   const consultTypeId = await createCustomMeetingType(api, parent, meetingTypeDictId, {
-    name: "Integration Test Consult",
+    name: "+Integration Test Consult",
     categoryDictId: meetingCategory.system!,
     durationMinutes: 30,
     defaultOrder: 101,

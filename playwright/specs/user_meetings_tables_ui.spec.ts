@@ -1,4 +1,4 @@
-import {meetingsListTab, shownTableRows} from "../helpers/meetings.ts";
+import {expectMeetingsListCounts, meetingsListTab, shownTableRows} from "../helpers/meetings.ts";
 import type {Page} from "@playwright/test";
 import {FACILITY, STAFF} from "../lib/layers/facility.ts";
 import {meetingsLayer} from "../lib/layers/meetings.ts";
@@ -13,12 +13,7 @@ import {expect, login, openPage, readOnlyTest} from "../lib/test.ts";
 
 const tab = meetingsListTab;
 
-async function expectCounts(page: Page, {planned, completed}: {planned: number; completed: number}) {
-  await expect(tab(page, "planned")).toContainText(new RegExp(`meetings_lists\\.planned — ${planned}(\\D|$)`, "i"));
-  await expect(tab(page, "completed")).toContainText(
-    new RegExp(`meetings_lists\\.completed — ${completed}(\\D|$)`, "i"),
-  );
-}
+const expectCounts = expectMeetingsListCounts;
 
 const rows = shownTableRows;
 

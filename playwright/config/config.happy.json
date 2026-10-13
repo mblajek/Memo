@@ -1,0 +1,19 @@
+{
+  "//": [
+    "The config of the happy path run (`pnpm :playwright-happy`): the docker target as its template",
+    "has it, so that the run needs no config of yours. See config.docker.template.json for what",
+    "the settings mean."
+  ],
+  "targetType": "docker",
+  "ui": {
+    "baseURL": "http://localhost:9084"
+  },
+  "docker": {
+    "base": "empty",
+    "memoDir": "..",
+    "appImage": "memo-memo-php",
+    "dbPort": 3307,
+    "vitePort": 9085,
+    "keepRunning": false
+  }
+}

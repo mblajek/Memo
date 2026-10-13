@@ -85,6 +85,22 @@ export async function login(page: Page, creds: Credentials) {
 }
 
 /**
+ * Leaves the page and drops the session of the browser, for another user to log in. The page is
+ * left first: a request of it still in flight would bring the old session back with its answer.
+ */
+export async function dropSession(page: Page) {
+  await page.goto("about:blank");
+  await page.context().clearCookies();
+}
+
+/** Logs in through the login form, as the page at the path shows it to a user not logged in. */
+export async function logInThroughForm(page: Page, creds: Pick<Credentials, "email" | "password">, path = "/") {
+  await openPage(page, path);
+  await submitLoginFormWithThrottleRetry(page, creds.email, creds.password);
+  await expect(page.locator("title=user_settings")).toBeVisible();
+}
+
+/**
  * Opens the path in the testing language, logging in first if a user is given.
  */
 export async function openPage(page: Page, path: string, creds?: Credentials) {
