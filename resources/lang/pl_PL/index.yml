@@ -40,6 +40,7 @@ exception:
     no_fresh_prod_db_dumps: "Aby możliwe było załadowanie (nadpisanie) bazy produkcyjnej, musi istnieć aktualny zrzut bazy, utworzony nie dawniej niż {{minutes, number}} min. temu"
     invalid_db_dump_status: "Zrzut bazy nie może zostać załadowany, spróbuj ponownie później (status: {{status}})"
     db_dumps_disabled: "Funkcjonalność tworzenia, przywracania i przeglądania zrzutów bazy danych jest wyłączona"
+    db_dump_already_running: "Tworzenie zrzutu tej bazy jest już w toku, spróbuj ponownie za kilka minut"
   _unknown: "Błąd konfiguracji ({{text}})"
 
 passwords:

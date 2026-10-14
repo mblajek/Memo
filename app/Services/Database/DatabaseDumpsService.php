@@ -14,6 +14,13 @@ class DatabaseDumpsService
     public function create(bool $isFromRc): DatabaseDumpJob
     {
         DatabaseDumpHelper::checkDumpsEnabled();
+        // The job takes this lock as well, and it is the one that decides, but it runs after the response is sent,
+        // so what it reports never reaches the caller. Asking here costs nothing and answers the usual case: a dump
+        // started by hand while the scheduled one is still running. A dump that starts in between is still caught
+        // by the job, and shows up as the error status of the row.
+        if (DatabaseDumpHelper::isDumpRunning(isRc: $isFromRc)) {
+            ExceptionFactory::dbDumpAlreadyRunning()->throw();
+        }
 
         $dbDump = new DbDump();
         $dbDump->status = DatabaseDumpStatus::creating;
