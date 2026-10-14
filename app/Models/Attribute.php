@@ -75,7 +75,9 @@ class Attribute extends Model
                 fn(AttributeTable $table) => lcfirst($table->name),
                 AttributeTable::valueCapable(),
             ))]),
-            'name' => Valid::trimmed(),
+            // Only fixed attributes have translatable names, the others have literal names (with
+            // the "+" prefix).
+            'name' => Valid::trimmed(['starts_with:+']),
             'api_name' => Valid::trimmed(['regex:/^[a-z][A-Za-z0-9]+$/']),
             'type' => Valid::trimmed([Rule::enum(AttributeType::class)]),
             'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')], nullable: true),

@@ -266,8 +266,11 @@ technicalsLayer.describe((artifact) => {
       await adminApi.post(`${adminPath()}/dictionary`, {name: COLOUR_DICT_NAME}, FAIL),
       unique,
     );
-    // "gender" is a global (fixed) dictionary.
-    await expectValidationError(await adminApi.post(`${adminPath()}/dictionary`, {name: "gender"}, FAIL), unique);
+    // "gender" is a global (fixed) dictionary, but a translatable name is rejected anyway.
+    await expectValidationError(await adminApi.post(`${adminPath()}/dictionary`, {name: "gender"}, FAIL), {
+      field: "name",
+      code: "validation.starts_with",
+    });
     await expectValidationError(
       await adminApi.patch(`${adminPath()}/dictionary/${emptyDictId}`, {name: COLOUR_DICT_NAME}, FAIL),
       unique,

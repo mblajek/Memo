@@ -50,7 +50,7 @@ class AttributeEndpointTest extends TestCase
         $data = [
             'facilityId' => null,
             'model' => self::MODEL,
-            'name' => "attr $seq",
+            'name' => "+attr $seq",
             'apiName' => "attr{$seq}x",
             'type' => 'string',
             'dictionaryId' => null,
@@ -131,12 +131,12 @@ class AttributeEndpointTest extends TestCase
         $id = $this->createAttribute()->assertCreated()->json('data.id');
         $this->prepareAdminUser();
         $this->patch(self::GLOBAL_URL . "/$id", [
-            'name' => 'Renamed',
+            'name' => '+Renamed',
             'description' => 'A description',
             'requirementLevel' => 'recommended',
         ])->assertOk();
         $attribute = Attribute::query()->findOrFail($id);
-        self::assertSame('Renamed', $attribute->name);
+        self::assertSame('+Renamed', $attribute->name);
         self::assertSame('A description', $attribute->description);
         self::assertSame('recommended', $attribute->requirement_level->value);
     }
@@ -169,7 +169,7 @@ class AttributeEndpointTest extends TestCase
             'default_order' => $this->maxOrder() + 1,
         ]);
         $this->prepareAdminUser();
-        $patch = $this->patch(self::GLOBAL_URL . "/{$attribute->id}", ['name' => 'changed']);
+        $patch = $this->patch(self::GLOBAL_URL . "/{$attribute->id}", ['name' => '+changed']);
         $patch->assertBadRequest();
         self::assertContains('validation.not_editable', $this->fieldCodes($patch, 'id'));
 
@@ -208,7 +208,7 @@ class AttributeEndpointTest extends TestCase
     {
         return array_merge([
             'model' => self::MODEL,
-            'name' => 'facility attr',
+            'name' => '+facility attr',
             'apiName' => 'facilityAttr' . Str::random(5),
             'type' => 'string',
             'dictionaryId' => null,
@@ -261,7 +261,7 @@ class AttributeEndpointTest extends TestCase
         $this->prepareFacilityAdmin($facility);
         $base = "/api/v1/facility/{$facility->id}/admin/attribute";
         foreach ([$global, $foreign] as $attribute) {
-            $this->patch("$base/{$attribute->id}", ['name' => 'x'])->assertNotFound();
+            $this->patch("$base/{$attribute->id}", ['name' => '+x'])->assertNotFound();
             $this->delete("$base/{$attribute->id}")->assertNotFound();
             self::assertNotNull(Attribute::query()->find($attribute->id));
         }
@@ -352,6 +352,20 @@ class AttributeEndpointTest extends TestCase
         $result = $this->patch(self::GLOBAL_URL . "/$id", ['name' => '+']);
         $result->assertBadRequest();
         self::assertContains('validation.not_in', $this->fieldCodes($result, 'name'));
+    }
+
+    public function testNameWithoutPlusPrefixIsRejected(): void
+    {
+        $result = $this->createAttribute(['name' => 'translatable_name']);
+        $result->assertBadRequest();
+        self::assertContains('validation.starts_with', $this->fieldCodes($result, 'name'));
+
+        $id = $this->createAttribute()->assertCreated()->json('data.id');
+        $this->prepareAdminUser();
+        $patch = $this->patch(self::GLOBAL_URL . "/$id", ['name' => 'translatable_name']);
+        $patch->assertBadRequest();
+        self::assertContains('validation.starts_with', $this->fieldCodes($patch, 'name'));
+        $this->patch(self::GLOBAL_URL . "/$id", ['description' => 'changed'])->assertOk();
     }
 
     public function testSeparatorRequiresEmptyRequirementLevel(): void
@@ -446,7 +460,7 @@ class AttributeEndpointTest extends TestCase
         $result = $this->post(self::GLOBAL_URL, [
             'facilityId' => null,
             'model' => self::MODEL,
-            'name' => 'no fixed flag',
+            'name' => '+no fixed flag',
             'apiName' => 'nofixed' . Str::random(5),
             'type' => 'string',
             'dictionaryId' => null,
@@ -473,7 +487,7 @@ class AttributeEndpointTest extends TestCase
         PermissionMiddleware::setPermissions(null);
         $this->post(self::GLOBAL_URL, [
             'model' => self::MODEL,
-            'name' => 'x',
+            'name' => '+x',
             'apiName' => 'x' . Str::random(5),
             'type' => 'string',
             'requirementLevel' => 'optional',
@@ -485,7 +499,7 @@ class AttributeEndpointTest extends TestCase
         $this->actAsVerifiedNonAdmin();
         $this->post(self::GLOBAL_URL, [
             'model' => self::MODEL,
-            'name' => 'x',
+            'name' => '+x',
             'apiName' => 'x' . Str::random(5),
             'type' => 'string',
             'requirementLevel' => 'optional',

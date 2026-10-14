@@ -235,7 +235,7 @@ API (`technicals.spec.ts`):
 - ✅ **The lists of dictionaries and of attributes are given to anyone, with those of every facility** — pins what the server does, see the app problems; the table queries and the list of the facilities need a login. _(E)_
 - ✅ **Admin endpoints are closed to non-admins** — staff and bare member get 403 on the facility ones, a facility admin 403 on the global ones, anonymous 401; nothing changes. _(M)_
 - ✅ **Facility admin creates, renames and deletes a dictionary** — the facility endpoint forces the facility scope, non-fixed, extendable. _(M)_
-- ✅ **Dictionary names are unique within the facility's visibility scope** — own and global names taken, a bare "+" rejected, renaming to the current name allowed. _(M)_
+- ✅ **Dictionary names are unique within the facility's visibility scope** — an own name taken, a translatable name (even that of a global dictionary) and a bare "+" rejected, renaming to the current name allowed. _(M)_
 - ✅ **A dictionary name may repeat the name of another facility's dictionary** _(E)_
 - ✅ **A dictionary with positions or used by an attribute cannot be deleted** — one dictionary that is both; the attribute-only case is the next entry. _(E)_
 - ✅ **A dictionary used only by an attribute cannot be deleted until the attribute is gone** _(M)_

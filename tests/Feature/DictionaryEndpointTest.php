@@ -34,7 +34,7 @@ class DictionaryEndpointTest extends TestCase
     private function createDictionary(array $overrides = []): TestResponse
     {
         $this->prepareAdminUser();
-        $data = ['facilityId' => null, 'name' => 'dict ' . Str::random(6), 'isFixed' => false, 'isExtendable' => true];
+        $data = ['facilityId' => null, 'name' => '+dict ' . Str::random(6), 'isFixed' => false, 'isExtendable' => true];
         return $this->post(self::GLOBAL_URL, array_merge($data, $overrides));
     }
 
@@ -51,8 +51,8 @@ class DictionaryEndpointTest extends TestCase
     {
         $id = $this->createDictionary()->assertCreated()->json('data.id');
         $this->prepareAdminUser();
-        $this->patch(self::GLOBAL_URL . "/$id", ['name' => 'Renamed'])->assertOk();
-        self::assertSame('Renamed', Dictionary::query()->findOrFail($id)->name);
+        $this->patch(self::GLOBAL_URL . "/$id", ['name' => '+Renamed'])->assertOk();
+        self::assertSame('+Renamed', Dictionary::query()->findOrFail($id)->name);
     }
 
     public function testDeleteEmptyDictionarySucceeds(): void
@@ -94,7 +94,7 @@ class DictionaryEndpointTest extends TestCase
     {
         $dictionary = Dictionary::factory()->fixed()->create();
         $this->prepareAdminUser();
-        $patch = $this->patch(self::GLOBAL_URL . "/{$dictionary->id}", ['name' => 'changed']);
+        $patch = $this->patch(self::GLOBAL_URL . "/{$dictionary->id}", ['name' => '+changed']);
         $patch->assertBadRequest();
         self::assertContains('validation.not_editable', $this->fieldCodes($patch, 'id'));
 
@@ -108,7 +108,7 @@ class DictionaryEndpointTest extends TestCase
     {
         $facility = Facility::factory()->create();
         $this->prepareFacilityAdmin($facility);
-        $result = $this->post("/api/v1/facility/{$facility->id}/admin/dictionary", ['name' => 'facility dict']);
+        $result = $this->post("/api/v1/facility/{$facility->id}/admin/dictionary", ['name' => '+facility dict']);
         $result->assertCreated();
         $dictionary = Dictionary::query()->findOrFail($result->json('data.id'));
         self::assertSame($facility->id, $dictionary->facility_id);
@@ -161,6 +161,20 @@ class DictionaryEndpointTest extends TestCase
         self::assertContains('validation.not_in', $this->fieldCodes($result, 'name'));
     }
 
+    public function testNameWithoutPlusPrefixIsRejected(): void
+    {
+        $result = $this->createDictionary(['name' => 'translatable_name']);
+        $result->assertBadRequest();
+        self::assertContains('validation.starts_with', $this->fieldCodes($result, 'name'));
+
+        $id = $this->createDictionary()->assertCreated()->json('data.id');
+        $this->prepareAdminUser();
+        $patch = $this->patch(self::GLOBAL_URL . "/$id", ['name' => 'translatable_name']);
+        $patch->assertBadRequest();
+        self::assertContains('validation.starts_with', $this->fieldCodes($patch, 'name'));
+        $this->patch(self::GLOBAL_URL . "/$id", ['isExtendable' => false])->assertOk();
+    }
+
     public function testPatchAcceptsUnchangedIsFixedButRejectsTrue(): void
     {
         $id = $this->createDictionary()->assertCreated()->json('data.id');
@@ -173,7 +187,7 @@ class DictionaryEndpointTest extends TestCase
 
     public function testCannotCreateDictionaryWithDuplicateName(): void
     {
-        $existing = Dictionary::factory()->create();
+        $existing = Dictionary::factory()->create(['name' => '+existing ' . Str::random(6)]);
         $result = $this->createDictionary(['name' => $existing->name]);
         $result->assertBadRequest();
         self::assertContains('validation.unique', $this->fieldCodes($result, 'name'));
@@ -181,7 +195,7 @@ class DictionaryEndpointTest extends TestCase
 
     public function testFacilityDictionaryCannotShadowGlobalName(): void
     {
-        $global = Dictionary::factory()->create();
+        $global = Dictionary::factory()->create(['name' => '+global ' . Str::random(6)]);
         $facility = Facility::factory()->create();
         $this->prepareFacilityAdmin($facility);
         $result = $this->post("/api/v1/facility/{$facility->id}/admin/dictionary", ['name' => $global->name]);
@@ -191,7 +205,7 @@ class DictionaryEndpointTest extends TestCase
 
     public function testSameNameAllowedInDifferentFacilities(): void
     {
-        $name = 'shared name ' . Str::random(6);
+        $name = '+shared name ' . Str::random(6);
         foreach ([Facility::factory()->create(), Facility::factory()->create()] as $facility) {
             $this->prepareFacilityAdmin($facility);
             $this->post("/api/v1/facility/{$facility->id}/admin/dictionary", ['name' => $name])
@@ -201,7 +215,7 @@ class DictionaryEndpointTest extends TestCase
 
     public function testRenameCannotShadowExistingName(): void
     {
-        $existing = Dictionary::factory()->create();
+        $existing = Dictionary::factory()->create(['name' => '+existing ' . Str::random(6)]);
         $dictionary = Dictionary::factory()->create();
         $this->prepareAdminUser();
         $result = $this->patch(self::GLOBAL_URL . "/{$dictionary->id}", ['name' => $existing->name]);
@@ -211,7 +225,7 @@ class DictionaryEndpointTest extends TestCase
 
     public function testRenameToOwnNameSucceeds(): void
     {
-        $dictionary = Dictionary::factory()->create();
+        $dictionary = Dictionary::factory()->create(['name' => '+own ' . Str::random(6)]);
         $this->prepareAdminUser();
         $this->patch(self::GLOBAL_URL . "/{$dictionary->id}", ['name' => $dictionary->name])->assertOk();
     }
@@ -338,7 +352,7 @@ class DictionaryEndpointTest extends TestCase
         $this->prepareFacilityAdmin($facility);
         $base = "/api/v1/facility/{$facility->id}/admin/dictionary";
         foreach ([$global, $foreign] as $dictionary) {
-            $this->patch("$base/{$dictionary->id}", ['name' => 'x'])->assertNotFound();
+            $this->patch("$base/{$dictionary->id}", ['name' => '+x'])->assertNotFound();
             $this->delete("$base/{$dictionary->id}")->assertNotFound();
             self::assertNotNull(Dictionary::query()->find($dictionary->id));
         }
@@ -347,14 +361,14 @@ class DictionaryEndpointTest extends TestCase
     public function testUnauthenticatedIsRejected(): void
     {
         PermissionMiddleware::setPermissions(null);
-        $this->post(self::GLOBAL_URL, ['facilityId' => null, 'name' => 'x', 'isFixed' => false, 'isExtendable' => true])
+        $this->post(self::GLOBAL_URL, ['facilityId' => null, 'name' => '+x', 'isFixed' => false, 'isExtendable' => true])
             ->assertUnauthorized();
     }
 
     public function testVerifiedNonAdminIsForbidden(): void
     {
         $this->actAsVerifiedNonAdmin();
-        $this->post(self::GLOBAL_URL, ['facilityId' => null, 'name' => 'x', 'isFixed' => false, 'isExtendable' => true])
+        $this->post(self::GLOBAL_URL, ['facilityId' => null, 'name' => '+x', 'isFixed' => false, 'isExtendable' => true])
             ->assertForbidden();
     }
 }
