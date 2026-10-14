@@ -33,7 +33,7 @@ class FacilityClientAttributeTest extends TestCase
     use DatabaseTransactions;
     use UserTrait;
 
-    // Seeded fixed "adult" position of the client-type dictionary (common_client_attributes migration).
+    // Seeded fixed "adult" position of the client-type dictionary (the v0.21.0 schema migration).
     private const CLIENT_TYPE_ADULT = 'd1c57dfc-c118-49ff-ae38-6585645349ca';
 
     private Facility $facility;
