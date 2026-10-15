@@ -56,7 +56,7 @@ facilityLayer.describe(() => {
   const FACILITY_ADMIN_PAGES: readonly (readonly [path: string, landmark: Landmark])[] = [
     ["admin/time-tables", calendarTodayButton("today")],
     ["admin/time-tables/weekly", tableColumn("time_table_weekly", "weekDate")],
-    ["admin/reports", text("reports.select_report_from_menu")],
+    ["admin/reports", text("reports.pick_report")],
     ["admin/notifications", (main) => main.getByRole("tab", {name: "tables.tables.notification.mode.all"})],
     ["admin/technicals/attributes", tableColumn("attribute", "displayName")],
     ["admin/technicals/dictionaries", tableColumn("dictionary", "displayName")],
