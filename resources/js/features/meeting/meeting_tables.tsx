@@ -196,6 +196,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     },
     category: {
       name: "categoryDictId",
+      filterControl: (props) => (
+        <DictFilterControl
+          {...props}
+          positionItemsFunc={(dict, defItem) =>
+            dict.allPositions.filter((p) => p.id !== meetingCategoryDict()?.system.id).map(defItem)
+          }
+        />
+      ),
       initialVisible: false,
       columnGroups: ["meeting_multicolumn", true, "typeDictId"],
     },

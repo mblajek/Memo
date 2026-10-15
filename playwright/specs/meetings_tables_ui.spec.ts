@@ -14,6 +14,7 @@ import {
   clearFilterButton,
   columnHeader,
   formField,
+  formSelect,
   showTableColumns,
   submitButton,
   tableCell,
@@ -97,6 +98,14 @@ meetingsLayer.describe((artifact) => {
         await expectRows(diana!);
         await clearFilterButton(main, "typeDictId").click();
         await expectRows(carl!, diana!, bea!, adam!);
+      });
+
+      await test.step("category filter does not offer the system category", async () => {
+        await showTableColumns(page, main, "meeting", ["categoryDictId"]);
+        await formSelect(main, "table__filter__val__categoryDictId").click();
+        await expect(page.getByRole("option", {name: /meetingCategory\.other/})).toBeVisible();
+        await expect(page.getByRole("option", {name: /meetingCategory\.system/})).toHaveCount(0);
+        await clickOutside(page);
       });
 
       await test.step("staff filter", async () => {
