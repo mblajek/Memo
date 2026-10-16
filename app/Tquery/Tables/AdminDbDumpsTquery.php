@@ -13,7 +13,8 @@ final readonly class AdminDbDumpsTquery extends TqService
     protected function getConfig(): TqConfig
     {
         $config = new TqConfig(table: TqTableAliasEnum::db_dumps_copy);
-        $config->addBase();
+        // The dumps registry is shared between environments, so its users might not exist here.
+        $config->addBase(nullableUsers: true);
         $config->addSimple(TqDataTypeEnum::string_nullable, 'name');
         $config->addSimple(TqDataTypeEnum::int_nullable, 'file_size');
         $config->addSimple(TqDataTypeEnum::string, 'app_version');
