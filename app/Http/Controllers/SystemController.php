@@ -335,8 +335,8 @@ class SystemController extends ApiController
             'data' => [
                 'version' => self::VERSION . ($isRc ? ' RC' : ''),
                 'appEnv' => Config::string('app.env'),
-                'appEnvColor' => env('APP_ENV_COLOR') ?: null,
-                'appEnvFgColor' => env('APP_ENV_FG_COLOR') ?: null,
+                'appEnvColor' => Config::get('app.env_color') ?: null,
+                'appEnvFgColor' => Config::get('app.env_fg_color') ?: null,
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'userTimezone' => DateHelper::getUserTimezone()->getName(),

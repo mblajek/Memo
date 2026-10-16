@@ -3,12 +3,13 @@
 use App\Exceptions\ExceptionFactory;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/docs-remote/{path}', function (string $path) {
     $data = Cache::remember("docs-remote/$path", 150 /* 2.5m */, function () use ($path): int|array {
-        $response = Http::get(env('DOCS_URL') . $path);
+        $response = Http::get(Config::string('app.docs_url') . $path);
         return ($response->status() === 200) ? [$response->header('Content-Type'), $response->body()] : 404;
     });
     return ($data === 404) ? ExceptionFactory::notFound()->render() :

@@ -8,6 +8,9 @@ return [
     'name' => Env::getOrFail('APP_NAME'),
     /* only 'production' is not displayed in application top bar, blocks migrations */
     'env' => Env::getOrFail('APP_ENV'),
+    /* colors of the environment name in application top bar */
+    'env_color' => Env::get('APP_ENV_COLOR'),
+    'env_fg_color' => Env::get('APP_ENV_FG_COLOR'),
     /* display error messages etc., sql in tquery */
     'debug' => (bool)Env::getOrFail('APP_DEBUG'),
     /* used by the console to properly generate URLs when using the Artisan command */
@@ -17,6 +20,8 @@ return [
     'timezone' => 'UTC',
     /* for communication with user - user interface, notifications */
     'user_timezone' => Env::get('APP_USER_TIMEZONE', 'Europe/Warsaw'),
+    /* base URL of the remote help documents */
+    'docs_url' => Env::get('DOCS_URL'),
 
     'locale' => 'pl_PL',
     'available_locales' => ['pl_PL'],
