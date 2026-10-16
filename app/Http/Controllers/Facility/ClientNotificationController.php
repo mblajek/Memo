@@ -91,7 +91,7 @@ class ClientNotificationController extends ApiController
             'remove_meeting_method_dict_id' => Valid::dict(DictionaryUuidEnum::NotificationMethod, sometimes: true),
             'remove_method_dict_id' => Valid::dict(DictionaryUuidEnum::NotificationMethod, sometimes: true),
             'add_meeting_method_dict_id' => Valid::dict(DictionaryUuidEnum::NotificationMethod, sometimes: true),
-            'add_meeting_client_methods' => Valid::bool(['accepted'], sometimes: true),
+            'add_meeting_client_methods' => Valid::bool(sometimes: true),
         ]);
 
         $addMeetingMethods = $this->getAddMeetingMethods($client, $data);

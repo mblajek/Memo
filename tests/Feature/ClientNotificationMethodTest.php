@@ -37,7 +37,10 @@ class ClientNotificationMethodTest extends TestCase
 
         $result = $this->post(sprintf('/api/v1/facility/%s/user/client', $this->facility->id), [
             'name' => 'Test Client',
-            'client' => ['typeDictId' => self::CLIENT_TYPE_ADULT],
+            'client' => [
+                'typeDictId' => self::CLIENT_TYPE_ADULT,
+                'notificationMethodDictIds' => [NotificationMethod::Sms->value],
+            ],
         ]);
         $result->assertCreated();
         $this->clientUserId = $result->json('data.id');
@@ -71,7 +74,7 @@ class ClientNotificationMethodTest extends TestCase
         $attendant->saveOrFail();
     }
 
-    private function addSmsNotifications(): TestResponse
+    private function patchNotificationMethods(array $data): TestResponse
     {
         return $this->patch(
             sprintf(
@@ -79,8 +82,13 @@ class ClientNotificationMethodTest extends TestCase
                 $this->facility->id,
                 $this->clientUserId,
             ),
-            ['addMeetingMethodDictId' => NotificationMethod::Sms->value],
+            $data,
         );
+    }
+
+    private function addSmsNotifications(): TestResponse
+    {
+        return $this->patchNotificationMethods(['addMeetingMethodDictId' => NotificationMethod::Sms->value]);
     }
 
     private function countNotifications(): int
@@ -107,6 +115,24 @@ class ClientNotificationMethodTest extends TestCase
         });
 
         $this->addSmsNotifications()->assertServerError();
+        self::assertSame(0, $this->countNotifications());
+    }
+
+    public function testAddsClientMethodsForAllFutureMeetings(): void
+    {
+        $result = $this->patchNotificationMethods(['addMeetingClientMethods' => true]);
+
+        $result->assertOk();
+        self::assertSame(['added' => 2, 'removed' => 0], $result->json('data'));
+        self::assertSame(2, $this->countNotifications());
+    }
+
+    public function testNotAddingClientMethodsAddsNothing(): void
+    {
+        $result = $this->patchNotificationMethods(['addMeetingClientMethods' => false]);
+
+        $result->assertOk();
+        self::assertSame(['added' => 0, 'removed' => 0], $result->json('data'));
         self::assertSame(0, $this->countNotifications());
     }
 }
