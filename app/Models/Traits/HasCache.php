@@ -30,9 +30,11 @@ trait HasCache
             ?? FatalExceptionFactory::unexpected()->throw();
     }
 
+    /** @return ?self null when the id is null or not in the cache */
     public static function getCacheByIdNullable(null|UuidEnum|string $id): ?self
     {
-        return ($id === null) ? null : self::getCacheById($id);
+        return ($id === null) ? null
+            : (self::getCacheAll()[($id instanceof UuidEnum) ? $id->value : $id] ?? null);
     }
 
     public static function clearCacheAll(): void

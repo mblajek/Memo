@@ -314,6 +314,19 @@ class PositionEndpointTest extends TestCase
         $this->createPosition($dictionary->id, extra: [$attribute->api_name => 'val']);
     }
 
+    public function testRequiredAttributeIdOfMissingAttributeIsSkipped(): void
+    {
+        $dictionary = $this->makeDictionary();
+        $attribute = $this->requirePositionAttribute($dictionary);
+        Value::query()
+            ->where('object_id', $dictionary->id)
+            ->where('ref_object_id', $attribute->id)
+            ->update(['ref_object_id' => Str::uuid()->toString()]);
+
+        $positionId = $this->createPosition($dictionary->id);
+        $this->patch(self::GLOBAL_URL . "/$positionId", ['name' => '+renamed'])->assertOk();
+    }
+
     public function testUpdateCannotClearDictionaryRequiredAttribute(): void
     {
         $dictionary = $this->makeDictionary();

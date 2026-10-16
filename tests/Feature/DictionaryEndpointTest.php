@@ -336,6 +336,25 @@ class DictionaryEndpointTest extends TestCase
         self::assertContains('validation.exists', $this->fieldCodes($result, 'positionRequiredAttributeIds'));
     }
 
+    public function testRequiringAttributeMissingFromStaleCacheIsRejected(): void
+    {
+        $dictionary = Dictionary::factory()->create();
+        $this->prepareAdminUser();
+        Attribute::getCacheAll();
+        // without events the attribute cache is not cleared, as when another request commits it
+        $attribute = Attribute::withoutEvents(fn() => Attribute::factory()->create([
+            'table' => 'positions',
+            'created_by' => User::SYSTEM,
+            'updated_by' => User::SYSTEM,
+        ]));
+        $result = $this->patch(
+            self::GLOBAL_URL . "/{$dictionary->id}",
+            ['positionRequiredAttributeIds' => [$attribute->id]],
+        );
+        $result->assertBadRequest();
+        self::assertContains('validation.exists', $this->fieldCodes($result, 'positionRequiredAttributeIds'));
+    }
+
     public function testAdminPatchCanToggleExtendable(): void
     {
         $dictionary = Dictionary::factory()->create(['is_extendable' => true]);
