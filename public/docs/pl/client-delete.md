@@ -18,7 +18,7 @@ i przynależności do grup zostaną połączone automatycznie.
 
 Postępuj zgodnie z poniższą instrukcją:
 
-1. Zdecyduj który profili jest _**właściwy**_ — jest to ten, który zostanie w pełni zachowany. Nie ma
+1. Zdecyduj, który z profili jest _**właściwy**_ — jest to ten, który zostanie w pełni zachowany. Nie ma
 istotnego znaczenia, który z profili to będzie, ale warto wybrać ten, który ma najwięcej informacji,
 albo ma je najbardziej aktualne.
 1. W osobnym oknie przeglądarki otwórz drugi profil — _**duplikat**_ (ten profil będzie docelowo usunięty).

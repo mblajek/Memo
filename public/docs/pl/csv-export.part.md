@@ -6,7 +6,7 @@ Dostępne są następujące formaty eksportu plików CSV z systemu:
 
   **Uwaga:** Program Microsoft Excel błędnie wczytuje pliki tego typu. Jeżeli chcesz wczytać dane do
   programu Excel, użyj formatu **$t(csv_export.format.excel_csv)**, lub skonwertuj plik CSV do
-  formatu XSLX, na przykład za pomocą Google Sheets.
+  formatu XLSX, na przykład za pomocą Google Sheets.
 
 - **$t(csv_export.format.excel_csv)** —
   Plik typu CSV w formacie niestandardowym, ale za to zgodnym z programem Excel.

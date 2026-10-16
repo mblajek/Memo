@@ -33,7 +33,7 @@ Proponowane aplikacje (każda z nich dostępna jest na telefony z systemem Andro
 - [Microsoft Authenticator](https://www.microsoft.com/pl-pl/security/mobile-authenticator-app)
 - [FreeOTP Authenticator](https://freeotp.github.io/)
 
-W razie wątpliwości do co wyboru aplikacji, skontaktuj się z administratorem.
+W razie wątpliwości co do wyboru aplikacji, skontaktuj się z administratorem.
 
 ### Procedura aktywacji OTP {#configure-steps}
 

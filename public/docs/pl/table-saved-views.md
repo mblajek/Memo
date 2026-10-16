@@ -31,8 +31,8 @@ niektóre z parametrów tabeli, a inne parametry pozostawiają niezmienione. Prz
 - widok ustawiający filtr na statusie spotkania i statusie obecności, bez modyfikowania innych filtrów.
 - widok ustawiający zakres dat spotkania, bez modyfikacji jakichkolwiek innych parametrów.
 
-Aby stworzyć filtr częściowy, przełącz panel zapisanych widoków w tryb zaawansowany (na górze po prawej stronie),
-potem utwórz filtr tak, jak zazwyczaj, a następnie edytuj go (albo skorzystaj od
+Aby stworzyć widok częściowy, przełącz panel zapisanych widoków w tryb zaawansowany (na górze po prawej stronie),
+potem utwórz widok tak, jak zazwyczaj, a następnie edytuj go (albo skorzystaj od
 razu z opcji _$t(tables.saved_views.edit_and_save)_). W oknie edycji przestaw niektóre przełączniki
 sterujące elementami widoku na pozycję _$t(quotes.open)$t(tables.saved_views.component_actions.ignore)$t(quotes.close)_.
 To spowoduje, że przełączenie się na ten widok nie zmieni tych elementów tabeli.

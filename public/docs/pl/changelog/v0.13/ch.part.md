@@ -6,7 +6,7 @@ Data wydania: **22 września 2024**
 konkretną kolumnę albo grupę kolumn. Przydaje się to szczególnie w tabelach raportów, które mają dużo kolumn.
 
 `🟢` Okienka w systemie (np. detale spotkania, edycja grupy klientów, potwierdzenia) mogą być przesunięte
-na bok żeby odsłonić to, co się pod nimi znajduje Należy chwycić myszką za pasek tytułowy okienka.
+na bok żeby odsłonić to, co się pod nimi znajduje. Należy chwycić myszką za pasek tytułowy okienka.
 
 `🟢` Widok konfliktów w kalendarzu. Jeżeli dwa spotkania używają tego samego zasobu (pokoju) w tym samym czasie,
 na kalendarzu mają czerwoną ramkę, a na detalach jest o tym informacja.

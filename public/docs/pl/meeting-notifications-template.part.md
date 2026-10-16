@@ -3,12 +3,14 @@ wartościami w momencie wysyłania powiadomienia:
 
 <!-- Keep this up to date with NotificationTemplate.php. -->
 
-| Znacznik              | Opis                                                                                                                                               | Przykładowa wartość |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| `{{facility_name}}`   | Nazwa placówki                                                                                                                                     | CPD Warszawa        |
-| `{{recipient_names}}` | Imiona osób, które otrzymują to powiadomienie (zwykle jest to tylko jedno imię, chyba że kilku odbiorców ma ten sam numer telefonu do powiadomień) | Tomasz, Mikołaj     |
-| `{{meeting_date}}`    | Data spotkania, razem z dniem tygodnia                                                                                                             | śr, 4.06.2025       |
-| `{{meeting_time}}`    | Godzina rozpoczęcia spotkania                                                                                                                      | 15:30               |
+| Znacznik                | Opis                                                                                                                                               | Przykładowa wartość   |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `{{facility_name}}`     | Nazwa placówki                                                                                                                                     | CPD Warszawa          |
+| `{{recipient_names}}`   | Imiona osób, które otrzymują to powiadomienie (zwykle jest to tylko jedno imię, chyba że kilku odbiorców ma ten sam numer telefonu do powiadomień) | Tomasz, Mikołaj       |
+| `{{meeting_date}}`      | Data spotkania, razem z dniem tygodnia                                                                                                             | śr., 4.06.2025        |
+| `{{meeting_time}}`      | Godzina rozpoczęcia spotkania                                                                                                                      | 15:30                 |
+| `{{meeting_datetime}}`  | Data (razem z dniem tygodnia) i godzina rozpoczęcia spotkania                                                                                      | śr., 4.06.2025, 15:30 |
+| `{{meeting_is_remote}}` | Forma spotkania, do użycia np. po słowach „o wizycie”: _zdalnej_ albo _w placówce_                                                                 | w placówce            |
 
 Przykładowa treść powiadomienia może wyglądać tak:
 

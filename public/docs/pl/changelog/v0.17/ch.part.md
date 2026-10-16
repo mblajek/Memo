@@ -33,13 +33,13 @@ i ustawiając je ręcznie łatwo zapomnieć np. o filtrowaniu również statusu 
 
 Dodatkowo pole _Kod aktualnego widoku_ pozwala na skopiowanie wartości (uwaga, jest dość długa,
 wyświetla się tylko kawałek) i przekazanie jej innemu pracownikowi, np. na komunikatorze.
-Drugi pracownik musi otworzyć tę samą tabelę i wkleić otrzymają wartość w to samo pole aby przywołać ten sam widok.
+Drugi pracownik musi otworzyć tę samą tabelę i wkleić otrzymaną wartość w to samo pole aby przywołać ten sam widok.
 
 `🟣` Dla administratora placówki: W tabeli pracowników można sprawdzić datę i godzinę ostatniego
 logowania pracownika, a także informację kiedy ostatnio zmienił hasło.
 
 `🔴` Administrator globalny może aktywować/dezaktywować pracownika placówki (niestety nadal nie może tego
-drobić administrator placówki). Dodatkowo nieaktywny pracownik placówki jest w niej widoczny,
+zrobić administrator placówki). Dodatkowo nieaktywny pracownik placówki jest w niej widoczny,
 ale nie może się już do niej logować.
 
 `⚫` Dużo różnych drobnych widocznych i niewidocznych poprawek i optymalizacji.

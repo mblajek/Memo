@@ -10,8 +10,8 @@ widok tygodniowy pozwala na realizowanie następujących scenariuszy:
 
 Operacje na grafikach są dostępne pod przyciskiem akcji `$icon(actionIcons.ThreeDots)` w poszczególnych wierszach
 tabeli. Niektóre akcje dostępne są bezpośrednio w rozwijanym menu, natomiast inne akcje wymagają
-kliknięcia `$icon(actionIcons.ThreeDots)` w wierszu _źródłowym_ i wybraniu zaznaczenia, a następnie kliknięcia
-`$icon(actionIcons.ThreeDots)` w wierszu _docelowym_ i wybraniu odpowiedniej akcji.
+kliknięcia `$icon(actionIcons.ThreeDots)` w wierszu _źródłowym_ i wybrania zaznaczenia, a następnie kliknięcia
+`$icon(actionIcons.ThreeDots)` w wierszu _docelowym_ i wybrania odpowiedniej akcji.
 
 Informacje w pojawiających się oknach dialogowych należy czytać uważnie, ponieważ operacje na
 grafikach nie mogą zostać cofnięte.

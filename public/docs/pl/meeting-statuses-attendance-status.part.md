@@ -1,5 +1,5 @@
 Każdy z uczestników spotkania ma $t(models.meeting.attendanceStatusDictId). Wartości te są ustawiane dla każdego uczestnika
-niezależnie, a także niezależne od statusu spotkania (chociaż pewne kombinacje mogą być mało sensowne).
+niezależnie, a także niezależnie od statusu spotkania (chociaż pewne kombinacje mogą być mało sensowne).
 
 Objaśnienie poszczególnych wartości:
 

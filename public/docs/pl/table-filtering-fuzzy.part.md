@@ -1,4 +1,4 @@
-Domyślnie kolumny tekstowe filtrowanie są w trybie _$t(tables.filter.textual.fuzzy)_,
+Domyślnie kolumny tekstowe filtrowane są w trybie _$t(tables.filter.textual.fuzzy)_,
 oznaczonym też symbolem **$t(tables.filter.textual.symbols.fuzzy)**.
 W tym trybie działa również pole globalnego filtra umieszczone nad tabelą, przy czym wtedy filtrowanie odbywa się
 po wielu kolumnach jednocześnie.
@@ -15,7 +15,7 @@ Najlepiej zilustrować działanie przykładami:
 | `*en`         | Beren, Luthien                               | Arwena                                         | wartości kończące się na "en"                                                         |
 | `*alf`        | Gandalf                                      | Gandalf Szary                                  | wartości kończące się na "alf"                                                        |
 | `t* *n`       | Thorin, Thrain                               | Thror                                          | wartości zaczynające się na "t" i kończące na "n" (_uwaga_: `t*n` nie zadziała)       |
-| `'f '`        | Gandalf Szary                                | Gandalf                                        | wartości zawierająca literę "f", a po niej spację; konieczne są pojedyncze cudzysłowy |
+| `'f '`        | Gandalf Szary                                | Gandalf                                        | wartości zawierające literę "f", a po niej spację; konieczne są pojedyncze cudzysłowy |
 | `*' I'`       | Thorin I                                     | Thorin II                                      | wartości kończące się na " I" (spacja + "I")                                          |
 | `*`           | wszystkie niepuste wartości                  | pusta wartość                                  |                                                                                       |
 | `''`          | pusta wartość                                | wszystkie niepuste wartości                    | dwa pojedyncze cudzysłowy (nie jeden podwójny)                                        |
