@@ -21,6 +21,7 @@ use App\Utils\OpenApi\FacilityParameter;
 use App\Utils\OpenApi\UserParameter;
 use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 
 class ClientNotificationController extends ApiController
@@ -94,7 +95,7 @@ class ClientNotificationController extends ApiController
         ]);
 
         $addMeetingMethods = $this->getAddMeetingMethods($client, $data);
-        $countRemoved = $countAdded = 0;
+        $countRemoved = 0;
 
         $attendances = MeetingAttendant::query()
             ->join('meetings', 'meetings.id', 'meeting_attendants.meeting_id')
@@ -112,34 +113,44 @@ class ClientNotificationController extends ApiController
             ->get()
             ->groupBy('meeting_id');
 
-        foreach ($attendances as $attendance) {
-            $notificationMethodsToAdd = $addMeetingMethods;
-            /** @var Notification $meetingNotification */
-            foreach ($notifications->get($attendance->meeting_id, []) as $meetingNotification) {
-                $notificationMethodsToAdd = array_filter(
-                    $notificationMethodsToAdd,
-                    fn(NotificationMethod $method): bool
-                        => $method !== $meetingNotification->notification_method_dict_id,
-                );
-                if (!$notificationMethodsToAdd) {
-                    continue 2;
+        $countAdded = DB::transaction(function () use (
+            $facility,
+            $meetingNotificationService,
+            $addMeetingMethods,
+            $attendances,
+            $notifications,
+        ): int {
+            $countAdded = 0;
+            foreach ($attendances as $attendance) {
+                $notificationMethodsToAdd = $addMeetingMethods;
+                /** @var Notification $meetingNotification */
+                foreach ($notifications->get($attendance->meeting_id, []) as $meetingNotification) {
+                    $notificationMethodsToAdd = array_filter(
+                        $notificationMethodsToAdd,
+                        fn(NotificationMethod $method): bool
+                            => $method !== $meetingNotification->notification_method_dict_id,
+                    );
+                    if (!$notificationMethodsToAdd) {
+                        continue 2;
+                    }
                 }
-            }
 
-            $attendance->meeting->setRelation('facility', $facility);
-            $attendance->meeting->notifications()->saveMany(
-                $meetingNotificationService->create(
-                    $attendance->meeting,
-                    array_map(fn(NotificationMethod $notificationMethod): MeetingNotification
-                        => new MeetingNotification(
-                        userId: $attendance->user_id,
-                        notificationMethodDictId: $notificationMethod,
-                        meetingAttendant: $attendance,
-                    ), $notificationMethodsToAdd),
-                ),
-            );
-            $countAdded += count($notificationMethodsToAdd);
-        }
+                $attendance->meeting->setRelation('facility', $facility);
+                $attendance->meeting->notifications()->saveMany(
+                    $meetingNotificationService->create(
+                        $attendance->meeting,
+                        array_map(fn(NotificationMethod $notificationMethod): MeetingNotification
+                            => new MeetingNotification(
+                            userId: $attendance->user_id,
+                            notificationMethodDictId: $notificationMethod,
+                            meetingAttendant: $attendance,
+                        ), $notificationMethodsToAdd),
+                    ),
+                );
+                $countAdded += count($notificationMethodsToAdd);
+            }
+            return $countAdded;
+        });
 
         return new JsonResponse(['data' => ['added' => $countAdded, 'removed' => $countRemoved]]);
     }
