@@ -311,9 +311,12 @@ class MeetingSeriesController extends ApiController
         foreach (
             $samples as ['date' => $date, 'start_dayminute' => $startDayminute, 'duration_minutes' => $durationMinutes]
         ) {
-            $dateObject = DateTimeImmutable::createFromFormat('Y-m-d', $date);
+            $dateObject = DateTimeImmutable::createFromFormat('!Y-m-d', $date);
             $meetingIdsGrouped [] = $commonQuery->clone()
-                ->whereBetween('date', [$dateObject->modify('-1day'), $dateObject->modify('+1day')])
+                ->whereBetween('date', [
+                    $dateObject->modify('-1day')->format('Y-m-d'),
+                    $dateObject->modify('+1day')->format('Y-m-d'),
+                ])
                 ->whereRaw("$startMinutesFromDate + `meetings`.`duration_minutes` > ?", [$date, $startDayminute])
                 ->whereRaw("$startMinutesFromDate < ?", [$date, $startDayminute + $durationMinutes])
                 ->get('id')->pluck('id')->toArray();
