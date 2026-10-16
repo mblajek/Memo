@@ -66,7 +66,7 @@ class DeveloperController extends ApiController
                 DateHelper::zuluToDbString(...),
                 array_intersect_key($data, array_flip(['created_at', 'updated_at']))
             );
-        $updated = DB::table($model->value)->where('id', $id)->update($updateData);
+        $updated = $updateData && DB::table($model->value)->where('id', $id)->update($updateData);
         return new JsonResponse(data: ['data' => (bool)$updated], status: 200);
     }
 
