@@ -89,6 +89,22 @@ class PostAdminUserTest extends TestCase
         $this->assertNull(User::query()->where('id', $result->json('data.id'))->first()->email);
     }
 
+    public function testWithGlobalAdminKeyAbsentSucceeds(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => null,
+            'password' => null,
+            'passwordExpireAt' => null,
+            'otpRequiredAt' => null,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertCreated();
+        $this->assertNull(User::query()->where('id', $result->json('data.id'))->first()->global_admin_grant_id);
+    }
+
     public function testWithoutGlobalAdminSucceeds(): void
     {
         $data = [
