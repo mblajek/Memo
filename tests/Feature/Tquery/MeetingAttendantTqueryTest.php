@@ -65,6 +65,23 @@ class MeetingAttendantTqueryTest extends TqueryTestCase
         return $user;
     }
 
+    public function testNullFilterOnListColumns(): void
+    {
+        $this->createStaffAttendant($this->createMeeting('2030-05-01'), 'Null Filter User');
+        $this->assertSame([
+            'attendants.*.name' => [0, 1],
+            'attendants' => [0, 1],
+            'clients.*.name' => [1, 0],
+            'clients' => [1, 0],
+            'staff.*.name' => [0, 1],
+            'staff' => [0, 1],
+            'resources' => [1, 0],
+        ], $this->listColumnsNullFilterCounts(
+            $this->url,
+            self::filterColumn('date', '=', '2030-05-01'),
+        ));
+    }
+
     public function testGetConfig(): void
     {
         $config = $this->tpiGet($this->url);

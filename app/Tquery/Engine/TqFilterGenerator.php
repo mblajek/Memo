@@ -18,6 +18,9 @@ class TqFilterGenerator
         return match ($columnConfig->type) {
             TqDataTypeEnum::is_null => fn(string $query) => "($query) is null",
             TqDataTypeEnum::is_not_null => fn(string $query) => "($query) is not null",
+            // List filters expect an unclosed "select count(…) … and (element" prefix. A plain list
+            // query yields null for an empty list, and supports only the null operator.
+            TqDataTypeEnum::list => fn(string $query) => "select ($query) is not null and (true",
             default => self::forward(...),
         };
     }

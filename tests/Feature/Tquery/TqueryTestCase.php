@@ -59,6 +59,29 @@ abstract class TqueryTestCase extends TestCase
         return $result->json();
     }
 
+    /**
+     * Counts the rows matching the given filter combined with the null filter, plain and inverted,
+     * on each list column: [column => [null count, not null count]].
+     */
+    protected function listColumnsNullFilterCounts(string $url, array $filter): array
+    {
+        $listColumns = array_filter($this->tpiGet($url)['columns'], fn(array $column) => $column['type'] === 'list');
+        $counts = [];
+        foreach (array_column($listColumns, 'name') as $column) {
+            foreach ([false, true] as $inv) {
+                $counts[$column][] = $this->tpiPost($url, [
+                    'columns' => self::columns('id'),
+                    'filter' => self::filterGroup('&', [
+                        $filter,
+                        ['type' => 'column', 'column' => $column, 'op' => 'null', 'inv' => $inv],
+                    ]),
+                    'paging' => self::paging(1),
+                ])['meta']['totalDataSize'];
+            }
+        }
+        return $counts;
+    }
+
     protected function assertTqueryData(array $response, ?int $expectedCount = null): array
     {
         $this->assertArrayHasKey('meta', $response);

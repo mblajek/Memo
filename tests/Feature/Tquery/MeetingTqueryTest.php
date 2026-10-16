@@ -314,6 +314,24 @@ class MeetingTqueryTest extends TqueryTestCase
         $this->assertEquals(5, $data[3]['_count']);
     }
 
+    public function testNullFilterOnListColumns(): void
+    {
+        $this->createMeeting('2030-05-01');
+        $this->addStaffAttendant($this->createMeeting('2030-05-02'));
+        $this->assertSame([
+            'attendants.*.name' => [1, 1],
+            'attendants' => [1, 1],
+            'clients.*.name' => [2, 0],
+            'clients' => [2, 0],
+            'staff.*.name' => [1, 1],
+            'staff' => [1, 1],
+            'resources' => [2, 0],
+        ], $this->listColumnsNullFilterCounts(
+            $this->url,
+            self::filterColumn('date', 'in', ['2030-05-01', '2030-05-02']),
+        ));
+    }
+
     public function testListFilters(): void
     {
         // Create 5 meetings, each with 0-2 attendants
