@@ -17,6 +17,8 @@ readonly class TqRequest
     public static function fromHttpRequest(TqConfig $config, Request $request): self
     {
         $distinct = $request->validate(['distinct' => Valid::bool(sometimes: true)])['distinct'] ?? false;
+        // Keeps the page offset computed below within the int range.
+        $pagingMax = 'max:' . (2 ** 31 - 1);
         $data = $request->validate([
             'columns' => Valid::list(),
             'columns.*' => Valid::array(keys: ['type', 'column']),
@@ -29,9 +31,9 @@ readonly class TqRequest
             'sort.*.column' => Valid::trimmed([Rule::in(array_keys($config->getSortableColumns($distinct)))]),
             'sort.*.desc' => Valid::bool(sometimes: true),
             'paging' => Valid::array(keys: ['number', 'offset', 'size']),
-            'paging.number' => Valid::int(['min:1'], sometimes: true),
-            'paging.offset' => Valid::int(['min:0'], sometimes: true),
-            'paging.size' => Valid::int(['min:1']),
+            'paging.number' => Valid::int(['min:1', $pagingMax], sometimes: true),
+            'paging.offset' => Valid::int(['min:0', $pagingMax], sometimes: true),
+            'paging.size' => Valid::int(['min:1', $pagingMax]),
         ]);
 
         $pageSize = $data['paging']['size'];
