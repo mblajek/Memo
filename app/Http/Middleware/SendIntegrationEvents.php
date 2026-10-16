@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Enums\AttributeTable;
 use App\Models\IntegrationEventOut;
 use App\Models\Meeting;
+use App\Models\StaffMember;
 use App\Models\User;
 use App\Models\Value;
 use App\Services\IntegrationEvents\IntegrationEventType;
@@ -53,8 +54,8 @@ class SendIntegrationEvents
         if ($model instanceof Value) {
             $userId = match ($model->attribute()->table) {
                 AttributeTable::User => $model->object_id,
-                AttributeTable::Client, AttributeTable::StaffMember
-                => Client::findOrFail($model->object_id)->user_id,
+                AttributeTable::Client => Client::findOrFail($model->object_id)->user_id,
+                AttributeTable::StaffMember => StaffMember::findOrFail($model->object_id)->member?->user_id,
                 default => null
             };
         } else {
