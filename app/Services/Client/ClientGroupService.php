@@ -123,7 +123,8 @@ class ClientGroupService
                 ->where('meetings.facility_id', $facilityId)
                 ->where('user_id', $groupClientToUpdate->user_id);
             if ($replaceAll) {
-                $updateQuery->whereNot('client_group_id', $groupClientToUpdate->client_group_id);
+                $updateQuery->where(fn($q) => $q->whereNull('client_group_id')
+                    ->orWhereNot('client_group_id', $groupClientToUpdate->client_group_id));
             } else {
                 $updateQuery->whereNull('client_group_id');
             }

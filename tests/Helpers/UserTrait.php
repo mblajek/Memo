@@ -21,6 +21,7 @@ trait UserTrait
         ?User $user = null,
         bool $globalAdmin = false,
         bool $facilityStaff = false,
+        bool $developer = false,
     ): void {
         $creator = new PermissionObjectCreator();
         $creator->user = $user ?? User::query()->findOrFail(User::SYSTEM);
@@ -31,6 +32,7 @@ trait UserTrait
         $creator->facilityMember = true;
         $creator->facilityAdmin = true;
         $creator->facilityStaff = $facilityStaff;
+        $creator->developer = $developer;
         PermissionMiddleware::setPermissions($creator->getPermissionObject());
     }
 }
