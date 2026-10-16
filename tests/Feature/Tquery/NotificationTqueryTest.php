@@ -21,7 +21,7 @@ class NotificationTqueryTest extends TqueryTestCase
         $this->url = "/api/v1/facility/{$this->facility->id}/notification/tquery";
     }
 
-    private function createNotification(string $subject, string $status = 'sent', string $service = 'email'): Notification
+    private function createNotification(string $subject, string $status = 'sent', ?string $service = 'email'): Notification
     {
         $notification = new Notification();
         $notification->fill([
@@ -48,6 +48,22 @@ class NotificationTqueryTest extends TqueryTestCase
         $this->assertContains('subject', $columnNames);
         $this->assertContains('status', $columnNames);
         $this->assertContains('service', $columnNames);
+    }
+
+    public function testServiceIsNullable(): void
+    {
+        $columns = array_column($this->tpiGet($this->url)['columns'], null, 'name');
+        $this->assertTrue($columns['service']['nullable']);
+
+        $this->createNotification('NTQ with service');
+        $withoutService = $this->createNotification('NTQ without service', service: null);
+        $data = $this->assertTqueryData($this->tpiPost($this->url, [
+            'columns' => self::columns('id', 'service'),
+            'filter' => self::filterColumn('service', 'null'),
+            'paging' => self::paging(50),
+        ]), 1);
+        $this->assertEquals($withoutService->id, $data[0]['id']);
+        $this->assertNull($data[0]['service']);
     }
 
     public function testQueries(): void

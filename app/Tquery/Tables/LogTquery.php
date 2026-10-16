@@ -23,7 +23,7 @@ final readonly class LogTquery extends TqService
         "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`user_id`", "user.name");
 
         $config->addSimple(TqDataTypeEnum::string, 'source');
-        $config->addSimple(TqDataTypeEnum::string, 'client_ip');
+        $config->addSimple(TqDataTypeEnum::string_nullable, 'client_ip');
 
         $config->addQuery(
             TqDataTypeEnum::text_nullable,
