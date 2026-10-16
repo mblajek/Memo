@@ -22,7 +22,7 @@ enum NotificationTemplate
         return '{{' . $this->name . '}}';
     }
 
-    public static function containsTemplateChars(string $value): string
+    public static function containsTemplateChars(string $value): bool
     {
         return str_contains($value, '{{') || str_contains($value, '}}');
     }
