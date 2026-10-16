@@ -31,4 +31,22 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'sms' => [
+        /* comma-separated, tried in order: dev, play */
+        'services' => env('SMS_SERVICES'),
+        /* used when the service has no from_name of its own */
+        'from_name' => env('SMS_FROM_NAME'),
+        /* outside production all SMS messages go to this number */
+        'no_prod_addr' => env('SMS_NO_PROD_ADDR'),
+        'dev' => [
+            'from_name' => env('SMS_DEV_FROM_NAME'),
+        ],
+        'play' => [
+            'client_id' => env('SMS_PLAY_CLIENT_ID'),
+            'secret' => env('SMS_PLAY_SECRET'),
+            'from_number' => env('SMS_PLAY_FROM_NUMBER'),
+            'from_name' => env('SMS_PLAY_FROM_NAME'),
+        ],
+    ],
+
 ];

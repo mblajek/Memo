@@ -9,8 +9,8 @@ use App\Models\Notification;
 use App\Notification\AbstractNotificationSendService;
 use App\Notification\Dev\SmsDevService;
 use Illuminate\Http\Client\HttpClientException;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 readonly class SmsService extends AbstractNotificationSendService
@@ -18,8 +18,8 @@ readonly class SmsService extends AbstractNotificationSendService
     protected const int SMS_UNICODE_LENGTH = 70;
     protected const int SMS_MAX_LENGTH = 255;
 
-    protected const string ENV_SERVICES = 'SMS_SERVICES';
-    private const string SMS_NO_PROD_ADDR = 'SMS_NO_PROD_ADDR';
+    protected const string CONFIG_SERVICES = 'services.sms.services';
+    private const string CONFIG_NO_PROD_ADDR = 'services.sms.no_prod_addr';
 
     private const array SERVICES = [
         'dev' => SmsDevService::class,
@@ -40,7 +40,7 @@ readonly class SmsService extends AbstractNotificationSendService
         string $number,
         string $message,
     ): ?string {
-        $serviceShortNames = array_map(trim(...), explode(',', Env::getOrFail(self::ENV_SERVICES)));
+        $serviceShortNames = array_map(trim(...), explode(',', Config::string(self::CONFIG_SERVICES)));
         $serviceShortNames = array_combine($serviceShortNames, $serviceShortNames);
 
         $serviceClasses = array_map(
@@ -103,7 +103,7 @@ readonly class SmsService extends AbstractNotificationSendService
 
         if (!App::isProduction()) {
             $message = "$number> $message";
-            $number = Env::getOrFail(self::SMS_NO_PROD_ADDR);
+            $number = Config::string(self::CONFIG_NO_PROD_ADDR);
         }
 
         $notification->address = $number;

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 readonly class SmsDevService extends AbstractSmsService
 {
-    protected const string ENV_FROM_NAME = 'SMS_DEV_FROM_NAME';
+    protected const string CONFIG_FROM_NAME = 'services.sms.dev.from_name';
 
     public function sendPreparedSms(string $number, string $message): void
     {

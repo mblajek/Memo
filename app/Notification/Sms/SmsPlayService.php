@@ -5,8 +5,8 @@ namespace App\Notification\Sms;
 use Closure;
 use Illuminate\Http\Client\HttpClientException;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
 readonly class SmsPlayService extends AbstractSmsService
@@ -14,14 +14,14 @@ readonly class SmsPlayService extends AbstractSmsService
     private const string URL_OAUTH_JWT =  'https://uslugidlafirm.play.pl/oauth/token-jwt';
     private const string URL_SMS_SEND = 'https://uslugidlafirm.play.pl/api/bramkasms/sendSms';
 
-    private const string ENV_CLIENT_ID = 'SMS_PLAY_CLIENT_ID';
-    private const string ENV_SECRET = 'SMS_PLAY_SECRET';
-    private const string ENV_FROM_NUMBER = 'SMS_PLAY_FROM_NUMBER';
-    protected const string ENV_FROM_NAME = 'SMS_PLAY_FROM_NAME';
+    private const string CONFIG_CLIENT_ID = 'services.sms.play.client_id';
+    private const string CONFIG_SECRET = 'services.sms.play.secret';
+    private const string CONFIG_FROM_NUMBER = 'services.sms.play.from_number';
+    protected const string CONFIG_FROM_NAME = 'services.sms.play.from_name';
 
     public function sendPreparedSms(string $number, string $message): void
     {
-        $fromNumber = Env::get(self::ENV_FROM_NUMBER);
+        $fromNumber = Config::get(self::CONFIG_FROM_NUMBER);
         $fromName = self::fromName();
         $this->exec(fn(array $jwt) => Http::withHeaders($jwt)
             ->post(self::URL_SMS_SEND, [
@@ -38,7 +38,7 @@ readonly class SmsPlayService extends AbstractSmsService
     {
         $jwt = $alwaysRefresh ? null : Cache::get('sms_play_jwt');
         if (!$jwt) {
-            $basic = base64_encode(Env::get(self::ENV_CLIENT_ID) . ':' . Env::get(self::ENV_SECRET));
+            $basic = base64_encode(Config::get(self::CONFIG_CLIENT_ID) . ':' . Config::get(self::CONFIG_SECRET));
             $jwt = Http::withHeaders(['Authorization' => "Basic $basic"])
                 ->post(self::URL_OAUTH_JWT)->throw()->object()->access_token;
             Cache::put('sms_play_jwt', $jwt);

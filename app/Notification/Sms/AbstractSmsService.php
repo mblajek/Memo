@@ -3,15 +3,15 @@
 namespace App\Notification\Sms;
 
 use Illuminate\Http\Client\HttpClientException;
-use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Config;
 
 abstract readonly class AbstractSmsService
 {
-    protected const string ENV_FROM_NAME = 'SMS_FROM_NAME';
+    protected const string CONFIG_FROM_NAME = 'services.sms.from_name';
 
     protected static function fromName(): ?string
     {
-        return Env::get(static::ENV_FROM_NAME, Env::get(self::ENV_FROM_NAME)) ?: null;
+        return (Config::get(static::CONFIG_FROM_NAME) ?? Config::get(self::CONFIG_FROM_NAME)) ?: null;
     }
 
     /** @throws HttpClientException */
