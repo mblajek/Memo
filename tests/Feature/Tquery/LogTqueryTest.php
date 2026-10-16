@@ -26,7 +26,8 @@ class LogTqueryTest extends TqueryTestCase
 
     private function createLogEntry(string $message, ?string $clientIp): LogEntry
     {
-        $logEntry = new LogEntry([
+        $logEntry = new LogEntry();
+        $logEntry->fill([
             'app_version' => 'test',
             'source' => 'api_custom_script',
             'client_ip' => $clientIp,

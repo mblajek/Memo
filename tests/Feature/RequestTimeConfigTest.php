@@ -102,7 +102,8 @@ class RequestTimeConfigTest extends TestCase
             'https://uslugidlafirm.play.pl/api/bramkasms/sendSms' => Http::response(),
         ]);
 
-        $notification = new Notification(['address' => '+48 123 456 789', 'subject' => 'Test']);
+        $notification = new Notification();
+        $notification->fill(['address' => '+48 123 456 789', 'subject' => 'Test']);
         self::assertSame('sms:play', App::make(SmsService::class)->sendNotification($notification));
 
         Http::assertSent(fn(Request $request): bool
@@ -111,9 +112,9 @@ class RequestTimeConfigTest extends TestCase
         Http::assertSent(fn(Request $request): bool
             => $request->url() === 'https://uslugidlafirm.play.pl/api/bramkasms/sendSms'
             && $request->header('Authorization') === ['Bearer jwt']
-            && $request['from'] === '48222222222'
-            && $request['fromName'] === 'Memo Test'
-            && $request['to'] === ['48111111111']
-            && $request['text'] === '48123456789> Test');
+            && $request->data()['from'] === '48222222222'
+            && $request->data()['fromName'] === 'Memo Test'
+            && $request->data()['to'] === ['48111111111']
+            && $request->data()['text'] === '48123456789> Test');
     }
 }
