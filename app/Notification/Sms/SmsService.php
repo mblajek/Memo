@@ -40,12 +40,12 @@ readonly class SmsService extends AbstractNotificationSendService
         string $number,
         string $message,
     ): ?string {
-        $serviceShortNames = explode(',', Env::get(self::ENV_SERVICES));
+        $serviceShortNames = array_map(trim(...), explode(',', Env::getOrFail(self::ENV_SERVICES)));
         $serviceShortNames = array_combine($serviceShortNames, $serviceShortNames);
 
         $serviceClasses = array_map(
             fn(string $serviceShort)
-                => self::SERVICES[trim($serviceShort)]
+                => self::SERVICES[$serviceShort]
                 ?? FatalExceptionFactory::unexpected()
                     ->setMessage("Invalid SMS service '$serviceShort'")->throw(),
             $serviceShortNames,
