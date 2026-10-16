@@ -13,6 +13,7 @@ use App\Services\Database\DatabaseDumpsService;
 use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class DatabaseRestoreCommand extends Command
 {
@@ -22,6 +23,13 @@ class DatabaseRestoreCommand extends Command
     public function handle(
         DatabaseDumpsService $service,
     ): int {
+        if (!$this->input->isInteractive()) {
+            $this->error(
+                'This command is interactive and cannot run with --no-interaction or --quiet',
+                OutputInterface::VERBOSITY_QUIET,
+            );
+            return self::FAILURE;
+        }
         DatabaseDumpHelper::checkDumpsEnabled();
         PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
 

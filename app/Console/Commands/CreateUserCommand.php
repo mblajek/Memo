@@ -12,14 +12,22 @@ use DateTimeImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class CreateUserCommand extends Command
 {
     protected $signature = 'fz:user';
     protected $description = 'Create new user';
 
-    public function handle(): void
+    public function handle(): int
     {
+        if (!$this->input->isInteractive()) {
+            $this->error(
+                'This command is interactive and cannot run with --no-interaction or --quiet',
+                OutputInterface::VERBOSITY_QUIET,
+            );
+            return self::FAILURE;
+        }
         PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
 
         $user = User::query()->newModelInstance();
@@ -55,5 +63,6 @@ class CreateUserCommand extends Command
         });
         $this->line("Created user $user->id");
         PermissionMiddleware::setPermissions(null);
+        return self::SUCCESS;
     }
 }
