@@ -49,7 +49,7 @@ user_edit:
   has_password_requires_email: "Użytkownik Memo musi posiadać adres e-mail"
   validation:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
-    cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu email jako niezweryfikowany."
+    cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu e-mail jako niezweryfikowany."
   success: "Zmodyfikowano dane"
 
 user_create:
@@ -75,7 +75,7 @@ attribute_form:
   field_names:
     defaultOrder: "kolejność $t(em_dash) wstaw przed"
   is_multi_value_info: "Pole atrybutu przechowuje wiele wartości podanego typu."
-  allow_required_only_on_create: "Nie można zmienić atrybutu w na „wymagany” po jego utworzeniu."
+  allow_required_only_on_create: "Nie można zmienić atrybutu na „wymagany” po jego utworzeniu."
 
 attribute_create:
   form_name: "Nowy atrybut"

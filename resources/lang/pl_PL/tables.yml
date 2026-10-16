@@ -106,10 +106,10 @@ tables:
     column_names:
       createdAt: "utworzono (spotkanie)"
       createdBy.name: "utworzono przez (spotkanie)"
-      createdBy.id: "$t(tables.tables.meeting_attendant.column_names.createdBy.id)"
+      createdBy.id: "$t(tables.tables.meeting_multi_attendant.column_names.createdBy.name)"
       updatedAt: "zmodyfikowano (spotkanie)"
       updatedBy.name: "zmodyfikowano przez (spotkanie)"
-      updatedBy.id: "$t(tables.tables.meeting_attendant.column_names.updatedBy.id)"
+      updatedBy.id: "$t(tables.tables.meeting_multi_attendant.column_names.updatedBy.name)"
 
   meeting_single_attendant:
     table_name: "$t(models.meeting._name_plural)"

@@ -69,7 +69,7 @@ user_facility_member:
   isFacilityClient: "klient"
 
 permissions:
-  _name: "uprawienia"
+  _name: "uprawnienia"
   loggedIn: "zalogowany"
   verified: "e-mail zweryfikowany"
   globalAdmin: "globalny administrator"

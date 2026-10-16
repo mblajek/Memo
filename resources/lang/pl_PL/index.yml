@@ -73,7 +73,7 @@ auth:
   password: "Hasło jest nieprawidłowe."
   password_expiration_soon: "Hasło wkrótce wygaśnie, należy je zmienić."
   otp_required: "Aktywacja OTP jest wymagana dla tego konta."
-  throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds, number}} sekund."
+  throttle: "Za dużo nieudanych prób logowania. Proszę spróbować ponownie za {{seconds, number}} sekund."
 
 verified_user: "Użytkownik zweryfikowany"
 unverified_user: "Użytkownik niezweryfikowany"
