@@ -114,7 +114,12 @@ class SendNotificationsCommand extends Command
         foreach ($notificationsToSend as $notificationToSend) {
             if ($notificationToSend->status->isStatusToSend()) {
                 $sentCount += $this->notificationService->send($notificationToSend);
-            } else {
+                // Saved right after the kept notification is sent: an abort before it leaves the
+                // group to be merged again by the next run, and one after it cannot resend these.
+                foreach ($notificationToSend->getDeduplicated() as $deduplicated) {
+                    $deduplicated->save();
+                }
+            } elseif ($notificationToSend->status !== NotificationStatus::deduplicated) {
                 $notificationToSend->save();
             }
         }
