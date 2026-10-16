@@ -36,22 +36,45 @@ class DatabaseEchoCommand extends Command
 
         try {
             $zip = new ZipArchive();
-            $zip->open($zipPath);
+            $openResult = $zip->open($zipPath);
+            if ($openResult !== true) {
+                return $this->failWith("Cannot open '{$zipPath}': " . self::openErrorMessage($openResult));
+            }
             $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
             $zip->setPassword(DatabaseDumpHelper::getDatabaseDumpPassword());
             $sql = $zip->getFromName($innerFile);
+            $readError = $zip->getStatusString();
             $zip->close();
             if (!is_string($sql)) {
-                Log::error("Cannot read item, maybe invalid password");
-                return self::FAILURE;
+                return $this->failWith("Cannot read file '{$innerFile}' inside '{$zipPath}': {$readError}");
             }
         } catch (Throwable $e) {
-            Log::error("Cannot read file '{$innerFile}' inside '{$zipPath}': {$e->getMessage()}");
-            return self::FAILURE;
+            return $this->failWith("Cannot read file '{$innerFile}' inside '{$zipPath}': {$e->getMessage()}");
         }
 
         $this->output->write($sql, false, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
 
         return self::SUCCESS;
+    }
+
+    /** Standard output carries only the dump contents, so errors go to stderr. */
+    private function failWith(string $message): int
+    {
+        Log::error($message);
+        $this->output->getErrorStyle()
+            ->writeln($message, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
+        return self::FAILURE;
+    }
+
+    private static function openErrorMessage(int $code): string
+    {
+        return match ($code) {
+            ZipArchive::ER_NOENT => 'No such file',
+            ZipArchive::ER_NOZIP => 'Not a zip archive',
+            ZipArchive::ER_INCONS => 'Zip archive inconsistent',
+            ZipArchive::ER_OPEN => 'Cannot open file',
+            ZipArchive::ER_READ => 'Read error',
+            default => "Zip error {$code}",
+        };
     }
 }
