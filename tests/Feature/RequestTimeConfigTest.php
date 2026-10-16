@@ -4,15 +4,18 @@ namespace Tests\Feature;
 
 use App\Models\Notification;
 use App\Notification\Sms\SmsService;
+use App\Providers\AppServiceProvider;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 /**
- * With a cached configuration `.env` is not loaded, so code running after boot must read settings
- * from config, not from the environment.
+ * With a cached configuration `.env` is not loaded, so code outside the config files must read
+ * settings from config, not from the environment.
  */
 class RequestTimeConfigTest extends TestCase
 {
@@ -116,5 +119,18 @@ class RequestTimeConfigTest extends TestCase
             && $request->data()['fromName'] === 'Memo Test'
             && $request->data()['to'] === ['48111111111']
             && $request->data()['text'] === '48123456789> Test');
+    }
+
+    public function testHttpsForcedByConfiguredUrl(): void
+    {
+        $this->removeEnv('APP_URL');
+        Config::set('app.url', 'https://memo.test');
+        URL::forceScheme('http');
+        // Booting again would otherwise make the Vite hot file shim write another file into public.
+        Vite::useHotFile(storage_path('framework/testing/no-hot-file'));
+
+        $this->app->getProvider(AppServiceProvider::class)->boot();
+
+        self::assertStringStartsWith('https://', URL::to('/request-time-config'));
     }
 }

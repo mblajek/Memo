@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (str_starts_with(env('APP_URL'), 'https')) {
+        if (str_starts_with(Config::string('app.url'), 'https')) {
             URL::forceScheme('https');
         }
         // todo: replace this code with docker/vite/laravel configuration
