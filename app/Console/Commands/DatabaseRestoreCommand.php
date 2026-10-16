@@ -82,10 +82,11 @@ class DatabaseRestoreCommand extends Command
         } /** @noinspection PhpRedundantCatchClauseInspection */ catch (ApiException $exception) {
             if ($exception->errorCode === 'exception.db.no_fresh_prod_db_dumps') {
                 $this->warn('Cannot restore PROD - no fresh database dump');
-                if ($this->confirm('Create dump and retry?', true)) {
-                    Bus::dispatchSync($service->create(isFromRc: false));
-                    Bus::dispatchSync($service->restore($dbDump, $isToRc));
+                if (!$this->confirm('Create dump and retry?', true)) {
+                    return self::FAILURE;
                 }
+                Bus::dispatchSync($service->create(isFromRc: false));
+                Bus::dispatchSync($service->restore($dbDump, $isToRc));
             } else {
                 throw $exception;
             }
