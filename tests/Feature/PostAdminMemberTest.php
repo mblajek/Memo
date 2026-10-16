@@ -6,11 +6,14 @@ use App\Models\Facility;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
+use Tests\Helpers\AdminEndpointHelpers;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
 
 class PostAdminMemberTest extends TestCase
 {
+    use AdminEndpointHelpers;
     use DatabaseTransactions;
     use UserTrait;
 
@@ -71,5 +74,29 @@ class PostAdminMemberTest extends TestCase
 
         $result->assertCreated();
         $this->assertNotNull(Member::query()->where('id', $result->json('data.id'))->first()->id);
+    }
+
+    public function testNonexistentUserReturnsValidationError(): void
+    {
+        /** @var Facility $facility */
+        $facility = Facility::factory()->create([
+            'name' => 'Test',
+            'url' => 'test-123',
+        ]);
+
+        $data = [
+            'userId' => Str::uuid()->toString(),
+            'facilityId' => $facility->id,
+            'hasFacilityAdmin' => false,
+            'isFacilityClient' => false,
+            'isFacilityStaff' => false,
+            'isActiveFacilityStaff' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+        self::assertContains('validation.exists', $this->fieldCodes($result, 'userId'));
+        $this->assertFalse(Member::query()->where('facility_id', $facility->id)->exists());
     }
 }

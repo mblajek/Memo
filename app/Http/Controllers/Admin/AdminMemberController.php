@@ -63,7 +63,7 @@ class AdminMemberController extends ApiController
         $data = $this->validate(
             [
                 'user_id' => [
-                    ...Valid::uuid(),
+                    ...Valid::uuid([Rule::exists('users', 'id')]),
                     Rule::unique('members')->where(fn($query) => //
                     $query->where('user_id', $request['user_id'])->where('facility_id', $request['facility_id'])),
                 ],
