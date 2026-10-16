@@ -37,12 +37,12 @@ trait BaseModel
 
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(self::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function updatedBy(): BelongsTo
     {
-        return $this->belongsTo(self::class, 'updated_by');
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     private static Model $instance;

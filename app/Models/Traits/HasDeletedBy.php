@@ -18,6 +18,6 @@ trait HasDeletedBy
 
     public function deletedBy(): BelongsTo
     {
-        return $this->belongsTo(self::class, 'deleted_by');
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }
