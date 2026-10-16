@@ -277,7 +277,7 @@ class User extends Authenticatable
         // todo: maybe do not use Schema in this way
         $omit = array_fill_keys($omit, true);
         $id = $this->id;
-        foreach (Schema::getTableListing(DB::getDatabaseName()) as $table) {
+        foreach (Schema::getTableListing(DB::getDatabaseName(), schemaQualified: false) as $table) {
             $query = DB::table($table);
             $ready = false;
             foreach (Schema::getColumns($table) as ['name' => $name, 'type' => $type]) {

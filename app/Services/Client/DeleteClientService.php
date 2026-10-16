@@ -64,7 +64,7 @@ class DeleteClientService
         $deleteUser = $deleteMember
             && $user->managed_by_facility_id === $member->facility_id
             && !$user->members()->whereNot('id', $member->id)->exists()
-            && !$user->isUsedInTables(omit: ['members.user_id']);
+            && !$user->isUsedInTables(omit: ['members.user_id', 'clients.user_id']);
 
         DB::transaction(function () use ($member, $client, $user, $deleteMember, $deleteUser) {
             if ($deleteMember) {
