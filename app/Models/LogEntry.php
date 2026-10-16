@@ -41,7 +41,7 @@ class LogEntry extends Model
         'api_fe_js_error', 'api_fe_feature_use', 'api_fe_csp_violation',
         'api_custom_script',
         'user_login_success', 'user_login_failure', 'user_login_unknown', 'user_password_change', 'user_otp_configure',
-        'notification_send_error',
+        'notification_send_error', 'notification_template_error',
     ];
     //@formatter:on
 

@@ -11,9 +11,11 @@ use App\Notification\Meeting\MeetingNotificationService;
 use App\Notification\Meeting\NotificationTemplate;
 use App\Notification\NotificationService;
 use App\Notification\NotificationStatus;
+use App\Services\System\LogService;
 use DateTimeImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Psr\Log\LogLevel;
 use Throwable;
 
 class SendNotificationsCommand extends Command
@@ -29,6 +31,7 @@ class SendNotificationsCommand extends Command
     public function __construct(
         private readonly MeetingNotificationService $meetingNotificationService,
         private readonly NotificationService $notificationService,
+        private readonly LogService $logService,
     ) {
         parent::__construct();
     }
@@ -186,10 +189,12 @@ class SendNotificationsCommand extends Command
                     : null;
             },
             NotificationTemplate::meeting_is_remote => function () use ($preparedNotification) {
-                return trans(
-                    $preparedNotification->meeting->is_remote
-                        ? 'notifications.template.is_remote' : 'notifications.template.is_not_remote',
-                );
+                return $preparedNotification->meeting
+                    ? trans(
+                        $preparedNotification->meeting->is_remote
+                            ? 'notifications.template.is_remote' : 'notifications.template.is_not_remote',
+                    )
+                    : null;
             },
             NotificationTemplate::recipient_names => function () use ($preparedNotification) {
                 $names = [];
@@ -211,7 +216,14 @@ class SendNotificationsCommand extends Command
         };
         try {
             $replacement = $getReplacement() ?? '(?)';
-        } catch (Throwable) {
+        } catch (Throwable $error) {
+            $this->logService->addEntry(
+                request: null,
+                source: 'notification_template_error',
+                logLevel: LogLevel::ERROR,
+                message: "Cannot substitute {$template->templateString()} in notification {$preparedNotification->id}",
+                context: $error->getMessage(),
+            );
             $replacement = '<?>';
         }
 
