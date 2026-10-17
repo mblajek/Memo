@@ -146,6 +146,9 @@ trait HasValues
         // a null facility means a global row: only global attributes may apply, and a
         // facility attribute sharing an api_name must not shadow the global one in the map
         $attrMap = ($facility === null) ? self::attrMapGlobal() : self::attrMap($facility);
+        if ($this->exists) {
+            $this->attrLoadValuesLocked();
+        }
         $currentAllValues = $this->attrValuesObjects();
         $changed = false;
         foreach ([true, false] as $attributeIsMultiNull) {
@@ -202,6 +205,14 @@ trait HasValues
         }
         if ($changed) {
             $this->refresh();
+            $this->attrLoadValuesLocked();
         }
+    }
+
+    private function attrLoadValuesLocked(): void
+    {
+        // a locking read makes a concurrent save of the row wait (or deadlock when there is no
+        // value row yet), and sees rows committed after the transaction's snapshot was taken
+        $this->setRelation('values', $this->values()->lockForUpdate()->get());
     }
 }
