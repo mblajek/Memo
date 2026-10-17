@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Facility;
+use App\Models\Grant;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -42,5 +43,29 @@ class DeleteAdminMemberTest extends TestCase
 
         $result->assertOk();
         $this->assertNull(Member::query()->where('id', $member->id)->first());
+    }
+
+    public function testDeletesFacilityAdminGrant(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        /** @var Facility $facility */
+        $facility = Facility::factory()->create([
+            'name' => 'Test',
+            'url' => 'test-123',
+        ]);
+        $grant = Grant::create();
+        /** @var Member $member */
+        $member = Member::factory()->create([
+            'user_id' => $user->id,
+            'facility_id' => $facility->id,
+            'facility_admin_grant_id' => $grant->id,
+        ]);
+
+        $result = $this->delete(sprintf(static::URL, $member->id));
+
+        $result->assertOk();
+        $this->assertNull(Member::query()->where('id', $member->id)->first());
+        $this->assertNull(Grant::query()->where('id', $grant->id)->first());
     }
 }

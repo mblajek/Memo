@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Models\Grant;
 use App\Models\Member;
 use App\Rules\Valid;
 use App\Services\Member\UpdateMemberService;
@@ -159,6 +160,9 @@ class AdminMemberController extends ApiController
             $member->client?->delete();
             $member->staffMember?->delete();
             $member->delete();
+            if ($member->facility_admin_grant_id) {
+                Grant::query()->find($member->facility_admin_grant_id)?->delete();
+            }
         });
 
         return new JsonResponse();
