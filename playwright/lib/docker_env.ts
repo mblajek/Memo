@@ -21,6 +21,15 @@ const DB_IMAGE = "mariadb:11.4";
 const DB_NAME = "memo_e2e";
 const DB_USER = "memo";
 
+// A container made from an image built by `docker compose` inherits the image's compose labels,
+// so tools that group containers by them (Docker Desktop, IDE views) would show the app container
+// as one of the checkout's own. Both containers are put in a compose project of their own.
+const COMPOSE_PROJECT = "memo-e2e";
+
+function composeLabels(container: string) {
+  return [`--label=com.docker.compose.project=${COMPOSE_PROJECT}`, `--label=com.docker.compose.service=${container}`];
+}
+
 const APP_ENV_FILE = path.join(DOCKER_DIR, "app.env");
 const STATE_FILE = path.join(DOCKER_DIR, "state.json");
 
@@ -122,6 +131,7 @@ async function startDB(dbPort: number, dbPassword: string) {
     "run",
     "--detach",
     `--name=${DB_CONTAINER}`,
+    ...composeLabels(DB_CONTAINER),
     `--network=${NETWORK}`,
     `--publish=127.0.0.1:${dbPort}:3306`,
     "--tmpfs=/var/lib/mysql:rw,size=2g",
@@ -181,7 +191,7 @@ async function appMadeFrom(s: ReturnType<typeof settings>) {
   return {
     user,
     label: createHash("sha256")
-      .update(JSON.stringify([imageId, s.memoDir, user, APP_CACHE_MOUNT]))
+      .update(JSON.stringify([imageId, s.memoDir, user, APP_CACHE_MOUNT, ...composeLabels(APP_CONTAINER)]))
       .digest("hex"),
   };
 }
@@ -203,6 +213,7 @@ async function startApp(s: ReturnType<typeof settings>, madeFrom: Awaited<Return
     "--detach",
     `--name=${APP_CONTAINER}`,
     `--label=${APP_MADE_FROM_LABEL}=${madeFrom.label}`,
+    ...composeLabels(APP_CONTAINER),
     `--network=${NETWORK}`,
     `--publish=127.0.0.1:${s.appPort}:80`,
     `--publish=127.0.0.1:${s.vitePort}:${s.vitePort}`,
