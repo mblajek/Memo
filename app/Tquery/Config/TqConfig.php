@@ -179,6 +179,18 @@ final class TqConfig
         "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`updated_by`", "$prefix.updated_by.name");
     }
 
+    /** For tables left-joined in the builder, whose columns are null when there is no joined row. */
+    public function makeTablesNullable(TqTableAliasEnum ...$tables): void
+    {
+        foreach ($this->columns as $columnAlias => $column) {
+            // A count over no joined row is 0, not null.
+            if (in_array($column->table, $tables, strict: true) && $column->transform !== 'count') {
+                $this->columns[$columnAlias] = $column->withNullableType();
+            }
+        }
+        $this->filterableColumns = null;
+    }
+
     public function removeColumns(string ...$columnAliases): void
     {
         foreach ($columnAliases as $columnAlias) {

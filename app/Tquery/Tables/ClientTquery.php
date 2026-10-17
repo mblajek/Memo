@@ -33,17 +33,21 @@ final readonly class ClientTquery extends FacilityUserTquery
             $config->addAttribute($attribute, 'client');
         }
 
+        // Only the groups of this facility.
+        $groupClients = "`group_clients` join `client_groups`"
+            . " on `client_groups`.`id` = `group_clients`.`client_group_id`"
+            . " and `client_groups`.`facility_id` = '{$facility->id}'";
         $config->addQuery(
             type: TqDataTypeEnum::int,
             columnOrQuery: fn(string $tableName) => //
-            "select count(1) from `group_clients` where `group_clients`.`user_id` = `users`.`id`",
+            "select count(1) from $groupClients where `group_clients`.`user_id` = `users`.`id`",
             columnAlias: 'client.groups.count'
         );
 
         $config->addListQuery(
             type: TqDataTypeEnum::uuid_list,
             select: "`group_clients`.`client_group_id`",
-            from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`",
+            from: "$groupClients where `group_clients`.`user_id` = `users`.`id`",
             columnAlias: 'client.groups.*.id',
             orderBy: self::GROUPS_ORDER,
         );
@@ -51,7 +55,7 @@ final readonly class ClientTquery extends FacilityUserTquery
         $config->addListQuery(
             type: TqDataTypeEnum::string_list,
             select: "`group_clients`.`role`",
-            from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`"
+            from: "$groupClients where `group_clients`.`user_id` = `users`.`id`"
             . " and `group_clients`.`role` is not null",
             columnAlias: 'client.groups.*.role',
             orderBy: self::GROUPS_ORDER,
@@ -60,7 +64,10 @@ final readonly class ClientTquery extends FacilityUserTquery
         $config->addListQuery(
             type: TqDataTypeEnum::uuid_list,
             select: "`group_clients`.`user_id`",
-            from: "`group_clients` as `current_group_clients` join `group_clients`"
+            from: "`group_clients` as `current_group_clients` join `client_groups`"
+            . " on `client_groups`.`id` = `current_group_clients`.`client_group_id`"
+            . " and `client_groups`.`facility_id` = '{$facility->id}'"
+            . " join `group_clients`"
             . " on `group_clients`.`client_group_id` = `current_group_clients`.`client_group_id`"
             . " and `group_clients`.`id` != `current_group_clients`.`id`"
             . " where `current_group_clients`.`user_id` = `users`.`id`",

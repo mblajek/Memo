@@ -164,7 +164,7 @@ readonly class MeetingTquery extends TqService
             $urgentNotesAttrId = ClientAttributeUuidEnum::UrgentNotes->value;
             $jsonFields ['urgentNotes'] = "(select json_arrayagg(`string_value` order by `default_order`)"
                 . " from `values` where `object_id` = `clients`.`id` and `attribute_id` = '$urgentNotesAttrId')";
-            $from .= ' inner join `clients` on `clients`.`user_id` = `users`.`id`'
+            $from .= ' left join `clients` on `clients`.`user_id` = `users`.`id`'
                 . ' and `clients`.`facility_id` = `meetings`.`facility_id`';
         }
 

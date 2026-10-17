@@ -37,6 +37,24 @@ final readonly class TqColumnConfig
         $this->renderer = $renderer ?? TqRendererGenerator::getRenderer($this);
     }
 
+    public function withNullableType(): self
+    {
+        return new self(
+            config: $this->config,
+            type: $this->type->nullableType(),
+            columnOrQuery: $this->columnOrQuery,
+            table: $this->table,
+            columnAlias: $this->columnAlias,
+            dictionaryId: $this->dictionaryId,
+            attributeId: $this->attributeId,
+            transform: $this->transform,
+            selector: $this->selector,
+            filter: $this->filter,
+            sorter: $this->sorter,
+            renderer: $this->renderer,
+        );
+    }
+
     public function applyJoin(TqBuilder $builder): void
     {
         $this->table?->applyJoin(builder: $builder, joinBase: $this->config->table, left: $this->type->isNullable());

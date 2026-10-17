@@ -3,8 +3,10 @@
 namespace Tests\Feature\Tquery;
 
 use App\Models\Client;
+use App\Models\ClientGroup;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
+use App\Models\GroupClient;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
 use App\Models\Member;
@@ -44,18 +46,24 @@ class MeetingClientTqueryTest extends TqueryTestCase
         return $meeting;
     }
 
-    private function createClientAttendant(Meeting $meeting, string $userName, int $order = 1): User
-    {
+    private function createClientAttendant(
+        Meeting $meeting,
+        string $userName,
+        int $order = 1,
+        ?Facility $clientFacility = null,
+        string $shortCode = '-',
+    ): User {
+        $clientFacility ??= $this->facility;
         $user = User::factory()->create(['name' => $userName]);
         $client = new Client();
         $client->user_id = $user->id;
-        $client->facility_id = $this->facility->id;
-        $client->short_code = '-';
+        $client->facility_id = $clientFacility->id;
+        $client->short_code = $shortCode;
         $client->type_dict_id = 'd1c57dfc-c118-49ff-ae38-6585645349ca'; // adult
         $client->saveOrFail();
         Member::factory()->create([
             'user_id' => $user->id,
-            'facility_id' => $this->facility->id,
+            'facility_id' => $clientFacility->id,
             'client_id' => $client->id,
         ]);
         $attendant = new MeetingAttendant();
@@ -88,6 +96,105 @@ class MeetingClientTqueryTest extends TqueryTestCase
         ));
     }
 
+    public function testListsAttendancesOfUsersNoLongerClientsOfTheFacility(): void
+    {
+        $meeting = $this->createMeeting('2030-06-01');
+        $current = $this->createClientAttendant($meeting, 'MCO current', 1);
+        // the client role removed, the membership kept (e.g. a staff member)
+        $roleRemoved = $this->createClientAttendant($meeting, 'MCO role removed', 2);
+        $roleRemovedMember = Member::query()->where('user_id', $roleRemoved->id)->firstOrFail();
+        $roleRemovedMember->client->delete();
+        // the membership removed
+        $memberRemoved = $this->createClientAttendant($meeting, 'MCO member removed', 3);
+        $member = Member::query()->where('user_id', $memberRemoved->id)->firstOrFail();
+        $client = $member->client;
+        $member->delete();
+        $client->delete();
+        // a client of another facility only
+        $otherFacility = Facility::factory()->create(['name' => 'MeetClientTQ Other Facility']);
+        $otherClient = $this->createClientAttendant($meeting, 'MCO other facility', 4, $otherFacility, 'OTHER');
+
+        $response = $this->tpiPost($this->url, [
+            'columns' => self::columns('attendant.userId', 'member.id', 'client.createdAt', 'client.shortCode'),
+            'filter' => self::filterColumn('date', '=', '2030-06-01'),
+            'sort' => [self::sort('attendant.name')],
+            'paging' => self::paging(50),
+        ]);
+        $this->assertSame(4, $response['meta']['totalDataSize']);
+        $rows = array_column($response['data'], null, 'attendant.userId');
+        $this->assertSame(
+            [$current->id, $memberRemoved->id, $otherClient->id, $roleRemoved->id],
+            array_column($response['data'], 'attendant.userId'),
+        );
+        $this->assertNotNull($rows[$current->id]['member.id']);
+        $this->assertNotNull($rows[$current->id]['client.createdAt']);
+        $this->assertSame('-', $rows[$current->id]['client.shortCode']);
+        $this->assertSame($roleRemovedMember->id, $rows[$roleRemoved->id]['member.id']);
+        foreach ([$roleRemoved, $memberRemoved, $otherClient] as $user) {
+            $this->assertNull($rows[$user->id]['client.createdAt']);
+            $this->assertNull($rows[$user->id]['client.shortCode']);
+        }
+        $this->assertNull($rows[$memberRemoved->id]['member.id']);
+        $this->assertNull($rows[$otherClient->id]['member.id']);
+
+        // only the groups of this facility are shown
+        $groupMate = User::factory()->create();
+        $group = ClientGroup::query()->create(['facility_id' => $this->facility->id]);
+        $otherGroup = ClientGroup::query()->create(['facility_id' => $otherFacility->id]);
+        $groupMemberships = [
+            [$group, $current],
+            [$group, $groupMate],
+            [$otherGroup, $otherClient],
+            [$otherGroup, $groupMate],
+        ];
+        foreach ($groupMemberships as [$g, $user]) {
+            GroupClient::query()->create(['client_group_id' => $g->id, 'user_id' => $user->id, 'role' => 'member']);
+        }
+        $groupColumns = [
+            'client.groups.count', 'client.groups.*.id', 'client.groups.*.role', 'client.groups.*.clients.*.userId',
+        ];
+        $rows = array_column($this->assertTqueryData($this->tpiPost($this->url, [
+            'columns' => self::columns('attendant.userId', ...$groupColumns),
+            'filter' => self::filterColumn('date', '=', '2030-06-01'),
+            'paging' => self::paging(50),
+        ]), 4), null, 'attendant.userId');
+        $this->assertSame(
+            [1, [$group->id], ['member'], [$groupMate->id]],
+            array_map(fn($column) => $rows[$current->id][$column], $groupColumns),
+        );
+        $this->assertSame(
+            [0, [], [], []],
+            array_map(fn($column) => $rows[$otherClient->id][$column], $groupColumns),
+        );
+
+        // the client columns are nullable, so inverted filters keep the rows without client data
+        $data = $this->assertTqueryData($this->tpiPost($this->url, [
+            'columns' => self::columns('attendant.userId'),
+            'filter' => self::filterGroup('&', [
+                self::filterColumn('date', '=', '2030-06-01'),
+                [
+                    'type' => 'column',
+                    'column' => 'client.typeDictId',
+                    'op' => '=',
+                    'val' => 'd1c57dfc-c118-49ff-ae38-6585645349ca',
+                    'inv' => true,
+                ],
+            ]),
+            'paging' => self::paging(50),
+        ]), 3);
+        $this->assertNotContains($current->id, array_column($data, 'attendant.userId'));
+        foreach (['member.id' => 2, 'client.createdAt' => 3] as $column => $nullCount) {
+            $this->assertSame($nullCount, $this->tpiPost($this->url, [
+                'columns' => self::columns('id'),
+                'filter' => self::filterGroup('&', [
+                    self::filterColumn('date', '=', '2030-06-01'),
+                    self::filterColumn($column, 'null'),
+                ]),
+                'paging' => self::paging(1),
+            ])['meta']['totalDataSize'], $column);
+        }
+    }
+
     public function testGetConfig(): void
     {
         $config = $this->tpiGet($this->url);
@@ -97,6 +204,9 @@ class MeetingClientTqueryTest extends TqueryTestCase
         $this->assertContains('date', $columnNames);
         $this->assertContains('attendant.name', $columnNames);
         $this->assertContains('member.id', $columnNames);
+        $nullable = array_column($config['columns'], 'nullable', 'name');
+        $this->assertTrue($nullable['client.createdAt']);
+        $this->assertFalse($nullable['client.urgentNotes.count']);
     }
 
     public function testQueries(): void

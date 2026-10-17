@@ -30,11 +30,17 @@ final readonly class MeetingClientTquery extends MeetingTquery
             left: false,
             inv: false,
         );
-        $builder->join(TqTableAliasEnum::users, TqTableAliasEnum::members, 'user_id', left: false, inv: true);
-        $builder->join(TqTableAliasEnum::members, TqTableAliasEnum::clients, 'client_id', left: false, inv: false);
+        // Left joins: an attendance stays listed when its user is no longer a client of the facility.
+        $builder->join(
+            TqTableAliasEnum::users,
+            TqTableAliasEnum::members,
+            'user_id',
+            left: true,
+            inv: true,
+            condition: "`members`.`facility_id` = '{$this->facility->id}'",
+        );
+        $builder->join(TqTableAliasEnum::members, TqTableAliasEnum::clients, 'client_id', left: true, inv: false);
         $builder->where(fn(TqSingleBind $bind) => //
-        "members.facility_id = {$bind->use()}", false, $this->facility->id, false, false);
-        $builder->where(fn(TqSingleBind $bind) => // redundant with inner join to `clients`
         "meeting_attendants.attendance_type_dict_id = {$bind->use()}",
             false,
             AttendanceType::Client->value,
@@ -98,6 +104,7 @@ final readonly class MeetingClientTquery extends MeetingTquery
             columnAlias: 'attendant.notifications.*.notification_method_dict_id',
         );
 
+        $config->makeTablesNullable(TqTableAliasEnum::members, TqTableAliasEnum::clients);
         return $config;
     }
 }

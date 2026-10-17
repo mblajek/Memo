@@ -84,6 +84,21 @@ enum TqDataTypeEnum
         };
     }
 
+    public function nullableType(): self
+    {
+        return match ($this) {
+            self::bool => self::bool_nullable,
+            self::date => self::date_nullable,
+            self::datetime => self::datetime_nullable,
+            self::int => self::int_nullable,
+            self::string => self::string_nullable,
+            self::uuid => self::uuid_nullable,
+            self::text => self::text_nullable,
+            self::dict => self::dict_nullable,
+            default => $this,
+        };
+    }
+
     public function baseType(): self
     {
         return match ($this) {

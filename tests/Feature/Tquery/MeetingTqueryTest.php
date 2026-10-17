@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tquery;
 
+use App\Models\Client;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
@@ -9,6 +10,8 @@ use App\Models\MeetingAttendant;
 use App\Models\Member;
 use App\Models\StaffMember;
 use App\Models\User;
+use App\Models\UuidEnum\ClientAttributeUuidEnum;
+use App\Models\Value;
 
 /** AI-generated (Opus 4.6) */
 class MeetingTqueryTest extends TqueryTestCase
@@ -69,6 +72,78 @@ class MeetingTqueryTest extends TqueryTestCase
         ]);
         $attendant->saveOrFail();
         return $user;
+    }
+
+    private function addClientAttendant(
+        Meeting $meeting,
+        string $userName,
+        int $order,
+        ?Facility $facility = null,
+    ): User {
+        $facility ??= $this->facility;
+        $user = User::factory()->create(['name' => $userName]);
+        $client = new Client();
+        $client->user_id = $user->id;
+        $client->facility_id = $facility->id;
+        $client->short_code = '-';
+        $client->type_dict_id = 'd1c57dfc-c118-49ff-ae38-6585645349ca'; // adult
+        $client->saveOrFail();
+        Member::factory()->create([
+            'user_id' => $user->id,
+            'facility_id' => $facility->id,
+            'client_id' => $client->id,
+        ]);
+        $attendant = new MeetingAttendant();
+        $attendant->fill([
+            'meeting_id' => $meeting->id,
+            'user_id' => $user->id,
+            'attendance_type_dict_id' => AttendanceType::Client->value,
+            'attendance_status_dict_id' => MeetingAttendant::ATTENDANCE_STATUS_OK,
+            'default_order' => $order,
+        ]);
+        $attendant->saveOrFail();
+        return $user;
+    }
+
+    private function addUrgentNote(User $user): void
+    {
+        Value::query()->create([
+            'attribute_id' => ClientAttributeUuidEnum::UrgentNotes->value,
+            'object_id' => Client::query()->where('user_id', $user->id)->valueOrFail('id'),
+            'string_value' => "Urgent: $user->name",
+            'default_order' => 1,
+            'created_by' => User::SYSTEM,
+        ]);
+    }
+
+    public function testClientsColumnListsUsersNoLongerClientsOfTheFacility(): void
+    {
+        $meeting = $this->createMeeting('2030-06-01');
+        $current = $this->addClientAttendant($meeting, 'MTQ current', 1);
+        $removed = $this->addClientAttendant($meeting, 'MTQ removed', 2);
+        $member = Member::query()->where('user_id', $removed->id)->firstOrFail();
+        $client = $member->client;
+        $member->delete();
+        $client->delete();
+        $otherFacility = Facility::factory()->create(['name' => 'MeetingTQ Other Facility']);
+        $other = $this->addClientAttendant($meeting, 'MTQ other facility', 3, $otherFacility);
+        $this->addUrgentNote($current);
+        $this->addUrgentNote($other);
+
+        $data = $this->assertTqueryData($this->tpiPost($this->url, [
+            'columns' => self::columns('clients', 'clients.count', 'clients.*.name', 'clients.*.userId'),
+            'filter' => self::filterColumn('id', '=', $meeting->id),
+            'paging' => self::paging(1),
+        ]), 1);
+        $userIds = [$current->id, $removed->id, $other->id];
+        $this->assertSame(3, $data[0]['clients.count']);
+        $this->assertSame(['MTQ current', 'MTQ removed', 'MTQ other facility'], $data[0]['clients.*.name']);
+        $this->assertSame($userIds, $data[0]['clients.*.userId']);
+        $this->assertSame($userIds, array_column($data[0]['clients'], 'userId'));
+        $this->assertSame(['Urgent: MTQ current'], $data[0]['clients'][0]['urgentNotes']);
+        $this->assertNull($data[0]['clients'][1]['urgentNotes']);
+        // the other facility's client data is not shown
+        $this->assertNull($data[0]['clients'][2]['urgentNotes']);
     }
 
     public function testGetConfig(): void
