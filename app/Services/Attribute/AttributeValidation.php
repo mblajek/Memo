@@ -7,6 +7,7 @@ use App\Exceptions\ExceptionFactory;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Enums\AttributeRequirementLevel;
+use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\Value;
 use App\Services\Dictionary\DictionaryReference;
@@ -20,6 +21,15 @@ trait AttributeValidation
 {
     /** @var array<string, list<string>> */
     private static array $tableColumns = [];
+
+    /**
+     * Names under which the API already exposes data of a table's objects other than its columns:
+     * resource fields and the first segment of built-in tquery column aliases.
+     */
+    private const array NON_COLUMN_API_NAMES = [
+        AttributeTable::Client->value => ['group_ids', 'groups'],
+        AttributeTable::Dictionary->value => ['positions'],
+    ];
 
     /**
      * Converts the camelCase input api_name to its stored snake_case form, asserting that the
@@ -117,9 +127,11 @@ trait AttributeValidation
     /** @throws ApiException */
     protected function assertApiNameUnique(string $table, string $apiName, ?string $ignoreId = null): void
     {
-        // an api_name shadowing a physical column would make attrSave() write bogus value rows
+        // an api_name shadowing a physical column would make attrSave() write bogus value rows, and
+        // one shadowing another API name would be dropped from resources or break the tquery config
         self::$tableColumns[$table] ??= Schema::getColumnListing($table);
-        if (in_array($apiName, self::$tableColumns[$table], true)) {
+        if (in_array($apiName, self::$tableColumns[$table], true)
+            || in_array($apiName, self::NON_COLUMN_API_NAMES[$table] ?? [], true)) {
             throw ExceptionFactory::fieldValidation('apiName', 'reserved');
         }
         $query = Attribute::query()->where('table', $table)->where('api_name', $apiName);

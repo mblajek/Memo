@@ -3,15 +3,25 @@
 namespace Tests\Feature;
 
 use App\Http\Permissions\PermissionMiddleware;
+use App\Http\Resources\DictionaryResource;
+use App\Http\Resources\Facility\FacilityClientResource;
+use App\Http\Resources\PositionResource;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Facility;
 use App\Models\User;
 use App\Models\Value;
+use App\Tquery\Tables\ClientTquery;
+use App\Tquery\Tables\DictionaryTquery;
+use App\Tquery\Tables\MeetingClientTquery;
+use App\Tquery\Tables\PositionTquery;
 use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
+use ReflectionMethod;
 use Tests\Helpers\AdminEndpointHelpers;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
@@ -452,6 +462,67 @@ class AttributeEndpointTest extends TestCase
         $result = $this->createAttribute(['apiName' => 'id']);
         $result->assertBadRequest();
         self::assertContains('validation.reserved', $this->fieldCodes($result, 'apiName'));
+    }
+
+    public static function nonColumnApiNameProvider(): array
+    {
+        return [
+            'client tquery column prefix' => ['client', 'groups', true],
+            'client resource field' => ['client', 'groupIds', false],
+            'dictionary resource field' => ['dictionary', 'positions', false],
+        ];
+    }
+
+    #[DataProvider('nonColumnApiNameProvider')]
+    public function testCreateRejectsApiNameOfNonColumnField(string $model, string $apiName, bool $isMultiValue): void
+    {
+        $result = $this->createAttribute(['model' => $model, 'apiName' => $apiName, 'isMultiValue' => $isMultiValue]);
+        $result->assertBadRequest();
+        self::assertContains('validation.reserved', $this->fieldCodes($result, 'apiName'));
+    }
+
+    /**
+     * Every name under which the resource or the tquery of a model exposes something other than an
+     * attribute must be refused as an attribute api_name, so that a newly added field cannot collide.
+     */
+    public function testCreateRejectsEveryNonAttributeApiName(): void
+    {
+        $facility = Facility::factory()->create();
+        $sources = [
+            'client' => [
+                FacilityClientResource::class,
+                [
+                    App::make(ClientTquery::class, ['facility' => $facility]),
+                    App::make(MeetingClientTquery::class, ['facility' => $facility]),
+                ],
+            ],
+            'dictionary' => [DictionaryResource::class, [App::make(DictionaryTquery::class)]],
+            'position' => [PositionResource::class, [App::make(PositionTquery::class)]],
+        ];
+        foreach ($sources as $model => [$resourceClass, $tqueries]) {
+            $mappedFields = (new ReflectionMethod($resourceClass, 'getMappedFields'))->invoke(null);
+            $names = [
+                ...(array_is_list($mappedFields) ? $mappedFields : array_keys($mappedFields)),
+                'createdAt',
+                'updatedAt',
+                'createdBy',
+                'updatedBy',
+            ];
+            foreach ($tqueries as $tquery) {
+                foreach ($tquery->getConfigArray()['columns'] as $column) {
+                    if (!isset($column['attributeId']) && str_starts_with($column['name'], "$model.")) {
+                        $names[] = explode('.', $column['name'])[1];
+                    }
+                }
+            }
+            foreach (array_unique($names) as $name) {
+                $result = $this->createAttribute(['model' => $model, 'apiName' => $name, 'isMultiValue' => true]);
+                self::assertNotEmpty(
+                    array_intersect(['validation.reserved', 'validation.unique'], $this->fieldCodes($result, 'apiName')),
+                    "$model: $name",
+                );
+            }
+        }
     }
 
     public function testCreateDefaultsIsFixedToFalse(): void
