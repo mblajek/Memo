@@ -14,10 +14,14 @@ use Throwable;
 class StorageService
 {
     /** @throws JsonException */
-    private function getUserStorage(User $user): array
+    private function getUserStorage(User $user, bool $forUpdate = false): array
     {
+        $query = DB::table('users');
+        if ($forUpdate) {
+            $query->lockForUpdate();
+        }
         return json_decode(
-            DB::table('users')->find($user->id, 'storage')->storage ?? '[]',
+            $query->find($user->id, 'storage')->storage ?? '[]',
             associative: true,
             flags: JSON_THROW_ON_ERROR,
         );
@@ -45,13 +49,17 @@ class StorageService
     {
         try {
             $data = json_decode($contents, flags: JSON_THROW_ON_ERROR);
-            $storage = $this->getUserStorage($user);
-            if ($data === null) {
-                unset($storage[$key]);
-            } else {
-                $storage[$key] = $contents;
-            }
-            $this->setUserStorage($user, $storage);
+            // the whole map is rewritten, so concurrent puts of other keys must wait
+            $storage = DB::transaction(function () use ($user, $key, $contents, $data) {
+                $storage = $this->getUserStorage($user, forUpdate: true);
+                if ($data === null) {
+                    unset($storage[$key]);
+                } else {
+                    $storage[$key] = $contents;
+                }
+                $this->setUserStorage($user, $storage);
+                return $storage;
+            });
             return $this->getStorageKeys($storage);
         } catch (Throwable) {
             ExceptionFactory::validation()->throw();
