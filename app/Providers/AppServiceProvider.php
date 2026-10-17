@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Services\System\Translator;
 use Illuminate\Support\Facades\App;
@@ -15,6 +16,10 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public const string AUTO_MIGRATE_LOCK = 'auto_migrate';
+    // below the database server's statement time limit, which would abort the wait first
+    private const int AUTO_MIGRATE_LOCK_TIMEOUT_SECONDS = 30;
+
     /**
      * Register any application services.
      */
@@ -51,11 +56,29 @@ class AppServiceProvider extends ServiceProvider
         // todo: find better way to detect if RC database should be migrates
         if (Config::boolean('app.db.auto_migrate')) {
             Cache::remember('db_auto_migrate_interval', 90, function () {
-                Artisan::call('migrate', array_fill_keys(['--step', '--force'], true));
+                $this->migrateExclusively();
                 return true;
             });
         }
 
         PermissionMiddleware::setPermissions(null);
+    }
+
+    /**
+     * The cache store may lack atomic locks (APC has none), so concurrent runs are serialised by a
+     * named lock of the database server. Lock names are global to the server, hence the database
+     * name in it.
+     */
+    private function migrateExclusively(): void
+    {
+        $lock = DB::getDatabaseName() . '.' . self::AUTO_MIGRATE_LOCK;
+        if (DB::scalar('select get_lock(?, ?)', [$lock, self::AUTO_MIGRATE_LOCK_TIMEOUT_SECONDS]) !== 1) {
+            FatalExceptionFactory::unexpected()->throw();
+        }
+        try {
+            Artisan::call('migrate', array_fill_keys(['--step', '--force'], true));
+        } finally {
+            DB::scalar('select release_lock(?)', [$lock]);
+        }
     }
 }
