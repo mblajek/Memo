@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Tquery;
 
+use App\Exceptions\ApiException;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Enums\AttributeRequirementLevel;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\Facility;
+use App\Services\Attribute\AttributeValidation;
 
 class AttributeTqueryTest extends TqueryTestCase
 {
@@ -164,6 +166,61 @@ class AttributeTqueryTest extends TqueryTestCase
         $this->assertSame([], $matchingIds(self::filterColumn('apiName', '=', 'tq_exposed_filter_one')));
         $this->assertSame([$fixedNameId], $matchingIds(self::filterColumn('name', '=', 'tqExposedFilterOne')));
         $this->assertSame([$customNameId], $matchingIds(self::filterColumn('name', '=', '+Tq_exposed_filter')));
+    }
+
+    /**
+     * A camelCase name stored through the services' conversion to snake_case comes back unchanged
+     * from the tquery's SQL conversion, as name and as apiName.
+     */
+    public function testSqlCamelCaseRestoresStoredNames(): void
+    {
+        $converter = new class () {
+            use AttributeValidation;
+
+            public function snake(string $apiName): ?string
+            {
+                try {
+                    return $this->snakeApiName($apiName);
+                } catch (ApiException) {
+                    return null;
+                }
+            }
+        };
+        $inputs = [
+            'ab', 'a1', 'aB', 'aBC', 'aBCDef', 'abC', 'a1B', 'a1b', 'aB1', 'a1B2', 'a1b2C3', 'abc123Def',
+            'x9Y', 'aZ', 'zA', 'aAA', 'aZz9', 'abcDefGhiJklMnoPqrStuVwxYz',
+        ];
+        mt_srand(20261017);
+        $chars = 'abyzABYZ019';
+        for ($i = 0; $i < 300; $i++) {
+            $input = 'a';
+            for ($length = mt_rand(1, 10); $length > 0; $length--) {
+                $input .= $chars[mt_rand(0, strlen($chars) - 1)];
+            }
+            $inputs[] = $input;
+        }
+        $idsByInput = [];
+        foreach (array_unique($inputs) as $input) {
+            $snake = $converter->snake($input);
+            if ($snake !== null) {
+                $idsByInput[$input] = $this->createAttribute(['name' => $snake, 'api_name' => $snake]);
+            }
+        }
+        $this->assertGreaterThan(200, count($idsByInput));
+
+        $rows = $this->assertTqueryData(
+            $this->tpiPost(self::URL, [
+                'columns' => self::columns('id', 'name', 'apiName'),
+                'filter' => self::filterColumn('id', 'in', array_values($idsByInput)),
+                'paging' => self::paging(count($idsByInput)),
+            ]),
+            count($idsByInput),
+        );
+        $rowsById = array_column($rows, null, 'id');
+        foreach ($idsByInput as $input => $id) {
+            $this->assertSame($input, $rowsById[$id]['apiName'], "apiName of $input");
+            $this->assertSame($input, $rowsById[$id]['name'], "name of $input");
+        }
     }
 
     /** Sorting by name orders by the camelCased value the tquery returns, not by the stored one. */
