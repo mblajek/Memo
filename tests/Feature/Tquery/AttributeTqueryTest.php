@@ -144,6 +144,45 @@ class AttributeTqueryTest extends TqueryTestCase
         }
     }
 
+    /** Filters on name and apiName match the camelCased values the tquery returns, not the stored ones. */
+    public function testNameAndApiNameFiltersMatchExposedValues(): void
+    {
+        $fixedNameId = $this->createAttribute(['name' => 'tq_exposed_filter_one', 'api_name' => 'tq_exposed_filter_one']);
+        $customNameId = $this->createAttribute(['name' => '+Tq_exposed_filter', 'api_name' => 'tq_exposed_filter_two']);
+        $matchingIds = fn(array $filter) => array_column($this->assertTqueryData($this->tpiPost(self::URL, [
+            'columns' => self::columns('id'),
+            'filter' => $filter,
+            'paging' => self::paging(10),
+        ])), 'id');
+
+        $this->assertSame([$fixedNameId], $matchingIds(self::filterColumn('apiName', '=', 'tqExposedFilterOne')));
+        $this->assertSame([$customNameId], $matchingIds(self::filterColumn('apiName', '%v%', 'ExposedFilterT')));
+        $this->assertEqualsCanonicalizing(
+            [$fixedNameId, $customNameId],
+            $matchingIds(self::filterColumn('apiName', '/v/', '^tqExposedFilter(One|Two)$')),
+        );
+        $this->assertSame([], $matchingIds(self::filterColumn('apiName', '=', 'tq_exposed_filter_one')));
+        $this->assertSame([$fixedNameId], $matchingIds(self::filterColumn('name', '=', 'tqExposedFilterOne')));
+        $this->assertSame([$customNameId], $matchingIds(self::filterColumn('name', '=', '+Tq_exposed_filter')));
+    }
+
+    /** Sorting by name orders by the camelCased value the tquery returns, not by the stored one. */
+    public function testNameSortMatchesExposedValues(): void
+    {
+        // Stored, "_" sorts before "b"; exposed, "Z" sorts after "b" (case-insensitively).
+        $ids = [
+            $this->createAttribute(['name' => 'tq_exposed_sort_a_z']),
+            $this->createAttribute(['name' => 'tq_exposed_sort_ab']),
+        ];
+        $rows = $this->assertTqueryData($this->tpiPost(self::URL, [
+            'columns' => self::columns('name'),
+            'filter' => self::filterColumn('id', 'in', $ids),
+            'sort' => [self::sort('name')],
+            'paging' => self::paging(10),
+        ]));
+        $this->assertSame(['tqExposedSortAb', 'tqExposedSortAZ'], array_column($rows, 'name'));
+    }
+
     /** The joined facility.name / dictionary.name columns resolve to the related records' names. */
     public function testJoinedColumns(): void
     {

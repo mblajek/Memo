@@ -326,8 +326,6 @@ export function useTechnicalsTableColumns() {
               <ShowCellVal v={props.v}>{(v) => <>{v()}</>}</ShowCellVal>
             </PaddedCell>
           )),
-          // Displayed camelCased but stored snake_cased, so a text filter on the raw value would mislead.
-          enableColumnFilter: false,
           size: 300,
         },
       },
