@@ -2,6 +2,8 @@
 
 namespace App\Models\Attributes;
 
+use App\Exceptions\ApiException;
+use App\Exceptions\ExceptionFactory;
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Attribute;
 use App\Models\Enums\AttributeTable;
@@ -195,6 +197,9 @@ trait HasValues
                     }
                 }
                 if ($dataValue !== null) {
+                    if ($attribute->type === AttributeType::Attributes) {
+                        self::attrLockReferencedAttributes($apiName, $isMultiValue ? $dataValue : [$dataValue]);
+                    }
                     foreach ($isMultiValue ? $dataValue : [$dataValue] as $key => $dataSingleValue) {
                         $value = new Value(['attribute_id' => $attribute->id, 'default_order' => $key]);
                         $value->setTypeColumnValue($dataSingleValue);
@@ -206,6 +211,22 @@ trait HasValues
         if ($changed) {
             $this->refresh();
             $this->attrLoadValuesLocked();
+        }
+    }
+
+    /**
+     * Stands in for the foreign key that values.ref_object_id cannot have: the shared lock makes
+     * a concurrent delete of a referenced attribute wait for this transaction, and a reference to
+     * an attribute deleted after the data was validated is rejected.
+     *
+     * @param list<string> $attributeIds
+     * @throws ApiException
+     */
+    private static function attrLockReferencedAttributes(string $apiName, array $attributeIds): void
+    {
+        $attributeIds = array_values(array_unique($attributeIds));
+        if (Attribute::query()->whereIn('id', $attributeIds)->sharedLock()->count() !== count($attributeIds)) {
+            throw ExceptionFactory::fieldValidation(Str::camel($apiName), 'exists');
         }
     }
 

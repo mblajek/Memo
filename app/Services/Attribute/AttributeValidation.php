@@ -154,9 +154,11 @@ trait AttributeValidation
     /** @throws ApiException */
     protected function assertNotReferenced(Attribute $attribute): void
     {
-        // ref_object_id holds references to this attribute from values of "attributes"-type attributes
+        // ref_object_id holds references to this attribute from values of "attributes"-type
+        // attributes; it has no foreign key, so a locking read is used to see the latest committed
+        // references and make a concurrent insert of one wait
         $referenced = Value::query()->where('attribute_id', $attribute->id)->exists()
-            || Value::query()->where('ref_object_id', $attribute->id)->exists();
+            || Value::query()->where('ref_object_id', $attribute->id)->sharedLock()->exists();
         if ($referenced) {
             throw ExceptionFactory::fieldValidation('id', 'in_use');
         }
