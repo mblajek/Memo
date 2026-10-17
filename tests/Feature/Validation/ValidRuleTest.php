@@ -133,4 +133,17 @@ class ValidRuleTest extends TestCase
         self::assertSame([], $this->failed(Valid::string(sometimes: true, nullable: true), null));
         self::assertSame([], $this->failed(Valid::string(sometimes: true, nullable: true), 'x'));
     }
+
+    public function testNullableNullStillRunsImplicitRules(): void
+    {
+        $rules = ['f' => Valid::string(['required_with:b', 'email'], nullable: true)];
+        self::assertSame(['required_with,values:b'], $this->failed($rules, ['f' => null, 'b' => 'x']));
+        // Non-implicit rules (here `email`) are still skipped for null.
+        self::assertSame([], $this->failed($rules, ['f' => null]));
+        self::assertSame(['email'], $this->failed($rules, ['f' => 'x', 'b' => 'x']));
+
+        $rules = ['f' => Valid::bool(['accepted_if:b,true'], nullable: true)];
+        self::assertSame(['accepted_if,other:b,value:true'], $this->failed($rules, ['f' => null, 'b' => true]));
+        self::assertSame([], $this->failed($rules, ['f' => null, 'b' => false]));
+    }
 }

@@ -19,7 +19,8 @@ use App\Utils\ConditionalArrayRule;
  * sometimes:
  * - if value doesn't appear in data, other validations (also nullable) are skipped
  * nullable:
- * - if value is null, other validations are skipped, [] and " " are not null in opposite to Laravel validation
+ * - if value is null, other validations except implicit ones (required_with etc.) are
+ *   skipped, [] and " " are not null in opposite to Laravel validation
  */
 class Valid extends AbstractDataRule implements IgnoreIdRule
 {
@@ -144,15 +145,17 @@ class Valid extends AbstractDataRule implements IgnoreIdRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value === null) {
-            if (!$this->nullable) {
-                $this->validator->addFailure($attribute, 'required');
-            }
+        if ($value === null && !$this->nullable) {
+            $this->validator->addFailure($attribute, 'required');
             return;
         }
 
         try {
-            ValidatorFacade::validate($this->data, [$attribute => $this->rules]);
+            // For null, `nullable` makes Laravel skip all but the implicit rules (required_with etc.).
+            ValidatorFacade::validate(
+                $this->data,
+                [$attribute => ($value === null) ? ['nullable', ...$this->rules] : $this->rules],
+            );
         } /** @noinspection PhpRedundantCatchClauseInspection */
         catch (ValidationException $validationException) {
             foreach ($validationException->validator->failed() as $fieldErrors) {
