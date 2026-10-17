@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tquery;
 
+use App\Tquery\Request\TqRequest;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -27,13 +28,13 @@ class TqueryPagingTest extends TqueryTestCase
 
     public function testLargePageSize(): void
     {
-        $this->assertTqueryData($this->postWithPaging(['size' => 1_000_000])->assertOk()->json());
+        $this->assertTqueryData($this->postWithPaging(['size' => TqRequest::MAX_PAGE_SIZE])->assertOk()->json());
     }
 
     public function testMaxPagingValues(): void
     {
         $response = $this->postWithPaging([
-            'size' => self::MAX_PAGING_VALUE,
+            'size' => TqRequest::MAX_PAGE_SIZE,
             'number' => self::MAX_PAGING_VALUE,
             'offset' => self::MAX_PAGING_VALUE,
         ]);
@@ -43,7 +44,7 @@ class TqueryPagingTest extends TqueryTestCase
     public static function tooLargePagingProvider(): array
     {
         return [
-            'size' => [['size' => self::MAX_PAGING_VALUE + 1], 'paging.size'],
+            'size' => [['size' => TqRequest::MAX_PAGE_SIZE + 1], 'paging.size'],
             'number' => [['size' => 1, 'number' => self::MAX_PAGING_VALUE + 1], 'paging.number'],
             'offset' => [['size' => 1, 'offset' => self::MAX_PAGING_VALUE + 1], 'paging.offset'],
             'overflowing page offset' => [['size' => PHP_INT_MAX, 'number' => 3], 'paging.size'],

@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 readonly class TqRequest
 {
+    public const int MAX_PAGE_SIZE = 1_000_000;
+
     /** @return array<string, TqColumnConfig> */
     public array $allColumns;
 
@@ -33,7 +35,7 @@ readonly class TqRequest
             'paging' => Valid::array(keys: ['number', 'offset', 'size']),
             'paging.number' => Valid::int(['min:1', $pagingMax], sometimes: true),
             'paging.offset' => Valid::int(['min:0', $pagingMax], sometimes: true),
-            'paging.size' => Valid::int(['min:1', $pagingMax]),
+            'paging.size' => Valid::int(['min:1', 'max:' . self::MAX_PAGE_SIZE]),
         ]);
 
         $pageSize = $data['paging']['size'];
