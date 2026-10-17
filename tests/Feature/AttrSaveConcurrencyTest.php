@@ -9,6 +9,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
 
@@ -24,6 +25,7 @@ class AttrSaveConcurrencyTest extends TestCase
     private const string OTHER_CONNECTION = 'attr_save_concurrency';
     private const string ATTRIBUTE = 'duration_minutes';
     private const int LOCK_WAIT_TIMEOUT = 1205;
+    private const int RECORD_CHANGED_SINCE_LAST_READ = 1020;
 
     private ?Dictionary $dictionary = null;
     private ?Position $position = null;
@@ -51,8 +53,19 @@ class AttrSaveConcurrencyTest extends TestCase
         parent::tearDown();
     }
 
-    public function testConcurrentSaveCannotLeaveTwoValuesOfSingleValueAttribute(): void
+    /**
+     * MariaDB's innodb_snapshot_isolation (the default since 11.6) changes how a locking read
+     * treats rows committed after the transaction's snapshot, so both settings are tested.
+     */
+    public static function snapshotIsolationProvider(): array
     {
+        return ['without snapshot isolation' => [false], 'with snapshot isolation' => [true]];
+    }
+
+    #[DataProvider('snapshotIsolationProvider')]
+    public function testConcurrentSaveCannotLeaveTwoValuesOfSingleValueAttribute(bool $snapshotIsolation): void
+    {
+        $this->setSnapshotIsolation($snapshotIsolation);
         $positionId = $this->createPosition();
         $position = Position::query()->findOrFail($positionId);
 
@@ -63,21 +76,41 @@ class AttrSaveConcurrencyTest extends TestCase
         self::assertFalse($otherSave->committed, 'the concurrent save should wait for the lock');
     }
 
-    public function testSaveSeesValuesCommittedAfterItsTransactionStarted(): void
+    #[DataProvider('snapshotIsolationProvider')]
+    public function testSaveSeesValuesCommittedAfterItsTransactionStarted(bool $snapshotIsolation): void
     {
+        $this->setSnapshotIsolation($snapshotIsolation);
         $positionId = $this->createPosition();
         $position = Position::query()->findOrFail($positionId);
 
         $otherSave = $this->saveOnOtherConnectionAfterNextQuery($positionId, 30);
-        DB::transaction(function () use ($position) {
+        $save = fn() => DB::transaction(function () use ($position) {
             // takes the transaction's snapshot before the concurrent save commits
             Value::query()->where('object_id', $position->id)->count();
             $position->attrSave(null, [self::ATTRIBUTE => 20]);
             self::assertSame(20, $position->attrValues()[self::ATTRIBUTE]);
         });
 
-        $this->assertSavedValue($positionId, 20);
+        if ($snapshotIsolation) {
+            // the save fails with an error that DB::transaction() can retry, rather than overwrite
+            // a value it has not seen
+            try {
+                $save();
+                self::fail('the save should fail');
+            } catch (QueryException $exception) {
+                self::assertSame(self::RECORD_CHANGED_SINCE_LAST_READ, $exception->errorInfo[1] ?? null);
+            }
+            $this->assertSavedValue($positionId, 30);
+        } else {
+            $save();
+            $this->assertSavedValue($positionId, 20);
+        }
         self::assertTrue($otherSave->committed);
+    }
+
+    private function setSnapshotIsolation(bool $snapshotIsolation): void
+    {
+        DB::statement('SET SESSION innodb_snapshot_isolation = ' . ($snapshotIsolation ? 'ON' : 'OFF'));
     }
 
     private function createPosition(): string

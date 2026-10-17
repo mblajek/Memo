@@ -212,7 +212,8 @@ trait HasValues
     private function attrLoadValuesLocked(): void
     {
         // a locking read makes a concurrent save of the row wait (or deadlock when there is no
-        // value row yet), and sees rows committed after the transaction's snapshot was taken
+        // value row yet), and sees rows committed after the transaction's snapshot was taken (with
+        // MariaDB's innodb_snapshot_isolation, it fails on them with a retryable error instead)
         $this->setRelation('values', $this->values()->lockForUpdate()->get());
     }
 }
