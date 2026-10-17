@@ -24,8 +24,6 @@ trait HasValues
 {
     use BaseModel;
 
-    private ?array $attrValues = null;
-
     public static function bootHasValues(): void
     {
         // values.object_id has no foreign key, so the owner must remove its value rows itself
@@ -93,44 +91,39 @@ trait HasValues
     /** @return array<non-falsy-string, list<ValueValue>|ValueValue> */
     public function attrValuesObjects(null|Facility|string|true $facility = null): array
     {
-        // todo: check facilityId for cached $this->attrValues
-
         $attributes = self::attrMap(facility: $facility);
         $modelAttributes = $this->getAttributes();
 
-        if ($this->attrValues === null || $this->isDirty() === false) {
-            $attrValues = [];
-            foreach ($attributes as $attribute) {
-                $apiName = $attribute->api_name;
-                $attrValues[$apiName] =
-                    ($attribute->is_multi_value === null && ($modelAttributes[$apiName] ?? null) !== null)
-                        ? new ValueValue(null, $this->attrCastValue($modelAttributes[$apiName], $attribute->type))
-                        : null;
-            }
-            foreach ($this->values as $value) {
-                $attribute = $value->attribute();
-                $apiName = $attribute->api_name;
-                if (!array_key_exists($apiName, $attrValues)) {
-                    // value belongs to another facility attribute
-                    continue;
-                }
-                $valueValue = $this->attrCastValue($value->getTypeColumnValue(), $attribute->type);
-                if ($attribute->is_multi_value) {
-                    if ($attrValues[$apiName] === null) {
-                        $attrValues[$apiName] = [];
-                    }
-                    $attrValues[$apiName][] = new ValueValue($value, $valueValue);
-                } else {
-                    if ($attrValues[$apiName] !== null) {
-                        // single attribute has multiple values
-                        FatalExceptionFactory::unexpected()->throw();
-                    }
-                    $attrValues[$apiName] = new ValueValue($value, $valueValue);
-                }
-            }
-            $this->attrValues = array_filter($attrValues, fn(mixed $attrValue) => $attrValue !== null);
+        $attrValues = [];
+        foreach ($attributes as $attribute) {
+            $apiName = $attribute->api_name;
+            $attrValues[$apiName] =
+                ($attribute->is_multi_value === null && ($modelAttributes[$apiName] ?? null) !== null)
+                    ? new ValueValue(null, $this->attrCastValue($modelAttributes[$apiName], $attribute->type))
+                    : null;
         }
-        return $this->attrValues;
+        foreach ($this->values as $value) {
+            $attribute = $value->attribute();
+            $apiName = $attribute->api_name;
+            if (!array_key_exists($apiName, $attrValues)) {
+                // value belongs to another facility attribute
+                continue;
+            }
+            $valueValue = $this->attrCastValue($value->getTypeColumnValue(), $attribute->type);
+            if ($attribute->is_multi_value) {
+                if ($attrValues[$apiName] === null) {
+                    $attrValues[$apiName] = [];
+                }
+                $attrValues[$apiName][] = new ValueValue($value, $valueValue);
+            } else {
+                if ($attrValues[$apiName] !== null) {
+                    // single attribute has multiple values
+                    FatalExceptionFactory::unexpected()->throw();
+                }
+                $attrValues[$apiName] = new ValueValue($value, $valueValue);
+            }
+        }
+        return array_filter($attrValues, fn(mixed $attrValue) => $attrValue !== null);
     }
 
     /** @return array<non-falsy-string, list<Carbon|bool|int|string>|Carbon|bool|int|string> */
@@ -208,7 +201,6 @@ trait HasValues
             }
         }
         if ($changed) {
-            $this->attrValues = null;
             $this->refresh();
         }
     }
