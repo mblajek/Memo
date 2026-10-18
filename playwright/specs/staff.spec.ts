@@ -1,5 +1,5 @@
 import {ADMIN, FACILITY, STAFF, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
-import {expectValidationError} from "../lib/responses.ts";
+import {expectValidationError, expectValidationErrors} from "../lib/responses.ts";
 import {expect, openPage, readOnlyTest, test} from "../lib/test.ts";
 
 /**
@@ -130,47 +130,64 @@ facilityLayer.describe((artifact) => {
     expect(body).toHaveLength(0);
   });
 
-  // The staff and the admins pages offer these columns to a facility admin only; the server gives
-  // them to any staff member who asks. Pinned as it is, not as it should be.
-  readOnlyTest(
-    "the columns of the account that the pages keep for admins are given to any staff member",
-    async ({api}) => {
-      const {facilityId, staffAdminUserId} = artifact();
-      const staffApi = await api.loggedInAs(STAFF);
-      const columns = [
-        "hasEmailVerified",
-        "passwordExpireAt",
-        "lastPasswordChangeAt",
-        "isOtpRequired",
-        "otpRequiredAt",
-        "hasOtpConfigured",
-        "lastLoginFailureAt",
-        "managedByFacility.name",
-      ];
-      const account = {
-        "hasEmailVerified": true,
-        "passwordExpireAt": null,
-        "lastPasswordChangeAt": null,
-        "isOtpRequired": false,
-        "otpRequiredAt": null,
-        "hasOtpConfigured": false,
-        "lastLoginFailureAt": null,
-        "managedByFacility.name": null,
-      };
-      const filter = {type: "column", column: "id", op: "=", val: staffAdminUserId};
-      const staff = await staffApi.tquery(`facility/${facilityId}/user/staff/tquery`, {
-        columns: [...columns, "staff.isActive", "staff.deactivatedAt"],
-        filter,
-      });
-      expect(staff.rows).toEqual([{...account, "staff.isActive": true, "staff.deactivatedAt": null}]);
-      // The members: also the facilities of a user, by name, whichever they are.
-      const members = await staffApi.tquery(`facility/${facilityId}/user/tquery`, {
-        columns: [...columns, "facilities.*.name", "facilities.count"],
-        filter,
-      });
-      expect(members.rows).toEqual([{...account, "facilities.*.name": [FACILITY.name], "facilities.count": 1}]);
-    },
-  );
+  readOnlyTest("the columns of the account are given to a facility admin only", async ({api}) => {
+    const {facilityId, staffAdminUserId} = artifact();
+    const columns = [
+      "hasEmailVerified",
+      "passwordExpireAt",
+      "lastPasswordChangeAt",
+      "isOtpRequired",
+      "otpRequiredAt",
+      "hasOtpConfigured",
+      "lastLoginFailureAt",
+    ];
+    const query = {
+      columns: columns.map((column) => ({type: "column", column})),
+      filter: {type: "column", column: "id", op: "=", val: staffAdminUserId},
+      paging: {size: 1},
+    };
+    const rejected = columns.map((_, i) => ({field: `columns.${i}.column`, code: "validation.in"}));
+    const staffApi = await api.loggedInAs(STAFF);
+    for (const entity of ["user", "user/staff"]) {
+      await expectValidationErrors(
+        await staffApi.post(`facility/${facilityId}/${entity}/tquery`, query, {allowFailure: true}),
+        rejected,
+      );
+    }
+    const adminApi = await api.loggedInAs(ADMIN);
+    const {rows} = await adminApi.tquery(`facility/${facilityId}/user/staff/tquery`, {
+      columns,
+      filter: query.filter,
+    });
+    expect(rows).toEqual([
+      {
+        hasEmailVerified: true,
+        passwordExpireAt: null,
+        lastPasswordChangeAt: null,
+        isOtpRequired: false,
+        otpRequiredAt: null,
+        hasOtpConfigured: false,
+        lastLoginFailureAt: null,
+      },
+    ]);
+  });
+
+  readOnlyTest("the facilities of a user are not given even to a facility admin", async ({api}) => {
+    const {facilityId} = artifact();
+    const adminApi = await api.loggedInAs(ADMIN);
+    const res = await adminApi.post(
+      `facility/${facilityId}/user/tquery`,
+      {
+        columns: ["id", "facilities.*.name", "facilities.count"].map((column) => ({type: "column", column})),
+        paging: {size: 1},
+      },
+      {allowFailure: true},
+    );
+    await expectValidationErrors(res, [
+      {field: "columns.1.column", code: "validation.in"},
+      {field: "columns.2.column", code: "validation.in"},
+    ]);
+  });
 
   readOnlyTest("ADMIN sees the staff page rendering with a known staff name", {tag: "@ui"}, async ({page}) => {
     await openPage(page, `/${FACILITY.url}/staff`, ADMIN);
