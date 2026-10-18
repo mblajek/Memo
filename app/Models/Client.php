@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Query\JoinClause;
 
 /**
  * @property non-falsy-string $user_id
@@ -72,6 +73,9 @@ class Client extends Model
         return $this->hasMany(GroupClient::class, 'client_id')->from(
             GroupClient::query()
                 ->join('members', 'members.user_id', 'group_clients.user_id')
+                ->join('client_groups', fn(JoinClause $join) => $join
+                    ->on('client_groups.id', 'group_clients.client_group_id')
+                    ->on('client_groups.facility_id', 'members.facility_id'))
                 ->select(['group_clients.*', 'members.client_id']),
             'group_clients',
         )->orderBy('group_clients.created_at')->orderBy('group_clients.id');
