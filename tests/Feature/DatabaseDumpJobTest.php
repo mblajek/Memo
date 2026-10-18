@@ -343,6 +343,7 @@ class DatabaseDumpJobTest extends TestCase
 
     public function testDoesNotSendRcDumpToBackupEndpoint(): void
     {
+        Config::set('app.db.rc_password', 'rc-secret');
         Config::set('app.db.backup_auth', 'backup-auth');
         Config::set('app.db.backup_url', 'https://backup.test/upload');
         Http::fake();
