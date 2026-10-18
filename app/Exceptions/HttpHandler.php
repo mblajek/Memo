@@ -57,6 +57,13 @@ class HttpHandler extends ExceptionHandler
         $this->fatalErrorHandlers[] = $handler;
     }
 
+    public function unregisterFatalErrorHandler(Closure $handler): void
+    {
+        $this->fatalErrorHandlers = array_values(
+            array_filter($this->fatalErrorHandlers, fn(Closure $registered) => $registered !== $handler),
+        );
+    }
+
     /**
      * Register the exception handling callbacks for the application.
      */

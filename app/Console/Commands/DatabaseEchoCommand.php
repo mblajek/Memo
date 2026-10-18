@@ -8,18 +8,20 @@ use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObjectCreator;
 use App\Models\DbDump;
 use App\Services\Database\DatabaseDumpHelper;
+use App\Services\Database\DatabaseDumpReadException;
 use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
-use ZipArchive;
 
 class DatabaseEchoCommand extends Command
 {
     protected $signature = 'fz:db-echo {id}';
-    protected $description = 'Echo database dump contents for DatabaseRestoreJob';
+    protected $description = 'Echo database dump contents';
+
+    private const int CHUNK_SIZE = 1 << 20;
 
     public function handle(): int
     {
@@ -30,29 +32,26 @@ class DatabaseEchoCommand extends Command
             ->whereIn('status', DatabaseDumpStatus::CREATE_OK)
             ->findOrFail(Uuid::fromString($this->argument('id')));
 
-        $dumpName = $dbDump->name;
-        $innerFile = DbDump::innerFileName($dumpName);
-        $zipPath = DbDump::fullPath($dumpName);
+        $zipPath = DbDump::fullPath($dbDump->name);
 
+        $copied = 0;
         try {
-            $zip = new ZipArchive();
-            $openResult = $zip->open($zipPath);
-            if ($openResult !== true) {
-                return $this->failWith("Cannot open '{$zipPath}': " . self::openErrorMessage($openResult));
-            }
-            $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
-            $zip->setPassword(DatabaseDumpHelper::getDatabaseDumpPassword());
-            $sql = $zip->getFromName($innerFile);
-            $readError = $zip->getStatusString();
-            $zip->close();
-            if (!is_string($sql)) {
-                return $this->failWith("Cannot read file '{$innerFile}' inside '{$zipPath}': {$readError}");
-            }
+            DatabaseDumpHelper::readDumpSql($dbDump, function (mixed $sql) use (&$copied): void {
+                // Copied in chunks, as a dump can have hundreds of megabytes.
+                while (is_string($chunk = fread($sql, self::CHUNK_SIZE)) && $chunk !== '') {
+                    $this->output->write($chunk, false, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
+                    $copied += strlen($chunk);
+                }
+            });
+        } catch (DatabaseDumpReadException $e) {
+            return $this->failWith($e->getMessage());
         } catch (Throwable $e) {
-            return $this->failWith("Cannot read file '{$innerFile}' inside '{$zipPath}': {$e->getMessage()}");
+            return $this->failWith("Cannot read the dump inside '{$zipPath}': {$e->getMessage()}");
         }
-
-        $this->output->write($sql, false, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
+        // Whoever reads the output cannot tell an empty dump from a database with nothing in it, so it is an error.
+        if (!$copied) {
+            return $this->failWith("The dump inside '{$zipPath}' is empty");
+        }
 
         return self::SUCCESS;
     }
@@ -64,17 +63,5 @@ class DatabaseEchoCommand extends Command
         $this->output->getErrorStyle()
             ->writeln($message, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
         return self::FAILURE;
-    }
-
-    private static function openErrorMessage(int $code): string
-    {
-        return match ($code) {
-            ZipArchive::ER_NOENT => 'No such file',
-            ZipArchive::ER_NOZIP => 'Not a zip archive',
-            ZipArchive::ER_INCONS => 'Zip archive inconsistent',
-            ZipArchive::ER_OPEN => 'Cannot open file',
-            ZipArchive::ER_READ => 'Read error',
-            default => "Zip error {$code}",
-        };
     }
 }

@@ -2,100 +2,49 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use Illuminate\Database\Schema\Blueprint;
+use App\Models\DbDump;
+use App\Services\Database\DatabaseDumpHelper;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use LogicException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Tests\Helpers\DbDumpsTrait;
 use Tests\TestCase;
-use ZipArchive;
 
 class DatabaseEchoCommandTest extends TestCase
 {
     use DatabaseTransactions;
+    use DbDumpsTrait;
 
     private const string DUMP_NAME = 'memo_2026-01-01_10-00-00';
     private const string INNER_FILE = self::DUMP_NAME . '.sql';
-    private const string PASSWORD = 'test-dump-password';
     private const string SQL = 'SELECT 1;';
 
-    private string $dbDumpsFile;
-    private string $dumpsDir;
     private string $zipPath;
     private string $dumpId;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->dbDumpsFile = tempnam(sys_get_temp_dir(), 'db_dumps_test_');
-        Config::set('database.connections.db_dumps.database', $this->dbDumpsFile);
-        DB::purge('db_dumps');
-        Schema::connection('db_dumps')->create('db_dumps', function (Blueprint $table) {
-            $table->char('id', 36);
-            $table->dateTime('created_at');
-            $table->dateTime('updated_at');
-            $table->char('created_by', 36);
-            $table->char('updated_by', 36);
-            $table->string('status', 36);
-            $table->string('name')->nullable();
-            $table->integer('file_size')->nullable();
-            $table->string('app_version');
-            $table->dateTime('restored_rc_at')->nullable();
-            $table->dateTime('restored_prod_at')->nullable();
-            $table->boolean('is_from_rc');
-            $table->boolean('is_backuped');
-        });
-        $this->dumpId = Str::uuid()->toString();
-        DB::connection('db_dumps')->table('db_dumps')->insert([
-            'id' => $this->dumpId,
-            'created_at' => '2026-01-01 10:00:00',
-            'updated_at' => '2026-01-01 10:00:00',
-            'created_by' => User::SYSTEM,
-            'updated_by' => User::SYSTEM,
-            'status' => 'created',
-            'name' => self::DUMP_NAME,
-            'file_size' => 100,
-            'app_version' => 'test',
-            'is_from_rc' => false,
-            'is_backuped' => false,
-        ]);
-
-        $this->dumpsDir = sys_get_temp_dir() . '/db_dumps_dir_test_' . Str::random(8);
-        mkdir("{$this->dumpsDir}/2026-01", recursive: true);
-        $this->zipPath = "{$this->dumpsDir}/2026-01/" . self::DUMP_NAME . '.zip';
-        Config::set('app.db.dump_path', $this->dumpsDir);
-        Config::set('app.db.dump_password', self::PASSWORD);
+        $this->setUpDbDumps();
+        $this->dumpId = $this->insertDbDump(self::DUMP_NAME);
+        $this->zipPath = DbDump::fullPath(self::DUMP_NAME);
+        mkdir(dirname($this->zipPath));
     }
 
     protected function tearDown(): void
     {
-        DB::purge('db_dumps');
-        unlink($this->dbDumpsFile);
-        if (file_exists($this->zipPath)) {
-            unlink($this->zipPath);
-        }
-        rmdir("{$this->dumpsDir}/2026-01");
-        rmdir($this->dumpsDir);
+        $this->tearDownDbDumps();
         parent::tearDown();
     }
 
-    private function createZip(string $innerFile, string $password): void
+    private function createZip(string $innerFile, string $password, string $sql = self::SQL): void
     {
-        $zip = new ZipArchive();
-        $zip->open($this->zipPath, ZipArchive::CREATE);
-        $zip->addFromString($innerFile, self::SQL);
-        $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
-        $zip->setPassword($password);
-        $zip->close();
+        $this->createDumpZip(self::DUMP_NAME, $sql, $innerFile, $password);
     }
 
     /** @return array{int, string, string} exit code, stdout, stderr */
@@ -137,7 +86,7 @@ class DatabaseEchoCommandTest extends TestCase
 
     public function testEchoesDumpContents(): void
     {
-        $this->createZip(self::INNER_FILE, self::PASSWORD);
+        $this->createZip(self::INNER_FILE, DatabaseDumpHelper::getDatabaseDumpPassword());
 
         [$exitCode, $stdout, $stderr] = $this->runEcho();
         $this->assertSame(Command::SUCCESS, $exitCode);
@@ -168,10 +117,17 @@ class DatabaseEchoCommandTest extends TestCase
 
     public function testReportsMissingFileInsideArchive(): void
     {
-        $this->createZip('other.sql', self::PASSWORD);
+        $this->createZip('other.sql', DatabaseDumpHelper::getDatabaseDumpPassword());
 
         $this->assertFailsWithError(
             "Cannot read file '" . self::INNER_FILE . "' inside '{$this->zipPath}': No such file",
         );
+    }
+
+    public function testReportsEmptyDump(): void
+    {
+        $this->createZip(self::INNER_FILE, DatabaseDumpHelper::getDatabaseDumpPassword(), sql: '');
+
+        $this->assertFailsWithError("The dump inside '{$this->zipPath}' is empty");
     }
 }
