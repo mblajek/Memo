@@ -97,7 +97,8 @@ class MeetingSeriesController extends ApiController
                 ->select('meetings.id')
                 ->where('base_meeting.id', $meeting->id)
                 ->from('meetings as base_meeting')
-                ->join('meetings', 'meetings.from_meeting_id', 'base_meeting.from_meeting_id');
+                ->join('meetings', 'meetings.from_meeting_id', 'base_meeting.from_meeting_id')
+                ->where('meetings.facility_id', $this->getFacilityOrFail()->id);
             if ($series === 'from_this' || $series === 'from_next') {
                 $query->whereRaw(
                     '(`base_meeting`.`date` < `meetings`.`date`'

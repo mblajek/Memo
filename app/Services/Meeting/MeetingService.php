@@ -27,7 +27,7 @@ readonly class MeetingService
     public function create(Facility $facility, array $data): string
     {
         $meeting = new Meeting($data);
-        $fromMeeting = $this->handleFromMeetingId($meeting);
+        $fromMeeting = $this->handleFromMeetingId($meeting, $facility);
         $meeting->facility_id = $facility->id;
         $this->fillMeetingCategory($meeting);
 
@@ -123,10 +123,11 @@ readonly class MeetingService
         });
     }
 
-    private function handleFromMeetingId(Meeting $meeting): ?Meeting
+    private function handleFromMeetingId(Meeting $meeting, Facility $facility): ?Meeting
     {
         if ($meeting->from_meeting_id) {
             $fromMeeting = Meeting::query()->findOrFail($meeting->from_meeting_id);
+            $fromMeeting->belongsToFacilityOrFail($facility);
             if ($meeting->from_meeting_id !== $fromMeeting->from_meeting_id) {
                 if ($fromMeeting->from_meeting_id) {
                     $meeting->from_meeting_id = $fromMeeting->from_meeting_id;

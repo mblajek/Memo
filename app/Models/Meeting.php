@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Enums\AttendanceType;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\BelongsToFacility;
@@ -108,7 +109,9 @@ class Meeting extends Model
                 DictionaryUuidEnum::MeetingResource,
                 [new UniqueWithMemoryRule('resource')],
             ),
-            'from_meeting_id' => Valid::uuid([Rule::exists('meetings', 'id')], sometimes: true),
+            'from_meeting_id' => Valid::uuid([
+                Rule::exists('meetings', 'id')->where('facility_id', PermissionMiddleware::facility()->id),
+            ], sometimes: true),
         };
     }
 
