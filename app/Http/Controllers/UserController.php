@@ -80,8 +80,8 @@ class UserController extends ApiController
                     properties: [
                         new OA\Property(
                             property: 'data',
-                            type: 'array',
-                            items: new OA\Items(properties: [
+                            type: 'object',
+                            properties: [
                                 new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
                                 new OA\Property(
                                     property: 'permissions',
@@ -93,7 +93,7 @@ class UserController extends ApiController
                                     type: 'array',
                                     items: new OA\Items(ref: '#/components/schemas/MemberResource')
                                 ),
-                            ])
+                            ]
                         ),
                     ]
                 )

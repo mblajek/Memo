@@ -34,7 +34,7 @@ class StaffController extends ApiController
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'All staff',
         tags: ['Facility staff'],
-        parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
+        parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query', required: true)],
         responses: [
             new OA\Response(
                 response: 200,

@@ -15,7 +15,6 @@ use OpenApi\Attributes as OA;
             type: 'string',
             format: 'uuid',
             example: 'UUID',
-            nullable: true,
         ),
     ]
 )] /**

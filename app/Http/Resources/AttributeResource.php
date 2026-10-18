@@ -17,10 +17,20 @@ use Illuminate\Support\Str;
         new OA\Property(property: 'name', type: 'string', example: 'attribute'),
         new OA\Property(property: 'apiName', type: 'string', example: 'attribute'),
         new OA\Property(
+            property: 'type',
+            type: 'string',
+            enum: [
+                'bool', 'date', 'datetime', 'int', 'string', 'text', 'dict', 'separator',
+                'user', 'client', 'attribute',
+            ],
+            example: 'int'
+        ),
+        new OA\Property(
             property: 'typeModel',
             type: 'string',
-            enum: ['int', 'bool', 'string', 'user', 'staffMember', '...'],
-            example: 'int'
+            enum: ['user', 'client', 'attribute'],
+            example: 'user',
+            nullable: true,
         ),
         new OA\Property(property: 'dictionaryId', type: 'string', format: 'uuid', example: 'UUID', nullable: true),
         new OA\Property(property: 'isFixed', type: 'bool', example: false),

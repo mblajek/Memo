@@ -91,6 +91,13 @@ class MeetingController extends ApiController
                         new OA\Property(property: 'resourceDictId', type: 'string', example: 'UUID'),
                     ])
                     ),
+                    new OA\Property(
+                        property: 'fromMeetingId',
+                        description: 'A meeting whose series the created meeting joins',
+                        type: 'string',
+                        format: 'uuid',
+                        example: 'UUID',
+                    ),
                 ]
             )
         ),

@@ -49,7 +49,7 @@ class AdminDatabaseController extends ApiController
         ),
         tags: ['Admin'],
         responses: [
-            new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [
+            new OA\Response(response: 200, description: 'Created', content: new OA\JsonContent(properties: [
                 new OA\Property(property: 'data', properties: [
                     new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
                 ]),

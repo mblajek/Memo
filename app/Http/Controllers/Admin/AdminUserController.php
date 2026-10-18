@@ -28,7 +28,7 @@ class AdminUserController extends ApiController
         description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'All users',
         tags: ['Admin'],
-        parameters: [new OA\Parameter(name: 'in', in: 'query')],
+        parameters: [new OA\Parameter(name: 'in', in: 'query', required: true)],
         responses: [
             new OA\Response(
                 response: 200,
@@ -58,14 +58,24 @@ class AdminUserController extends ApiController
         summary: 'Create user',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['name', 'hasGlobalAdmin'],
+                required: ['name', 'passwordExpireAt', 'otpRequiredAt'],
                 properties: [
                     new OA\Property(property: 'name', type: 'string', example: 'Jan'),
                     new OA\Property(property: 'email', type: 'string', example: 'jan@jan.pl'),
                     new OA\Property(property: 'hasEmailVerified', type: 'bool', example: false),
                     new OA\Property(property: 'password', type: 'string', example: 'password'),
-                    new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
-                    new OA\Property(property: 'otpRequiredAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+                    new OA\Property(
+                        property: 'passwordExpireAt',
+                        type: 'datetime',
+                        example: '2023-05-10T20:46:43Z',
+                        nullable: true,
+                    ),
+                    new OA\Property(
+                        property: 'otpRequiredAt',
+                        type: 'datetime',
+                        example: '2023-05-10T20:46:43Z',
+                        nullable: true,
+                    ),
                     new OA\Property(property: 'hasGlobalAdmin', type: 'bool', example: false),
                     new OA\Property(property: 'managedByFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
                 ]

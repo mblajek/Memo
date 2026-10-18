@@ -22,7 +22,7 @@ class OpenApiPost extends OA\Post
             summary: $summary,
             requestBody: new OA\RequestBody(
                 content: new OA\JsonContent(
-                    required: ['name', 'url'],
+                    required: ['columns', 'paging'],
                     properties: [
                         new OA\Property(
                             property: 'columns', type: 'array', items: new OA\Items(properties: [
@@ -53,8 +53,9 @@ class OpenApiPost extends OA\Post
                         ])
                         ),
                         new OA\Property(
-                            property: 'paging', properties: [
+                            property: 'paging', required: ['size'], properties: [
                             new OA\Property(property: 'number', type: 'int', example: 1),
+                            new OA\Property(property: 'offset', type: 'int', example: 0),
                             new OA\Property(property: 'size', type: 'int', example: 20),
                         ]
                         ),
@@ -67,14 +68,10 @@ class OpenApiPost extends OA\Post
             responses: [
                 new OA\Response(
                     response: 200, description: 'OK', content: new OA\JsonContent(properties: [
-                    new OA\Property(property: 'meta', properties: [
-                        new OA\Property(
-                            property: 'columns', type: 'array', items: new OA\Items(properties: [
-                            new OA\Property(property: 'type', type: 'string', example: 'column'),
-                            new OA\Property(property: 'name', type: 'string', example: 'id'),
-                        ])
-                        ),
+                    new OA\Property(property: 'sql', description: 'Only in the debug mode', type: 'string'),
+                    new OA\Property(property: 'meta', required: ['totalDataSize', 'totalDataPages'], properties: [
                         new OA\Property(property: 'totalDataSize', type: 'int', example: 15),
+                        new OA\Property(property: 'totalDataPages', type: 'int', example: 1),
                     ]),
                     new OA\Property(
                         property: 'data', type: 'array', items: new OA\Items(example: '{"id": "UUID", "name": "abc"}')

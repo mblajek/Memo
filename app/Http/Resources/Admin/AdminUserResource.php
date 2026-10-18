@@ -13,7 +13,13 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'hasPassword', type: 'bool', example: 'true'),
         new OA\Property(property: 'hasGlobalAdmin', type: 'bool', example: 'false'),
         new OA\Property(property: 'members', type: 'array', items: new OA\Items(ref: '#/components/schemas/MemberResource')),
-        new OA\Property(property: 'managedByFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
+        new OA\Property(
+            property: 'managedByFacilityId',
+            type: 'string',
+            format: 'uuid',
+            example: 'UUID',
+            nullable: true,
+        ),
     ],
 )]
 /**

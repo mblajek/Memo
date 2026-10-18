@@ -85,7 +85,7 @@ class ClientGroupController extends ApiController
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Get client groups',
         tags: ['Facility client group'],
-        parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
+        parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query', required: true)],
         responses: [
             new OA\Response(
                 response: 200, description: 'OK', content: new OA\JsonContent(properties: [

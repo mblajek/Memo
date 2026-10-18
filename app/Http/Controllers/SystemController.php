@@ -245,7 +245,7 @@ class SystemController extends ApiController
         tags: ['System'],
         responses: [
             new OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(properties: [
-                new OA\Property(property: 'data', type: 'array', items: new OA\Items(properties: [
+                new OA\Property(property: 'data', type: 'object', properties: [
                     new OA\Property(property: 'version', type: 'string', example: '1.2.3'),
                     new OA\Property(property: 'appEnv', type: 'string', example: 'production'),
                     new OA\Property(property: 'appEnvColor', type: 'string', example: '#AABBCC', nullable: true),
@@ -260,6 +260,7 @@ class SystemController extends ApiController
                     ),
                     new OA\Property(property: 'commitHash', type: 'string', nullable: true),
                     new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
+                    new OA\Property(property: 'dumpsEnabled', type: 'bool', example: true),
                     new OA\Property(property: 'lastDump', type: 'datetime', nullable: true),
                     new OA\Property(property: 'cpu15m', type: 'float', nullable: true),
                     new OA\Property(property: 'freeDiskSpaceMb', type: 'float', nullable: true),
@@ -293,7 +294,7 @@ class SystemController extends ApiController
                             ),
                         ],
                     ),
-                ])),
+                ]),
             ])),
         ]
     )]
@@ -384,7 +385,7 @@ class SystemController extends ApiController
         summary: 'Add log entry',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['logLevel', 'message'],
+                required: ['source', 'logLevel'],
                 properties: [
                     new OA\Property(property: 'source', type: 'string', example: 'api_fe_js_error'),
                     new OA\Property(property: 'logLevel', type: 'string', enum: LogEntry::LEVELS, example: 'info'),

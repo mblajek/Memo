@@ -143,7 +143,7 @@ class MeetingSeriesController extends ApiController
                 required: ['dates', 'interval'],
                 properties: [
                     new OA\Property(
-                        property: 'date', type: 'array',
+                        property: 'dates', type: 'array',
                         items: new OA\Items(type: 'string', example: '2023-12-13'),
                     ),
                     new OA\Property(property: 'interval', type: 'string', example: '1d', nullable: true),
@@ -168,7 +168,8 @@ class MeetingSeriesController extends ApiController
                     new OA\Property(
                         property: 'ids', type: 'array', items: new OA\Items(
                         type: 'string',
-                        example: '2023-12-13'
+                        format: 'uuid',
+                        example: 'UUID'
                     ),
                     ),
                 ],

@@ -10,7 +10,7 @@ use OpenApi\Attributes as OA;
     schema: 'FacilityStaffResource',
     properties: [
         new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: false),
-        new OA\Property(property: 'deactivatedAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+        new OA\Property(property: 'deactivatedAt', type: 'datetime', example: '2023-05-10T20:46:43Z', nullable: true),
     ],
 )] /**
  * @method __construct(User $resource)
