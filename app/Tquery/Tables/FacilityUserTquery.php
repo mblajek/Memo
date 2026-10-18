@@ -7,11 +7,18 @@ use App\Models\Meeting;
 use App\Models\MeetingAttendant;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
+use App\Tquery\Config\TqTableAliasEnum;
 
 abstract readonly class FacilityUserTquery extends AdminUserTquery
 {
-    public function __construct(protected Facility $facility)
-    {
+    /**
+     * The users can be members of other facilities too, so there are no columns about those. The
+     * account security columns are only for those who manage the accounts of the facility.
+     */
+    public function __construct(
+        protected Facility $facility,
+        private bool $withAccountSecurity,
+    ) {
         parent::__construct();
     }
 
@@ -103,7 +110,12 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
     protected function getConfig(): TqConfig
     {
-        $config = parent::getConfig();
+        $config = new TqConfig(table: TqTableAliasEnum::users);
+        self::addUserColumns($config);
+        if ($this->withAccountSecurity) {
+            self::addAccountSecurityColumns($config);
+        }
+        $config->addCount();
         $config->addQuery(
             type: TqDataTypeEnum::bool,
             columnOrQuery: fn(string $tableName) => "`$tableName`.`managed_by_facility_id` <=> '{$this->facility->id}'",

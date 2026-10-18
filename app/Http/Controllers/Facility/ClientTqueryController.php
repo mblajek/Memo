@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Facility;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Http\Permissions\PermissionMiddleware;
 use App\Tquery\Engine\TqService;
 use App\Tquery\OpenApi\OpenApiGet;
 use App\Tquery\OpenApi\OpenApiPost;
@@ -23,7 +24,10 @@ class ClientTqueryController extends ApiController
 
     private function getTqService(): TqService
     {
-        return App::make(ClientTquery::class, ['facility' => $this->getFacilityOrFail()]);
+        return App::make(ClientTquery::class, [
+            'facility' => $this->getFacilityOrFail(),
+            'withAccountSecurity' => PermissionMiddleware::permissions()->facilityAdmin,
+        ]);
     }
 
     #[OpenApiGet(

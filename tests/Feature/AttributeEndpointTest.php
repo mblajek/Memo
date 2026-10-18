@@ -492,7 +492,7 @@ class AttributeEndpointTest extends TestCase
             'client' => [
                 FacilityClientResource::class,
                 [
-                    App::make(ClientTquery::class, ['facility' => $facility]),
+                    App::make(ClientTquery::class, ['facility' => $facility, 'withAccountSecurity' => true]),
                     App::make(MeetingClientTquery::class, ['facility' => $facility]),
                 ],
             ],

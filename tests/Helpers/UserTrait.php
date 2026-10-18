@@ -35,4 +35,16 @@ trait UserTrait
         $creator->developer = $developer;
         PermissionMiddleware::setPermissions($creator->getPermissionObject());
     }
+
+    public function prepareFacilityStaff(Facility $facility, ?User $user = null): void
+    {
+        $creator = new PermissionObjectCreator();
+        $creator->user = $user ?? User::query()->findOrFail(User::SYSTEM);
+        $creator->facility = $facility;
+        $creator->loggedIn = true;
+        $creator->verified = true;
+        $creator->facilityMember = true;
+        $creator->facilityStaff = true;
+        PermissionMiddleware::setPermissions($creator->getPermissionObject());
+    }
 }
