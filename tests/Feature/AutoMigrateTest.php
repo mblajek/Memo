@@ -39,9 +39,9 @@ class AutoMigrateTest extends TestCase
         return DB::getDatabaseName() . '.' . AppServiceProvider::AUTO_MIGRATE_LOCK;
     }
 
-    private function boot(): void
+    private function autoMigrate(): void
     {
-        $this->app->getProvider(AppServiceProvider::class)->boot();
+        $this->app->getProvider(AppServiceProvider::class)->autoMigrate();
     }
 
     /** A separate process holds the lock, as a concurrent auto-migration would. */
@@ -84,7 +84,7 @@ class AutoMigrateTest extends TestCase
                 );
                 return 0;
             });
-        $this->boot();
+        $this->autoMigrate();
         $this->assertSame(1, DB::scalar('select is_free_lock(?)', [$this->lockName()]));
         $this->assertTrue(Cache::has(self::INTERVAL_CACHE_KEY));
     }
@@ -93,7 +93,7 @@ class AutoMigrateTest extends TestCase
     {
         Artisan::shouldReceive('call')->once()->andThrow(new RuntimeException('migration failed'));
         try {
-            $this->boot();
+            $this->autoMigrate();
             $this->fail('Expected the migration failure to propagate');
         } catch (RuntimeException $e) {
             $this->assertSame('migration failed', $e->getMessage());

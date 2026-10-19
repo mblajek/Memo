@@ -53,6 +53,13 @@ class AppServiceProvider extends ServiceProvider
             // Illuminate\Database\Eloquent\Model::preventLazyLoading();
         }
 
+        $this->autoMigrate();
+
+        PermissionMiddleware::setPermissions(null);
+    }
+
+    public function autoMigrate(): void
+    {
         // todo: find better way to detect if RC database should be migrates
         if (Config::boolean('app.db.auto_migrate')) {
             Cache::remember('db_auto_migrate_interval', 90, function () {
@@ -60,8 +67,6 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             });
         }
-
-        PermissionMiddleware::setPermissions(null);
     }
 
     /**
