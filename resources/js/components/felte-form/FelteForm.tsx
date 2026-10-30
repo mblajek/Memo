@@ -1,7 +1,14 @@
-import {AssignableErrors, FormConfigWithoutTransformFn, Obj, SubmitContext, Touched} from "@felte/core";
+import {
+  _update,
+  AssignableErrors,
+  Extender,
+  FormConfigWithoutTransformFn,
+  Obj,
+  SubmitContext,
+  Touched,
+} from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
-import {validator} from "@felte/validator-zod";
 import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
 import {Autofocus} from "components/utils/Autofocus";
@@ -66,6 +73,28 @@ export type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit
     readonly preventPageLeave?: boolean;
   };
 
+function zodValidator<T extends Obj>(schema: z.ZodType<T>): Extender<T> {
+  return (currentForm) => {
+    if (currentForm.stage === "SETUP") {
+      currentForm.addValidator(async (values) => {
+        const result = await schema.safeParseAsync(values);
+        if (result.success) {
+          return undefined;
+        }
+        let errors = {} as AssignableErrors<T>;
+        for (const issue of result.error.issues) {
+          errors = _update(errors, issue.path.map(String), (messages: unknown) => [
+            ...(Array.isArray(messages) ? messages : []),
+            issue.message,
+          ]);
+        }
+        return errors;
+      });
+    }
+    return {};
+  };
+}
+
 /**
  * Wrapper for felte's `createForm`.
  *
@@ -127,7 +156,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const formConfig: FormConfigWithoutTransformFn<T> = {
     ...createFormOptions,
     // eslint-disable-next-line solid/reactivity
-    extend: [validator({schema: props.schema}), reporter],
+    extend: [zodValidator(props.schema), reporter],
     onSubmit: async (values, ctx) => {
       // Remove the unknown validation field from values so that it doesn't get submitted.
       const result = await createFormOptions.onSubmit?.(
