@@ -31,6 +31,7 @@ import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {ColumnType, DataColumnSchema, DataItem, isDataColumn} from "data-access/memo-api/tquery/types";
 import {DateTime} from "luxon";
+import {CopyToClipboard} from "resources/js/components/ui/CopyToClipboard";
 import {createEffect, createMemo, createSignal, on, Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
@@ -65,7 +66,7 @@ export const ClientFields: VoidComponent<Props> = (props) => {
                     <SmallSpinner />
                   }
                 >
-                  {shortCode()}
+                  {shortCode()} <CopyToClipboard text={shortCode()} />
                 </Show>
               ),
             } satisfies AttributeParams<string>,
