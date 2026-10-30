@@ -649,8 +649,8 @@ meetingsLayer.describe((artifact) => {
       await login(page, ADMIN);
       await page.goto(`/${FACILITY.url}/admin/reports`);
       const main = page.locator("main");
-      await expect(main.getByText("Wybierz raport z menu")).toBeVisible();
-      await main.getByRole("link", {name: "Więcej informacji o dostępnych raportach"}).click();
+      await expect(main.getByText("Wybierz raport:")).toBeVisible();
+      await main.getByRole("link", {name: "Więcej informacji i opis raportów"}).click();
       await expect(page).toHaveURL(/\/help\/reports$/);
       await expect(main.getByRole("heading", {level: 1, name: "Raporty", exact: true})).toBeVisible();
 
