@@ -6,7 +6,7 @@ import {dateOffset} from "../lib/dates.ts";
 import {FACILITY, STAFF, facilityLayer} from "../lib/layers/facility.ts";
 import {meetingsLayer} from "../lib/layers/meetings.ts";
 import {disableTranslations} from "../helpers/lang.ts";
-import {expect, login, MemoAPI, openPage, readOnlyTest} from "../lib/test.ts";
+import {expect, login, openPage, readOnlyTest} from "../lib/test.ts";
 import {formField} from "../helpers/selectors.ts";
 
 /** Concerns that are not about one feature: the session, the app's version, the time zone. */
@@ -72,18 +72,11 @@ facilityLayer.describe(() => {
 });
 
 /**
- * A page in a browser for which it is another day than in the app's time zone already, or still:
- * 12 or 13 hours ahead of it in its afternoon, or as much behind it in its morning. Skips the test
- * if the seeded "today" — the today of the machine running the tests — is not the app's today.
+ * A page in a browser for which it is another day than in the app's time zone (the run's) already,
+ * or still: 12 or 13 hours ahead of it in its afternoon, or as much behind it in its morning.
  */
-async function withFarTimeZonePage(api: MemoAPI, browser: Browser, body: (page: Page) => Promise<void>) {
-  const status = await api.getData<SystemStatus>("system/status");
-  const appNow = DateTime.now().setZone(status.userTimezone);
-  readOnlyTest.skip(
-    appNow.toISODate() !== dateOffset(0),
-    `the tests run in a time zone where it is not the same day as in the app's (${status.userTimezone})`,
-  );
-  const timezoneId = appNow.hour >= 12 ? "Pacific/Kiritimati" : "Pacific/Pago_Pago";
+async function withFarTimeZonePage(browser: Browser, body: (page: Page) => Promise<void>) {
+  const timezoneId = DateTime.now().hour >= 12 ? "Pacific/Kiritimati" : "Pacific/Pago_Pago";
   const context = await browser.newContext({baseURL: (await loadConfig()).ui.baseURL, timezoneId});
   try {
     const page = await context.newPage();
@@ -99,9 +92,9 @@ meetingsLayer.describe((artifact) => {
   readOnlyTest(
     "a meeting keeps its date and time in a browser of another time zone",
     {tag: "@ui"},
-    async ({browser, api}) => {
+    async ({browser}) => {
       const {todayMeeting} = artifact();
-      await withFarTimeZonePage(api, browser, async (page) => {
+      await withFarTimeZonePage(browser, async (page) => {
         await openPage(
           page,
           `/${FACILITY.url}/calendar?${new URLSearchParams({mode: "day", date: todayMeeting.date})}`,
@@ -123,9 +116,9 @@ meetingsLayer.describe((artifact) => {
   readOnlyTest(
     "calendar's today is the app's today in a browser of another time zone",
     {tag: "@ui"},
-    async ({browser, api}) => {
+    async ({browser}) => {
       const {todayMeeting, pastMeeting, futureMeeting} = artifact();
-      await withFarTimeZonePage(api, browser, async (page) => {
+      await withFarTimeZonePage(browser, async (page) => {
         await openPage(page, `/${FACILITY.url}/calendar?mode=day`);
         await resourceInput(page, "day", STAFF.name).check();
         // The day shown is the one with the meeting seeded for today.

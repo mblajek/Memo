@@ -765,13 +765,17 @@ meetingsLayer.describe((artifact) => {
     await test.step("the view mode links to the conflict in the calendar", async () => {
       await meetingBlocks(page, futureMeeting.id).first().click();
       await expect(viewHeading(page)).toBeVisible();
+      // The link takes the staff of the meeting from the view: wait for it to have the saved ones.
+      await expect(attendantRow(form, "staff", 1)).toContainText(STAFF_ADMIN.name);
       await showConflicts.click();
       await expect(viewHeading(page)).toHaveCount(0);
-      // The room's column is added: both meetings are in it.
+      // The room's column is added, and the columns of the meeting's staff: STAFF_ADMIN, added to
+      // the meeting above, is in the other meeting too.
       await expect(resourceInput(page, "day", "E2E Taken Room")).toBeChecked();
       await expect(resourceInput(page, "day", "E2E Free Room")).not.toBeChecked();
-      await expect(meetingBlocks(page, otherMeetingId)).toHaveCount(1);
-      await expect(meetingBlocks(page, futureMeeting.id)).toHaveCount(2);
+      await expect(resourceInput(page, "day", STAFF_ADMIN.name)).toBeChecked();
+      await expect(meetingBlocks(page, otherMeetingId)).toHaveCount(2);
+      await expect(meetingBlocks(page, futureMeeting.id)).toHaveCount(3);
     });
   });
 

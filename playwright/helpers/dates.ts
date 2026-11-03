@@ -24,7 +24,7 @@ export function shownTableDate(isoDate: string) {
   return `calendar.weekday_overrides.${weekday} , ${shownDate(isoDate)}`;
 }
 
-/** A moment as the pages and the exports have it, to the second, in this machine's time zone. */
+/** A moment as the pages and the exports have it, to the second, in the time zone of the run. */
 export function shownDateTime(isoTime: string) {
   return DateTime.fromISO(isoTime).toFormat("dd.MM.yyyy, HH:mm:ss");
 }

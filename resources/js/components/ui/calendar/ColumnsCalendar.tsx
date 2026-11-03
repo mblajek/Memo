@@ -218,7 +218,10 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                 )}
               </Index>
               <Show when={props.columns.some(({day}) => isToday(day))}>
-                <div class="absolute w-full h-0 border-b-2 border-red-500 z-50" style={{top: `${nowPixelY()}px`}} />
+                <div
+                  class="absolute w-full h-0 border-b-2 border-red-500 z-50 pointer-events-none"
+                  style={{top: `${nowPixelY()}px`}}
+                />
               </Show>
             </div>
             <div class="grid grid-cols-subgrid" style={{"grid-column": "columns"}}>
@@ -228,7 +231,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                     {col.hoursArea()}
                     <Show when={isToday(col.day)}>
                       <div
-                        class="absolute w-full h-0 border-b-2 border-red-500 z-50"
+                        class="absolute w-full h-0 border-b-2 border-red-500 z-50 pointer-events-none"
                         style={{top: `${nowPixelY()}px`}}
                       />
                     </Show>

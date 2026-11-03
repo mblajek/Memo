@@ -5,8 +5,8 @@ import {E2E_ROOT} from "./config.ts";
 import "./init_luxon.ts";
 
 /**
- * The date `dayOffset` days from today, as `YYYY-MM-DD`. "Today" is the local date of the machine
- * running the tests — the same one the browser, and so the app's UI, goes by.
+ * The date `dayOffset` days from today, as `YYYY-MM-DD`. "Today" is the date in the time zone of the
+ * run, the app's — the same one the browser, and so the app's UI, goes by.
  */
 export function dateOffset(dayOffset: number): string {
   return DateTime.now().plus({days: dayOffset}).toISODate();

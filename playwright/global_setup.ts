@@ -4,6 +4,7 @@ import {disposeDB} from "./lib/db.ts";
 import {startDockerEnv, stopDockerEnv} from "./lib/docker_env.ts";
 import {checkServerIsForTests} from "./lib/guards.ts";
 import {acquireRunLock, endRun, releaseRunLock, startRun} from "./lib/layers.ts";
+import {useAppTimeZone} from "./lib/time_zone.ts";
 
 export default async function globalSetup(config: FullConfig) {
   if (config.workers !== 1) {
@@ -17,6 +18,8 @@ export default async function globalSetup(config: FullConfig) {
     if (cfg.targetType === "docker") {
       await startDockerEnv(cfg);
     }
+    // Before the layers, which make their data on the days of this zone.
+    await useAppTimeZone();
     await startRun();
   } catch (e) {
     await releaseRunLock();
