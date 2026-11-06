@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Attribute;
+use App\Models\ClientGroup;
 use App\Models\Enums\AttendanceType;
 use App\Models\Enums\NotificationMethod;
 use App\Models\Facility;
+use App\Models\GroupClient;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
 use App\Models\Member;
@@ -48,11 +50,14 @@ class DeleteFacilityClientTest extends TestCase
         return $result->json('data.id');
     }
 
-    private function createAttendance(string $userId): MeetingAttendant
-    {
+    private function createAttendance(
+        string $userId,
+        ?Facility $facility = null,
+        AttendanceType $type = AttendanceType::Client,
+    ): MeetingAttendant {
         $meeting = new Meeting();
         $meeting->fill([
-            'facility_id' => $this->facility->id,
+            'facility_id' => ($facility ?? $this->facility)->id,
             'date' => '2030-05-01',
             'start_dayminute' => 600,
             'duration_minutes' => 60,
@@ -66,12 +71,19 @@ class DeleteFacilityClientTest extends TestCase
         $attendant->fill([
             'meeting_id' => $meeting->id,
             'user_id' => $userId,
-            'attendance_type_dict_id' => AttendanceType::Client->value,
+            'attendance_type_dict_id' => $type->value,
             'attendance_status_dict_id' => MeetingAttendant::ATTENDANCE_STATUS_OK,
             'default_order' => 1,
         ]);
         $attendant->saveOrFail();
         return $attendant;
+    }
+
+    private function createGroupMembership(string $userId, ?Facility $facility = null): GroupClient
+    {
+        $group = ClientGroup::query()->create(['facility_id' => ($facility ?? $this->facility)->id]);
+        /** @var GroupClient */
+        return GroupClient::query()->create(['client_group_id' => $group->id, 'user_id' => $userId]);
     }
 
     private function deleteClient(string $userId, array $data = []): array
@@ -155,6 +167,74 @@ class DeleteFacilityClientTest extends TestCase
         );
         self::assertTrue(DB::table('users')->where('id', $userId)->exists());
         self::assertSame($otherUserId, $attendant->refresh()->user_id);
+    }
+
+    public function testDeletesWithoutDuplicateWhenReferencedOnlyInOtherFacilities(): void
+    {
+        $userId = $this->createClient();
+        $otherFacility = Facility::factory()->create();
+        $attendant = $this->createAttendance($userId, $otherFacility);
+        $groupClient = $this->createGroupMembership($userId, $otherFacility);
+
+        self::assertSame(
+            ['clientDeleted' => true, 'memberDeleted' => true, 'userDeleted' => false],
+            $this->deleteClient($userId),
+        );
+        self::assertSame($userId, $attendant->refresh()->user_id);
+        self::assertSame($userId, $groupClient->refresh()->user_id);
+    }
+
+    public function testDeletesWithoutDuplicateWhenOnlyStaffAttendances(): void
+    {
+        $userId = $this->createClient();
+        $attendant = $this->createAttendance($userId, type: AttendanceType::Staff);
+
+        $this->deleteClient($userId);
+
+        self::assertSame($userId, $attendant->refresh()->user_id);
+    }
+
+    public function testDeduplicationMovesOnlyClientItemsOfTheFacility(): void
+    {
+        $userId = $this->createClient();
+        $otherUserId = $this->createClient();
+        $otherFacility = Facility::factory()->create();
+        $attendant = $this->createAttendance($userId);
+        $groupClient = $this->createGroupMembership($userId);
+        $staffAttendant = $this->createAttendance($userId, type: AttendanceType::Staff);
+        $otherAttendant = $this->createAttendance($userId, $otherFacility);
+        $otherGroupClient = $this->createGroupMembership($userId, $otherFacility);
+
+        self::assertSame(
+            ['clientDeleted' => true, 'memberDeleted' => true, 'userDeleted' => false],
+            $this->deleteClient($userId, ['duplicateOf' => $otherUserId]),
+        );
+        self::assertSame($otherUserId, $attendant->refresh()->user_id);
+        self::assertSame($otherUserId, $groupClient->refresh()->user_id);
+        self::assertSame($userId, $staffAttendant->refresh()->user_id);
+        self::assertSame($userId, $otherAttendant->refresh()->user_id);
+        self::assertSame($userId, $otherGroupClient->refresh()->user_id);
+    }
+
+    public function testDeduplicationDropsItemsTheDuplicateAlreadyHas(): void
+    {
+        $userId = $this->createClient();
+        $otherUserId = $this->createClient();
+        $attendant = $this->createAttendance($userId);
+        $duplicateAttendant = new MeetingAttendant();
+        $duplicateAttendant->fill([
+            'meeting_id' => $attendant->meeting_id,
+            'user_id' => $otherUserId,
+            'attendance_type_dict_id' => AttendanceType::Client->value,
+            'attendance_status_dict_id' => MeetingAttendant::ATTENDANCE_STATUS_OK,
+            'default_order' => 2,
+        ]);
+        $duplicateAttendant->saveOrFail();
+
+        $this->deleteClient($userId, ['duplicateOf' => $otherUserId]);
+
+        self::assertNull(MeetingAttendant::query()->find($attendant->id));
+        self::assertSame($otherUserId, $duplicateAttendant->refresh()->user_id);
     }
 
     public function testIsUsedInTablesSkipsOmittedColumns(): void

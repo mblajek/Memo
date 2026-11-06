@@ -10,8 +10,6 @@ use App\Http\Resources\Facility\FacilityUserClientResource;
 use App\Models\Client;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
-use App\Models\GroupClient;
-use App\Models\MeetingAttendant;
 use App\Models\Member;
 use App\Models\User;
 use App\Rules\MemberExistsRule;
@@ -229,10 +227,7 @@ class ClientController extends ApiController
         User $user,
     ): JsonResponse {
         $member = $user->belongsToFacilityOrFail(isClient: true);
-        if (
-            MeetingAttendant::query()->where('meeting_attendants.user_id', $user->id)->exists()
-            || GroupClient::query()->where('group_clients.user_id', $user->id)->exists()
-        ) {
+        if ($member->isReferencedAs(AttendanceType::Client)) {
             $duplicateOf = $this->validate([
                 'duplicate_of' => Valid::uuid([
                     new MemberExistsRule(AttendanceType::Client),

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Enums\AttendanceType;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
@@ -72,5 +73,24 @@ class Member extends Model
     public function isActiveStaff(): ?bool
     {
         return $this->staffMember?->isActive();
+    }
+
+    /**
+     * Whether the user attends the facility's meetings in the given role or, for the client role,
+     * belongs to any of the facility's client groups.
+     */
+    public function isReferencedAs(AttendanceType $attendanceType): bool
+    {
+        return MeetingAttendant::query()
+                ->join('meetings', 'meetings.id', 'meeting_attendants.meeting_id')
+                ->where('meetings.facility_id', $this->facility_id)
+                ->where('meeting_attendants.user_id', $this->user_id)
+                ->where('meeting_attendants.attendance_type_dict_id', $attendanceType->value)
+                ->exists()
+            || ($attendanceType === AttendanceType::Client && GroupClient::query()
+                    ->join('client_groups', 'client_groups.id', 'group_clients.client_group_id')
+                    ->where('client_groups.facility_id', $this->facility_id)
+                    ->where('group_clients.user_id', $this->user_id)
+                    ->exists());
     }
 }
