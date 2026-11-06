@@ -8,7 +8,7 @@ interface Props extends htmlAttributes.div {
 }
 
 /** Maximum length of a tag in characters. If longer, it's just plain text. */
-const MAX_TAG_LENGTH = 50;
+const MAX_TAG_LENGTH = 80;
 
 // Based on https://daringfireball.net/2010/07/improved_regex_for_matching_urls
 const URL_REGEXP =
