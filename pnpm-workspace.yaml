@@ -2,9 +2,6 @@
 packages:
   - "."
 engineStrict: true
-# Otherwise an install after `pnpm install --prod` is skipped as a repeat, leaving the dev
-# dependencies out.
-optimisticRepeatInstall: false
 # 4 days (in minutes)
 minimumReleaseAge: 5760
 allowBuilds:
