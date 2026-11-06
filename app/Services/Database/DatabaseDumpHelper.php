@@ -64,8 +64,8 @@ class DatabaseDumpHelper
 
     /**
      * The dump being made goes to a file with a known name, and not to a random one, so that what an interrupted
-     * dump leaves behind is found by the next one, instead of piling up. The file is also the lock that keeps two
-     * dumps of the same database from running at once.
+     * dump leaves behind is found by the next one, instead of piling up. The file is also the lock of the database:
+     * every dump and every restore of it holds it, so that no two of them run at once.
      */
     public static function getCurrentDumpPath(bool $isRc): string
     {
@@ -73,11 +73,11 @@ class DatabaseDumpHelper
     }
 
     /**
-     * Tells whether a dump of this database is being made right now, by trying to take its lock. It only answers
-     * for this moment: the lock can be taken right after, so the caller cannot treat a no as a reservation. The
-     * dump job takes the same lock and stays the one that decides.
+     * Tells whether a dump or a restore of this database is running right now, by trying to take its lock. It only
+     * answers for this moment: the lock can be taken right after, so the caller cannot treat a no as a reservation.
+     * The jobs take the same lock and stay the ones that decide.
      */
-    public static function isDumpRunning(bool $isRc): bool
+    public static function isDatabaseBusy(bool $isRc): bool
     {
         $path = self::getCurrentDumpPath(isRc: $isRc);
         if (!is_file($path)) {

@@ -18,12 +18,17 @@ final readonly class DatabaseRestoreJob extends AbstractDatabaseJob
 
     protected function run(): void
     {
-        // The program runs the statements as they come, so a damaged dump has to be found before.
-        DatabaseDumpHelper::verifyDumpSql($this->dbDump);
-        DatabaseDumpHelper::readDumpSql(
-            $this->dbDump,
-            fn(mixed $sql) => $this->executeRestore(isToRc: $this->isToRc, input: $sql),
-        );
+        $lock = $this->lockDatabase(isRc: $this->isToRc);
+        try {
+            // The program runs the statements as they come, so a damaged dump has to be found before.
+            DatabaseDumpHelper::verifyDumpSql($this->dbDump);
+            DatabaseDumpHelper::readDumpSql(
+                $this->dbDump,
+                fn(mixed $sql) => $this->executeRestore(isToRc: $this->isToRc, input: $sql),
+            );
+        } finally {
+            fclose($lock);
+        }
 
         $this->dbDump->status = DatabaseDumpStatus::created;
         if ($this->isToRc) {

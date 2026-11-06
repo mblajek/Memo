@@ -183,7 +183,7 @@ class DatabaseDumpJobTest extends TestCase
             (new DatabaseDumpsService())->create(isFromRc: false);
             $this->fail('No exception thrown');
         } catch (ApiException $e) {
-            $this->assertSame('exception.db.db_dump_already_running', $e->errorCode);
+            $this->assertSame('exception.db.db_busy', $e->errorCode);
         } finally {
             fclose($lock);
         }
@@ -196,7 +196,7 @@ class DatabaseDumpJobTest extends TestCase
         $check = fopen($this->currentDumpPath(), 'r');
         $this->assertTrue(flock($check, LOCK_SH | LOCK_NB));
         try {
-            $this->assertFalse(DatabaseDumpHelper::isDumpRunning(isRc: false));
+            $this->assertFalse(DatabaseDumpHelper::isDatabaseBusy(isRc: false));
         } finally {
             fclose($check);
         }
@@ -215,7 +215,7 @@ class DatabaseDumpJobTest extends TestCase
             $job->handle();
             $this->fail('No exception thrown');
         } catch (ApiException $e) {
-            $this->assertSame('exception.db.db_dump_already_running', $e->errorCode);
+            $this->assertSame('exception.db.db_busy', $e->errorCode);
         } finally {
             fclose($lock);
         }

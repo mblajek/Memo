@@ -3,6 +3,7 @@
 namespace App\Services\Database\Jobs;
 
 use App\Exceptions\ConsoleHandler;
+use App\Exceptions\ExceptionFactory;
 use App\Exceptions\FatalExceptionFactory;
 use App\Exceptions\HttpHandler;
 use App\Models\DbDump;
@@ -50,6 +51,50 @@ abstract readonly class AbstractDatabaseJob
     }
 
     abstract protected function run();
+
+    private const int LOCK_ATTEMPTS = 10;
+    private const int LOCK_RETRY_MICROSECONDS = 100_000;
+
+    /**
+     * Takes the lock of the database, which every dump and restore of it holds, so that none of them runs while
+     * another is writing to the database or reading it. The lock holds for as long as the returned file stays open,
+     * and the system drops it even when the process is killed, so a killed job does not block the next one.
+     *
+     * The lock is the file of the dump being made, see DatabaseDumpHelper::getCurrentDumpPath(). It is opened
+     * without truncating, as another dump may still be writing to it.
+     *
+     * @return resource the locked file
+     */
+    protected function lockDatabase(bool $isRc)
+    {
+        $path = DatabaseDumpHelper::getCurrentDumpPath(isRc: $isRc);
+        // The file holds the plaintext of the whole database while a dump is made, so it must not be readable by
+        // anyone else. As fopen takes no mode, the umask gives it one already at the creation: a chmod after it
+        // would leave a moment when the file is there and readable.
+        $umask = umask(0077);
+        try {
+            $file = fopen($path, 'c+');
+        } finally {
+            umask($umask);
+        }
+        if ($file === false) {
+            Log::error("Cannot open the lock of the database '$path'");
+            FatalExceptionFactory::unexpected()->throw();
+        }
+        // Checking whether the database is busy takes the lock for a moment, so a failure is retried for a while.
+        $locked = flock($file, LOCK_EX | LOCK_NB);
+        for ($attempt = 1; !$locked && $attempt < self::LOCK_ATTEMPTS; $attempt++) {
+            usleep(self::LOCK_RETRY_MICROSECONDS);
+            $locked = flock($file, LOCK_EX | LOCK_NB);
+        }
+        if (!$locked) {
+            fclose($file);
+            // The exception is not reported, and the job may run after the response is sent.
+            Log::warning("Another dump or restore holds the lock on '$path'");
+            ExceptionFactory::dbBusy()->throw();
+        }
+        return $file;
+    }
 
     /**
      * Called when the process is dying on a fatal error, e.g. after exhausting the memory limit, where the finally

@@ -107,9 +107,9 @@ class ExceptionFactory
         return new ApiException(409, 'exception.db.db_dumps_disabled');
     }
 
-    public static function dbDumpAlreadyRunning(): ApiException
+    public static function dbBusy(): ApiException
     {
-        return new ApiException(409, 'exception.db.db_dump_already_running');
+        return new ApiException(409, 'exception.db.db_busy');
     }
 
     public static function unknownHttp(int $statusCode): ApiException

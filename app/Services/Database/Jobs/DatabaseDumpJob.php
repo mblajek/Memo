@@ -2,7 +2,6 @@
 
 namespace App\Services\Database\Jobs;
 
-use App\Exceptions\ExceptionFactory;
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\DbDump;
 use App\Services\Database\DatabaseDumpHelper;
@@ -18,9 +17,6 @@ use ZipArchive;
 
 final readonly class DatabaseDumpJob extends AbstractDatabaseJob
 {
-    private const int LOCK_ATTEMPTS = 10;
-    private const int LOCK_RETRY_MICROSECONDS = 100_000;
-
     /** Holds the locked file of the dump in `sqlFile` while it is locked, as the class is readonly. */
     private stdClass $locked;
 
@@ -30,21 +26,6 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
         parent::__construct($dbDump, errorStatus: DatabaseDumpStatus::create_error);
         $this->locked = new stdClass();
         $this->locked->sqlFile = null;
-    }
-
-    /**
-     * Checking whether a dump is running takes the lock for a moment, so a failure is retried for
-     * a while.
-     */
-    private static function lock($file): bool
-    {
-        for ($attempt = 1; $attempt < self::LOCK_ATTEMPTS; $attempt++) {
-            if (flock($file, LOCK_EX | LOCK_NB)) {
-                return true;
-            }
-            usleep(self::LOCK_RETRY_MICROSECONDS);
-        }
-        return flock($file, LOCK_EX | LOCK_NB);
     }
 
     /**
@@ -104,28 +85,7 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
         // The dump goes to a file, and not to a string, as it can have hundreds of megabytes. The file has a known
         // name, so that what an interrupted dump leaves behind is found here and not left on the disk forever.
         $sqlPath = DatabaseDumpHelper::getCurrentDumpPath(isRc: $isFromRc);
-        // Opened without truncating, as the file may still be the one another dump is writing to right now.
-        // The file holds the plaintext of the whole database, so it must not be readable by anyone else. As fopen
-        // takes no mode, the umask gives it one already at the creation: a chmod after it would leave a moment
-        // when the file is there and readable.
-        $umask = umask(0077);
-        try {
-            $sqlFile = fopen($sqlPath, 'c+');
-        } finally {
-            umask($umask);
-        }
-        if ($sqlFile === false) {
-            Log::error("Cannot open the file of the dump '$sqlPath'");
-            FatalExceptionFactory::unexpected()->throw();
-        }
-        // The lock holds for as long as the process keeps the file open, and the system drops it even when the
-        // process is killed, so a dump killed for the memory it took does not block the next one.
-        if (!self::lock($sqlFile)) {
-            fclose($sqlFile);
-            // The exception is not reported, and the job may run after the response is sent.
-            Log::warning("Another dump holds the lock on '$sqlPath'");
-            ExceptionFactory::dbDumpAlreadyRunning()->throw();
-        }
+        $sqlFile = $this->lockDatabase(isRc: $isFromRc);
 
         $this->locked->sqlFile = $sqlFile;
         try {

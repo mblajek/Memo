@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\ApiException;
 use App\Models\DbDump;
 use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpReadException;
@@ -54,6 +55,73 @@ class DatabaseRestoreJobTest extends TestCase
             $thrown = $e;
         }
         return [DbDump::query()->findOrFail($this->dumpId), $thrown];
+    }
+
+    /** @return resource the file holding the lock of the database, which keeps it until closed */
+    private function lockDatabase(bool $isRc)
+    {
+        $path = DatabaseDumpHelper::getCurrentDumpPath(isRc: $isRc);
+        touch($path);
+        $lock = fopen($path, 'r');
+        $this->assertTrue(flock($lock, LOCK_EX | LOCK_NB));
+        return $lock;
+    }
+
+    public function testRefusesToStartWhileTargetDatabaseIsBusy(): void
+    {
+        $lock = $this->lockDatabase(isRc: true);
+        try {
+            (new DatabaseDumpsService())->restore(DbDump::query()->findOrFail($this->dumpId), isToRc: true);
+            $this->fail('No exception thrown');
+        } catch (ApiException $e) {
+            $this->assertSame('exception.db.db_busy', $e->errorCode);
+        } finally {
+            fclose($lock);
+        }
+        $this->assertSame(DatabaseDumpStatus::created, DbDump::query()->findOrFail($this->dumpId)->status);
+    }
+
+    public function testFailsWhenAnotherJobTakesTargetDatabaseInTheMeantime(): void
+    {
+        Log::spy();
+        $this->createZip(self::SQL);
+        $inputPath = $this->fakeOutputPath('input');
+        $this->fakeProgram('mariadb', "cat > '$inputPath'");
+        $job = (new DatabaseDumpsService())->restore(DbDump::query()->findOrFail($this->dumpId), isToRc: true);
+        $lock = $this->lockDatabase(isRc: true);
+        try {
+            $job->handle();
+            $this->fail('No exception thrown');
+        } catch (ApiException $e) {
+            $this->assertSame('exception.db.db_busy', $e->errorCode);
+        } finally {
+            fclose($lock);
+        }
+        $this->assertSame(DatabaseDumpStatus::restore_error, DbDump::query()->findOrFail($this->dumpId)->status);
+        $this->assertFileDoesNotExist($inputPath);
+    }
+
+    public function testHoldsLockOfTargetDatabaseWhileRestoring(): void
+    {
+        $this->createZip(self::SQL);
+        $probePaths = [];
+        $probes = [];
+        foreach (['rc' => true, 'prod' => false] as $name => $isRc) {
+            $probePaths[$name] = $this->fakeOutputPath("probe-$name");
+            $probes[] = escapeshellarg(PHP_BINARY) . ' -r '
+                . escapeshellarg('echo flock(fopen($argv[1], "c"), LOCK_SH | LOCK_NB) ? "free" : "locked";')
+                . ' ' . escapeshellarg(DatabaseDumpHelper::getCurrentDumpPath(isRc: $isRc))
+                . ' > ' . escapeshellarg($probePaths[$name]);
+        }
+        $this->fakeProgram('mariadb', implode("\n", ['cat > /dev/null', ...$probes]));
+
+        [$dbDump, $thrown] = $this->runRestore();
+
+        $this->assertNull($thrown);
+        $this->assertSame(DatabaseDumpStatus::created, $dbDump->status);
+        $this->assertSame('locked', file_get_contents($probePaths['rc']));
+        $this->assertSame('free', file_get_contents($probePaths['prod']));
+        $this->assertFalse(DatabaseDumpHelper::isDatabaseBusy(isRc: true));
     }
 
     public function testStreamsDumpIntoRestoreProgram(): void
