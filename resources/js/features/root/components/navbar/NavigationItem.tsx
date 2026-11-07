@@ -97,11 +97,12 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
           {...htmlAttributes.merge(aProps, {
             class: cx(
               collapsed() ? "px-4 py-2" : ["px-2 py-1", props.small ? "gap-2" : "gap-3 min-h-10"],
-              "self-center rounded-lg flex flex-row items-center text-black hover:bg-white/50",
+              "self-center rounded-lg flex flex-row items-center text-black",
             ),
             style: {"line-height": "1.3"},
           })}
           activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
+          inactiveClass="hover:bg-white/50"
           onClick={(event) => {
             if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS) && location.pathname === aProps.href) {
               clearAllHistoryState({forceReset: true});
