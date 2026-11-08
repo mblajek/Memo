@@ -29,3 +29,4 @@ yarn-error.log
 /database/dumps/*.*
 /database/integration_events/*.*
 /release
+/local

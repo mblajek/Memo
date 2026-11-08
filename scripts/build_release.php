@@ -134,6 +134,10 @@ ini_set('display_errors', 1);
                 $branch = $matches[1];
             }
         }
+        $changes = array_diff($changes, [
+            // temp ignore changes:
+            // 'M scripts/build_release.php',
+        ]);
         if (!$branch) {
             $exit('Unknown git branch in git-version.txt');
         } elseif ($changes) {
@@ -145,14 +149,17 @@ ini_set('display_errors', 1);
     $exec('rm -rf release');
     $exec('mkdir -p release/memo/', $config['release']);
     $exec('git pull', $config['pull'], echoOutput: true);
+    $exec('composer install -n -q');
 
     $exec('php vendor/bin/pint --test', $config['release']);
     $exec('php -d memory_limit=512M vendor/bin/phpstan', $config['release']);
+    $exec('php vendor/bin/phpunit', $config['release']);
 
-    $exec('composer install -n -q', $config['dev']);
     $exec('composer install -n -q --no-dev', $config['prod']);
-
     $exec('pnpm run build');
+
+    $exec('pnpm audit',  echoOutput: true);
+    $exec('composer audit -f plain --abandoned=report',  echoOutput: true);
 
     $exec('php artisan l5-swagger:generate');
     $exec('php artisan cache:clear');
@@ -178,8 +185,7 @@ ini_set('display_errors', 1);
     $exec('composer install -n -q', $config['prod']); // install dev after no-dev
 
     echo "\n";
-    $exec('pnpm audit',  echoOutput: true);
-    $exec('composer audit -f plain --abandoned=report',  echoOutput: true);
+
 
     echo "\n\nBuild finished for branch {$color($branch, $branch === 'master')} ({$formatTime($startTime)})\n\n";
 })();

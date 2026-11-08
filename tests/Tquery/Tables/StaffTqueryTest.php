@@ -9,7 +9,7 @@ class StaffTqueryTest extends TqueryConfigTestAbstract
 {
     protected function createTqService(): StaffTquery
     {
-        return new StaffTquery(Facility::factory()->makeOne(['id' => 'facility-id']));
+        return new StaffTquery(Facility::factory()->makeOne(['id' => 'facility-id']), withAccountSecurity: false);
     }
 
     public function testConfig()

@@ -49,7 +49,12 @@ class AutoMigrateTest extends TestCase
     {
         $config = Config::get('database.connections.' . DB::getDefaultConnection());
         $script = <<<'PHP'
-            $pdo = new PDO(getenv('LOCK_DSN'), getenv('LOCK_USER'), getenv('LOCK_PASSWORD'));
+            $pdo = new PDO(
+                getenv('LOCK_DSN'),
+                getenv('LOCK_USER'),
+                getenv('LOCK_PASSWORD'),
+                json_decode(getenv('LOCK_OPTIONS'), true),
+            );
             if ($pdo->query('select get_lock(' . $pdo->quote(getenv('LOCK_NAME')) . ', 10)')->fetchColumn() != 1) {
                 exit(1);
             }
@@ -64,6 +69,8 @@ class AutoMigrateTest extends TestCase
                 'LOCK_DSN' => "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']}",
                 'LOCK_USER' => $config['username'],
                 'LOCK_PASSWORD' => (string)$config['password'],
+                // e.g. SSL, required by a remote server with require_secure_transport
+                'LOCK_OPTIONS' => json_encode($config['options'] ?? []),
                 'LOCK_NAME' => $this->lockName(),
                 'LOCK_HOLD_MICROSECONDS' => (string)self::HOLD_MICROSECONDS,
             ],
