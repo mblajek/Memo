@@ -157,6 +157,7 @@ class DatabaseRestoreJobTest extends TestCase
         $this->assertSame(DatabaseDumpStatus::restore_error, $dbDump->status);
         $this->assertNull($dbDump->restored_rc_at);
         $this->expectErrorLogged('exit status 1, standard error: ERROR 1064: syntax error');
+        $this->assertFileDoesNotExist(DatabaseDumpHelper::getCurrentErrorPath(isRc: true));
     }
 
     public function testFailsWhenRestoreProgramStopsReadingEarly(): void

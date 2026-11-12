@@ -148,6 +148,25 @@ class DatabaseDumpJobTest extends TestCase
         $this->assertSame('', file_get_contents($this->currentDumpPath()));
     }
 
+    /**
+     * An http request runs under open_basedir, which does not allow the temporary directory of the system, so the
+     * standard error must go to the dumps directory, which the request can open. It can quote the data, so it is
+     * readable only by its owner.
+     */
+    public function testCollectsStandardErrorInDumpsDirectory(): void
+    {
+        Log::spy();
+        $errorPath = DatabaseDumpHelper::getCurrentErrorPath(isRc: false);
+        $this->fakeProgram('mariadb-dump', 'readlink /proc/$$/fd/2 >&2; stat -L -c %a /proc/$$/fd/2 >&2; exit 1');
+
+        [$dbDump] = $this->runDump();
+
+        $this->assertSame(DatabaseDumpStatus::create_error, $dbDump->status);
+        $this->assertStringStartsWith("{$this->dumpsDir}/", $errorPath);
+        $this->expectErrorLogged("standard error: $errorPath\n600");
+        $this->assertFileDoesNotExist($errorPath);
+    }
+
     public function testFailsOnEmptyDump(): void
     {
         Log::spy();

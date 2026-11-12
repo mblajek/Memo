@@ -73,6 +73,17 @@ class DatabaseDumpHelper
     }
 
     /**
+     * The standard error of the database program run by a dump or a restore. It is in the dumps directory, and not
+     * in the temporary directory of the system, which the open_basedir of the http requests does not allow. It has
+     * a known name for the same reason as the dump, and as it is used only under the lock of the database, no two
+     * programs write to it at once.
+     */
+    public static function getCurrentErrorPath(bool $isRc): string
+    {
+        return self::getDatabaseDumpsPath() . '/current-dump' . ($isRc ? '-rc' : '') . '.err';
+    }
+
+    /**
      * Tells whether a dump or a restore of this database is running right now, by trying to take its lock. It only
      * answers for this moment: the lock can be taken right after, so the caller cannot treat a no as a reservation.
      * The jobs take the same lock and stay the ones that decide.

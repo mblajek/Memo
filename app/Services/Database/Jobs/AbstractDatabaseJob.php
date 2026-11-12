@@ -137,9 +137,10 @@ abstract readonly class AbstractDatabaseJob
      * all the users of the system, e.g., in ps or htop. The database name and the user are not secret, so they stay
      * on the command line, as the client has no environment variables for them.
      *
-     * The standard error is collected to a temporary file, and not inherited, as the process can be serving an
-     * http request, where the inherited standard error does not reach the log of the application. On a failure it
-     * is logged together with the exit status, and on a success it is dropped.
+     * The standard error is collected to a file, and not inherited, as the process can be serving an http request,
+     * where the inherited standard error does not reach the log of the application. On a failure it is logged
+     * together with the exit status, and on a success it is dropped. The file is the one of
+     * DatabaseDumpHelper::getCurrentErrorPath(), so the caller must hold the lock of the database.
      *
      * @param ?resource $input read into the standard input of the program, can be any stream, also a userland one,
      *     and must not be empty, as the program would accept it and report a success
@@ -151,13 +152,22 @@ abstract readonly class AbstractDatabaseJob
         $dbUser = DatabaseDumpHelper::getDatabaseUsername(isRc: $isRc);
         $dbPassword = DatabaseDumpHelper::getDatabasePassword(isRc: $isRc);
 
-        $errorPath = tempnam(sys_get_temp_dir(), 'db-error-');
-        if ($errorPath === false) {
+        // The errors can quote the data, e.g. a duplicated value, so the file is readable only by its owner, which
+        // the umask gives it at the creation, as for the lock. One left by a killed job is truncated here.
+        $errorPath = DatabaseDumpHelper::getCurrentErrorPath(isRc: $isRc);
+        $umask = umask(0077);
+        try {
+            $errorFile = fopen($errorPath, 'w+');
+        } finally {
+            umask($umask);
+        }
+        if ($errorFile === false) {
+            Log::error("Cannot open the file for the standard error '$errorPath'");
             FatalExceptionFactory::unexpected()->throw();
         }
 
         try {
-            $descriptorSpec = [2 => ['file', $errorPath, 'w']];
+            $descriptorSpec = [2 => $errorFile];
             if ($input !== null) {
                 $descriptorSpec[0] = ['pipe', 'r'];
             }
@@ -203,7 +213,9 @@ abstract readonly class AbstractDatabaseJob
             }
 
             if ($result !== 0 || $inputError !== null) {
-                $error = trim((string)file_get_contents($errorPath, length: self::ERROR_LOG_LENGTH));
+                // The program wrote through its own descriptor, so the file is read from its beginning.
+                rewind($errorFile);
+                $error = trim((string)stream_get_contents($errorFile, length: self::ERROR_LOG_LENGTH));
                 Log::error("Command '$program $dbName' failed"
                     . (($inputError === null) ? '' : ", $inputError")
                     . ", exit status $result"
@@ -211,6 +223,7 @@ abstract readonly class AbstractDatabaseJob
                 FatalExceptionFactory::unexpected()->throw();
             }
         } finally {
+            fclose($errorFile);
             unlink($errorPath);
         }
     }
