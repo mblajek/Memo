@@ -158,7 +158,7 @@ ini_set('display_errors', 1);
     $exec('composer install -n -q --no-dev', $config['prod']);
     $exec('pnpm run build');
 
-    $exec('pnpm audit',  echoOutput: true);
+    $exec('pnpm audit --prod',  echoOutput: true);
     $exec('composer audit -f plain --abandoned=report',  echoOutput: true);
 
     $exec('php artisan l5-swagger:generate');
