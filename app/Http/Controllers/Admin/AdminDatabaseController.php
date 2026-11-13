@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exceptions\ExceptionFactory;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
@@ -14,6 +13,7 @@ use App\Tquery\OpenApi\OpenApiGet;
 use App\Tquery\OpenApi\OpenApiPost;
 use App\Tquery\Tables\AdminDbDumpsTquery;
 use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DMH;
+use Closure;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,10 +29,12 @@ class AdminDatabaseController extends ApiController
     protected function initPermissions(): void
     {
         $this->permissionOneOf(Permission::globalAdmin);
-
-        if (!DatabaseDumpHelper::dumpsEnabled()) {
-            ExceptionFactory::dbDumpsDisabled()->throw();
-        }
+        // Checked in a middleware run after the permission one: thrown here, in the constructor, it
+        // would answer before the permission check, also to anonymous and unprivileged callers.
+        $this->middleware(function (Request $request, Closure $next) {
+            DatabaseDumpHelper::checkDumpsEnabled();
+            return $next($request);
+        });
     }
 
     #[OA\Post(
