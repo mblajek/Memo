@@ -16,6 +16,7 @@ trait ApiExceptionTrait
     public readonly array $errorData;
     public readonly int $httpCode;
     protected array $validationErrors = [];
+    protected array $headers = [];
 
     public function getData(): array
     {
@@ -49,7 +50,7 @@ trait ApiExceptionTrait
     /** @param array<ApiExceptionTrait> $addErrors */
     public function renderMany(array $addErrors = []): JsonResponse
     {
-        return new JsonResponse($this->renderContent($addErrors), $this->httpCode);
+        return new JsonResponse($this->renderContent($addErrors), $this->httpCode, $this->headers);
     }
 
     /** called by framework */
@@ -72,6 +73,12 @@ trait ApiExceptionTrait
 
     public function getHeaders(): array
     {
-        return [];
+        return $this->headers;
+    }
+
+    public function setHeaders(array $headers): self
+    {
+        $this->headers = $headers;
+        return $this;
     }
 }

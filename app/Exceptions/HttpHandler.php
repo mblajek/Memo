@@ -87,8 +87,10 @@ class HttpHandler extends ExceptionHandler
     {
         $e = parent::prepareException($e);
 
-        return match (true) {
-            App::hasDebugModeEnabled(), ($e instanceof ValidationException) => $e,
+        if (App::hasDebugModeEnabled() || ($e instanceof ValidationException)) {
+            return $e;
+        }
+        $apiException = match (true) {
             ($e instanceof TooManyRequestsHttpException) => ExceptionFactory::tooManyRequests(),
             ($e instanceof NotFoundHttpException) => ExceptionFactory::notFound(),
             ($e instanceof UnauthorizedHttpException) => ExceptionFactory::unauthorised(),
@@ -101,6 +103,11 @@ class HttpHandler extends ExceptionHandler
             ($e instanceof FatalError) => FatalExceptionFactory::fatal(),
             true => FatalExceptionFactory::unknown($e),
         };
+        // Headers set for the response travel on the exception (e.g. Retry-After of a throttle).
+        if ($e instanceof HttpExceptionInterface) {
+            $apiException->setHeaders($e->getHeaders());
+        }
+        return $apiException;
     }
 
     /** @inheritdoc */

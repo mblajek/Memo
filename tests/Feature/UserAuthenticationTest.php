@@ -6,6 +6,7 @@ use App\Http\Permissions\PermissionMiddleware;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\Helpers\UserTrait;
@@ -127,6 +128,29 @@ class UserAuthenticationTest extends TestCase
         $this->assertEquals('exception.bad_credentials', $result->json('errors')[0]['code']);
         $result->assertUnauthorized();
         $result->assertJsonStructure($this->unauthorizedErrorJsonStructure());
+    }
+
+    public function testThrottledLoginTellsWhenToRetry(): void
+    {
+        // With debug on, the framework renders its own exception, headers included.
+        Config::set('app.debug', false);
+        $data = [
+            'email' => 'test@test.pl',
+            'password' => '12345',
+        ];
+        for ($i = 0; $i < 5; $i++) {
+            $this->post(static::URL_LOGIN, $data)->assertUnauthorized();
+        }
+
+        $result = $this->post(static::URL_LOGIN, $data);
+
+        $result->assertStatus(429);
+        $this->assertSame([['code' => 'exception.too_many_requests']], $result->json('errors'));
+        $retryAfter = (int)$result->headers->get('Retry-After');
+        $this->assertGreaterThan(0, $retryAfter);
+        $this->assertLessThanOrEqual(60, $retryAfter);
+        $result->assertHeader('X-RateLimit-Limit', 5);
+        $result->assertHeader('X-RateLimit-Remaining', 0);
     }
 
     public function testLoginWithExistentDataWillPass(): void
