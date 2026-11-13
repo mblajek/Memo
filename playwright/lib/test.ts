@@ -1,6 +1,6 @@
 import {test as base, expect, type APIRequestContext, type Page} from "@playwright/test";
 import {MemoAPI, MemoAPIError, extendTestTimeout, loginThrottleWaitMs, withTimeBudget} from "./api.ts";
-import {loadConfig, type Credentials} from "./config.ts";
+import {failureDumpsEnabled, loadConfig, type Credentials} from "./config.ts";
 import {getDB} from "./db.ts";
 import {disableTranslations} from "../helpers/lang.ts";
 import {loadActiveLayer, markDirty, tablesChangedSinceActiveLayer} from "./layers.ts";
@@ -165,7 +165,7 @@ interface Fixtures {
  * Drop-in replacement for `@playwright/test`'s `test`. Adds an autouse fixture that, around every
  * test, restores the DB to the current layer's snapshot beforehand and marks it dirty unless the
  * test is read-only and passes; if the test fails, a fresh dump is taken and a reference to it
- * attached to the report for later inspection.
+ * attached to the report for later inspection, unless the failure dumps are switched off.
  * Also provides the `api` fixtures, with CSRF handling.
  */
 export const test = base.extend<Fixtures>({
@@ -216,7 +216,7 @@ export const test = base.extend<Fixtures>({
           await markDirty();
         }
       }
-      if (testInfo.status !== testInfo.expectedStatus || changedByReadOnly.length) {
+      if ((testInfo.status !== testInfo.expectedStatus || changedByReadOnly.length) && (await failureDumpsEnabled())) {
         try {
           const db = await getDB();
           const label = testInfo.titlePath.join(" : ");

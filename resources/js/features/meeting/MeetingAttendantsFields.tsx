@@ -436,7 +436,8 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   return (
     <div class="flex flex-col items-stretch">
       <div class="grid gap-1" style={{"grid-template-columns": "1.5fr 1fr"}}>
-        <div>
+        {/* Wrapped anywhere, just for tests. */}
+        <div class="wrapTextAnywhere">
           <FieldLabel
             fieldName={props.name}
             umbrella

@@ -111,7 +111,12 @@ Where a test needs something out-of-the-ordinary, it's called out in the notes.
   error (`AttributeType.php`), a disabled dictionary position left out of the selects of the forms
   also where it was the value, and so lost with the next save (`DictionarySelect.tsx`), the
   calendar's line of the current time catching the clicks meant for the meetings under it
-  (`ColumnsCalendar.tsx`).
+  (`ColumnsCalendar.tsx`), the label of the attendants of the meeting form (a long key in the
+  testing language) widening its column so that the status column was squeezed to a letter per line
+  — in Firefox, and in Chromium on an `rc` server (`MeetingAttendantsFields.tsx`), the DB dump
+  endpoints answering 409 "dumps disabled" before checking who asks
+  (`AdminDatabaseController.php`), a throttled request losing its `Retry-After` header with debug
+  off (`HttpHandler.php`).
 
 ---
 
@@ -227,7 +232,9 @@ needs no waiting. The spec logs in a lot and waits the login throttle out (about
   submit → success toast + list contains it** _(M)_ `(admin_ui.spec.ts)`
 - ✅ **Cancel facility-create modal: no new facility persisted** _(M)_ `(admin_ui.spec.ts)`
 - ✅ **Global admin's DB dumps page renders: the table and the create menu** — the menu is only
-  opened; no dump is created or restored. _(E)_ `(admin_ui.spec.ts)`
+  opened; no dump is created or restored. Where the server keeps no dumps (`dumpsEnabled` of
+  `system/status`), the page shows `exception.db.db_dumps_disabled` instead. _(E)_
+  `(admin_ui.spec.ts)`
 - ✅ **Create user via the /admin/users Add modal: fill name+email, submit → toast + tquery contains
   the user** _(M)_ `(admin_ui.spec.ts)`
 - ✅ **Create facility with duplicate URL shows unique-constraint error** — API-level. _(M)_
@@ -312,7 +319,8 @@ Already implemented; the broad test bucket.
   `admin/developer/migrate` (status only), `admin/developer/log/tquery`, `admin/db-dump/tquery`,
   `admin/user/tquery`, `admin/facility/tquery`; `mail/test` and `system/log` for anonymous only. No
   call that would change anything if let through (`overwrite-metadata`, `patch-staff`, dump create /
-  restore are not sent). _(E)_ `(closed_endpoints.spec.ts)`
+  restore are not sent). Where the server keeps no dumps, `admin/db-dump/tquery` answers the global
+  admin 409, but still 401 and 403 to the others. _(E)_ `(closed_endpoints.spec.ts)`
 - ✅ **A log entry with no content is refused** _(E)_ `(closed_endpoints.spec.ts)`
 - ✅ **The endpoints of clients, client groups, staff and members are for facility staff and admins
   only** — in the Test Clients layer: the lists, the table queries and their column lists, and the
@@ -1154,8 +1162,9 @@ at a `meetingCategory` position.
   help to a report (it names no facility), the info icon of the report with the link to the full
   help page. _(E)_ `(meetings_tables_ui.spec.ts)`
 - ✅ **Each table query endpoint names its columns, and returns every one of them** — API: thirteen
-  endpoints (of the facility, of the technicals, of the global admin); every declared column is of a
-  known type, can be asked for, comes in every row, and is empty only if declared nullable. _(M)_
+  endpoints (of the facility, of the technicals, of the global admin; twelve where the server keeps
+  no DB dumps); every declared column is of a known type, can be asked for, comes in every row, and
+  is empty only if declared nullable. _(M)_
   `(meetings.spec.ts)`
 
 ### Mark attendance
@@ -1512,9 +1521,8 @@ Not listed anywhere above:
   are seen only by one smoke test (three pages) and by the help tests. Plural forms other than "one"
   and most texts are never checked; of the formats of the locale, the dates and the times are.
 - **Other environments** — one desktop viewport; no accessibility or visual checks; not run in CI.
-  Edge is not run: it is Chromium, which is. One test is `fixme` in Firefox for an app problem
-  listed at the end, and the CSV export tests are skipped there (no export in a browser without the
-  File System Access API).
+  Edge is not run: it is Chromium, which is. The CSV export tests are skipped in Firefox (no export
+  in a browser without the File System Access API).
 - **Permissions of time tables** — any staff member can change anyone's work times and leave times
   through the API (see the note in the Time Tables section). A product decision; no test pins it
   either way.
@@ -1567,9 +1575,6 @@ From a review of the specs; none of these is fixed yet.
 ### App problems the tests ran into, not fixed
 
 - `client.contactEmail` accepts any string.
-- In Firefox, with the long labels of the testing language, the attendance status column of the
-  meeting form is squeezed to a letter per line, and the form grows too tall for its options to be
-  clicked. Whether real (shorter) labels wrap badly there too has not been checked.
 - Hours before 10 are shown as "9:00" in Chromium and as "09:00" in Firefox (`formatDayMinuteHM`,
   `hour: "numeric"` formatted by the browser).
 - A user with no stored state of the news (a new one) is not shown the link to the news in the first

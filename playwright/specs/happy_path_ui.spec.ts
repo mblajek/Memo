@@ -106,9 +106,12 @@ happyPathLayer.describe((artifact) => {
 
     await test.step("the global admin sees the admin pages", async () => {
       await logInThroughForm(page, (await loadConfig()).ui.admin);
+      // The lists are paged, and the server may have others' data: each is searched.
       await openPage(page, "/admin/users");
+      await page.getByPlaceholder("actions.search").fill(STAFF.email);
       await expect(tableRows(main, STAFF.email)).toHaveCount(1);
       await openPage(page, "/admin/facilities");
+      await page.getByPlaceholder("actions.search").fill(FACILITY.name);
       await expect(tableRows(main, FACILITY.name)).toHaveCount(1);
     });
 

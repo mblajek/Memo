@@ -9,6 +9,12 @@
     "To have the servers started for you, on a DB of their own, use config.docker.template.json."
   ],
   "targetType": "local",
+  "// failureDumps": [
+    "Whether the DB is dumped after a failed test, for you to look at: a file next to the test's",
+    "trace in test-results/, gone with the next run. On this target it is on if not given.",
+    "MEMO_E2E_FAILURE_DUMPS=1 or 0 overrides it for one run."
+  ],
+  "failureDumps": true,
   "ui": {
     "baseURL": "http://localhost:8000",
     "admin": {

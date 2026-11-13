@@ -17,7 +17,7 @@ export function useAutoRelatedClients() {
       equals: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]),
     });
     const result = createMemo(() =>
-      userIdsMemo().length
+      userIdsMemo().length && attendanceTypeDict()
         ? ({
             priorityQuerySpec: {
               entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting/attendant`,

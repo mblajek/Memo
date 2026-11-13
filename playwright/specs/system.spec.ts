@@ -224,9 +224,10 @@ test(
     await expect(page).toHaveURL(new RegExp(`/help/changelog#v${version.replace(".", "\\.")}$`));
     const main = page.locator("main");
     await expect(main.getByRole("heading", {level: 1, name: /^Co nowego w /})).toBeVisible();
-    // The log is put together from a part per version; the link leads to the current one.
+    // The log is put together from a part per version, each loaded on its own; the link leads to
+    // the current one.
     await expect(main.locator(`[id="v${version}"]`)).toBeInViewport();
-    expect(await main.locator('h2[id^="v"]').count()).toBeGreaterThan(5);
+    await expect.poll(() => main.locator('h2[id^="v"]').count()).toBeGreaterThan(5);
     await expect(main).not.toContainText("$include(");
     await expect(main).not.toContainText("$t(");
 

@@ -26,6 +26,12 @@
     "To start over with a new DB: `docker rm -f memo-e2e-db`. Changing docker.base does the same."
   ],
   "targetType": "docker",
+  "// failureDumps": [
+    "Whether the DB is dumped after a failed test, for you to look at: a file next to the test's",
+    "trace in test-results/, gone with the next run. On this target it is on if not given.",
+    "MEMO_E2E_FAILURE_DUMPS=1 or 0 overrides it for one run."
+  ],
+  "failureDumps": true,
   "ui": {
     "// baseURL": "Where the app container serves the app. Pick a free port; not the one of your own server.",
     "baseURL": "http://localhost:9084"

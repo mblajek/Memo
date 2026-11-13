@@ -97,6 +97,14 @@ export async function lastLoginFacilityId(api: MemoAPI) {
   return (await api.getData<{user: {lastLoginFacilityId: string | null}}>("user/status")).user.lastLoginFacilityId;
 }
 
+/**
+ * Whether the server keeps DB dumps. Where it does not, each `admin/db-dump/*` endpoint answers 409
+ * `exception.db.db_dumps_disabled` to the global admin.
+ */
+export async function dumpsEnabled(api: MemoAPI) {
+  return (await api.getData<{dumpsEnabled: boolean}>("system/status")).dumpsEnabled;
+}
+
 /** The keys that the user has in the storage of the server. */
 export async function storageKeys(api: MemoAPI) {
   return (await (await api.get("user/storage")).json()) as readonly string[];

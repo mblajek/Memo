@@ -1,3 +1,4 @@
+import {dumpsEnabled} from "../helpers/queries.ts";
 import {loadConfig} from "../lib/config.ts";
 import {
   expectFormErrors,
@@ -77,14 +78,31 @@ readOnlyTest(
 readOnlyTest(
   "global admin's DB dumps page shows the table and offers creating a dump",
   {tag: "@ui"},
-  async ({page}) => {
+  async ({page, globalAdminApi}) => {
     const cfg = await loadConfig();
+    const enabled = await dumpsEnabled(globalAdminApi);
+    // The page's error toast may come before the testing language is in effect, so its text is
+    // not to be relied on: the answer the page got is checked instead.
+    const tqueryResponse = enabled
+      ? undefined
+      : page.waitForResponse(
+          (res) => res.request().method() === "GET" && new URL(res.url()).pathname.endsWith("/admin/db-dump/tquery"),
+        );
     await openPage(page, "/admin/db-dumps", cfg.ui.admin);
 
     const main = page.locator("main");
-    await expect(
-      main.getByRole("button", {name: /tables\.tables\.db_dump\.column_names\.createStatus/i}),
-    ).toBeVisible();
+    const createStatusColumn = main.getByRole("button", {
+      name: /tables\.tables\.db_dump\.column_names\.createStatus/i,
+    });
+    if (tqueryResponse) {
+      // The menu has no link here; the page, opened by its URL, is told that dumps are disabled.
+      const response = await tqueryResponse;
+      expect(response.status()).toBe(409);
+      expect(await response.json()).toEqual({errors: [{code: "exception.db.db_dumps_disabled"}]});
+      await expect(createStatusColumn).toHaveCount(0);
+      return;
+    }
+    await expect(createStatusColumn).toBeVisible();
     await expect(main.getByText("Errors:")).toHaveCount(0);
     // Only open the menu: creating or restoring a dump is not for a test.
     await main.getByRole("button", {name: "actions.db_dump.create", exact: true}).click();

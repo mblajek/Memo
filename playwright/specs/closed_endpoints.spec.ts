@@ -1,3 +1,4 @@
+import {dumpsEnabled} from "../helpers/queries.ts";
 import {ADMIN, BARE_MEMBER, STAFF, STAFF_ADMIN, facilityLayer} from "../lib/layers/facility.ts";
 import {MemoAPI, expect, readOnlyTest} from "../lib/test.ts";
 
@@ -14,9 +15,16 @@ const DEVELOPER_ONLY: readonly Request[] = [
   ["GET", "admin/developer/log/tquery"],
   ["POST", "admin/developer/log/tquery"],
 ];
-const GLOBAL_ADMIN_ONLY: readonly Request[] = [
+/**
+ * Open to the global admin only where the server keeps DB dumps. Elsewhere they answer him 409, but
+ * the others still 401 and 403: whether the server keeps dumps is no business of theirs.
+ */
+const DB_DUMPS: readonly Request[] = [
   ["GET", "admin/db-dump/tquery"],
   ["POST", "admin/db-dump/tquery"],
+];
+const GLOBAL_ADMIN_ONLY: readonly Request[] = [
+  ...DB_DUMPS,
   ["GET", "admin/user/tquery"],
   ["GET", "admin/facility/tquery"],
 ];
@@ -55,11 +63,18 @@ facilityLayer.describe(() => {
     async ({globalAdminApi}) => {
       await expectStatus(globalAdminApi, "global admin", DEVELOPER_ONLY, 403);
       // Guard: the same session is let into the global admin's own endpoints.
+      const gets = GLOBAL_ADMIN_ONLY.filter(([method]) => method === "GET");
       await expectStatus(
         globalAdminApi,
         "global admin",
-        GLOBAL_ADMIN_ONLY.filter(([method]) => method === "GET"),
+        gets.filter((request) => !DB_DUMPS.includes(request)),
         200,
+      );
+      await expectStatus(
+        globalAdminApi,
+        "global admin",
+        gets.filter((request) => DB_DUMPS.includes(request)),
+        (await dumpsEnabled(globalAdminApi)) ? 200 : 409,
       );
     },
   );

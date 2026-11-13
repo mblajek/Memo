@@ -169,12 +169,14 @@ clientsLayer.describe((artifact) => {
         await expect(page).toHaveURL(new RegExp(`/clients/${clientId}$`));
         const form = page.locator("form#client_edit");
         await expect(formField(form, "name")).toHaveValue(name);
-        expect(await shownAttributes(form, ["shortCode", "typeDictId", ...SHOWN_WHEN_EMPTY])).toEqual({
-          shortCode: "11",
-          typeDictId: "dictionary.clientType.adult",
-          ...Object.fromEntries(SHOWN_WHEN_EMPTY.map((apiName) => [apiName, EMPTY_VALUE])),
-          contactStartAt: shownDateWithWeekday(today),
-        });
+        await expect
+          .poll(() => shownAttributes(form, ["shortCode", "typeDictId", ...SHOWN_WHEN_EMPTY]))
+          .toEqual({
+            shortCode: "11",
+            typeDictId: "dictionary.clientType.adult",
+            ...Object.fromEntries(SHOWN_WHEN_EMPTY.map((apiName) => [apiName, EMPTY_VALUE])),
+            contactStartAt: shownDateWithWeekday(today),
+          });
         for (const apiName of SHOWN_WHEN_EMPTY) {
           await expectSectionShown(attributeRow(form, apiName), true);
         }
@@ -244,30 +246,26 @@ clientsLayer.describe((artifact) => {
       await expect(page).toHaveURL(new RegExp(`/clients/${clientId}$`));
       const details = page.locator("form#client_edit");
       await expect(formField(details, "name")).toHaveValue(name);
-      const shown = await shownAttributes(details, [
-        "shortCode",
-        "typeDictId",
-        ...SHOWN_WHEN_EMPTY,
-        ...FOLDED_WHEN_EMPTY,
-      ]);
-      expect(shown).toEqual({
-        shortCode: FULL.shortCode,
-        typeDictId: "dictionary.clientType.child",
-        genderDictId: "dictionary.gender.female",
-        urgentNotes: "Urgent one, * low two",
-        // The date in the browser's locale, followed by the age.
-        birthDate: expect.stringMatching(/^09\.03\.2015 .*calendar\.units\.years\{count:\d+\}/),
-        contactEmail: FULL.contactEmail,
-        // A number of the app's country is shown without the country's prefix.
-        contactPhone: "601 202 303",
-        addressStreetNumber: FULL.addressStreetNumber,
-        addressPostalCode: FULL.addressPostalCode,
-        addressCity: FULL.addressCity,
-        contactStartAt: "poniedziałek, 15.01.2024",
-        contactEndAt: "poniedziałek, 30.06.2025",
-        documentsLinks: FULL.documentsLinks.join(" "),
-        notificationMethodDictIds: "dictionary.notificationMethod.sms",
-      });
+      await expect
+        .poll(() => shownAttributes(details, ["shortCode", "typeDictId", ...SHOWN_WHEN_EMPTY, ...FOLDED_WHEN_EMPTY]))
+        .toEqual({
+          shortCode: FULL.shortCode,
+          typeDictId: "dictionary.clientType.child",
+          genderDictId: "dictionary.gender.female",
+          urgentNotes: "Urgent one, * low two",
+          // The date in the browser's locale, followed by the age.
+          birthDate: expect.stringMatching(/^09\.03\.2015 .*calendar\.units\.years\{count:\d+\}/),
+          contactEmail: FULL.contactEmail,
+          // A number of the app's country is shown without the country's prefix.
+          contactPhone: "601 202 303",
+          addressStreetNumber: FULL.addressStreetNumber,
+          addressPostalCode: FULL.addressPostalCode,
+          addressCity: FULL.addressCity,
+          contactStartAt: "poniedziałek, 15.01.2024",
+          contactEndAt: "poniedziałek, 30.06.2025",
+          documentsLinks: FULL.documentsLinks.join(" "),
+          notificationMethodDictIds: "dictionary.notificationMethod.sms",
+        });
       for (const apiName of FOLDED_WHEN_EMPTY) {
         await expectSectionShown(attributeRow(details, apiName), true);
       }

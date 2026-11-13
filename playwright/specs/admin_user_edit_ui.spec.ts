@@ -183,7 +183,9 @@ facilityLayer.describe((artifact) => {
       await test.step("the columns can be sorted by, but for the list of the facilities", async () => {
         const seeded = [STAFF, ADMIN, STAFF_ADMIN, BARE_MEMBER];
         const seededEmails: readonly string[] = seeded.map(({email}) => email);
-        await page.getByPlaceholder("actions.search").fill("@test.pl");
+        // The members of the facility only: with others' data on the server, the users matching a
+        // wider search may not fit on the first page.
+        await page.getByPlaceholder("actions.search").fill(`'${FACILITY.name}'`);
         await expect(tableRows(main, STAFF.email)).toHaveCount(1);
         const sortButton = (column: string) =>
           columnHeader(main, column).getByRole("button", {name: `tables.tables.user.column_names.${column}`});

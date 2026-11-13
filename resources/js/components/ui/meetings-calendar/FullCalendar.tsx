@@ -507,7 +507,8 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
         });
         // Once resources are loaded, make sure there aren't any selected resources that don't really exist.
         createOneTimeEffect({
-          input: staff,
+          // The meeting resources come from the dictionaries: without them, they would all be pruned.
+          input: () => (dictionaries() ? staff() : undefined),
           effect: (staff) => {
             const validResourceIds = new Set<string>();
             for (const group of resourceGroups()) {

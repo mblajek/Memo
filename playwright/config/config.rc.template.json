@@ -9,6 +9,12 @@
     "places."
   ],
   "targetType": "rc",
+  "// failureDumps": [
+    "Whether the DB is dumped after a failed test, for you to look at. Such a dump stays on the",
+    "dbAPI server until deleted by hand, so on this target it is off if not given.",
+    "MEMO_E2E_FAILURE_DUMPS=1 or 0 overrides it for one run."
+  ],
+  "failureDumps": false,
   "ui": {
     "baseURL": "https://rc-memo.example.com",
     "admin": {

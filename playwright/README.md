@@ -231,6 +231,17 @@ TESTS.md.
 The output of the run logs each test, each DB restore and each layer setup with its time, and
 after each test how many are done and the time elapsed.
 
+### The dump of the DB
+
+On the `docker` and `local` targets the dump is a file next to the trace. On the `rc` target it is
+a dump on the `dbAPI` server (the report of the test names it), where nothing deletes it — so
+there it is not made unless asked for. `"failureDumps": true` or `false` in the config sets it for
+the target, and `MEMO_E2E_FAILURE_DUMPS` for one run:
+
+```sh
+MEMO_E2E_FAILURE_DUMPS=1 pnpm :playwright specs/clients_ui.spec.ts
+```
+
 ## Layout
 
 - `specs/` — the tests.

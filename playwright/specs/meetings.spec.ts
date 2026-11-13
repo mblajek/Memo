@@ -4,6 +4,7 @@ import {meetingsLayer} from "../lib/layers/meetings.ts";
 import {
   cloneMeeting,
   createMeetingResource,
+  dumpsEnabled,
   meetingClientIds,
   meetingClients,
   meetingConflicts,
@@ -700,7 +701,9 @@ meetingsLayer.describe((artifact) => {
         [staffAdminApi, "system/position/tquery", 1],
         [globalAdminApi, "admin/user/tquery", 14],
         [globalAdminApi, "admin/facility/tquery", 1],
-        [globalAdminApi, "admin/db-dump/tquery", 0],
+        // Where the server keeps no dumps, this endpoint only answers 409, as
+        // closed_endpoints.spec.ts checks.
+        ...((await dumpsEnabled(globalAdminApi)) ? [[globalAdminApi, "admin/db-dump/tquery", 0] as const] : []),
       ];
       for (const [endpointApi, path, leastRows] of endpoints) {
         const schema = (await (await endpointApi.get(path)).json()) as {

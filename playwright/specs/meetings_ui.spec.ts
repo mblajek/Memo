@@ -186,12 +186,7 @@ meetingsLayer.describe((artifact) => {
     await expect(block).not.toContainText(zoe.name);
   });
 
-  test("attendance statuses are set per attendant in the edit form", {tag: "@ui"}, async ({page, api, browserName}) => {
-    test.fixme(
-      browserName === "firefox",
-      "In Firefox the long labels of the testing language squeeze the status column to a letter per line, " +
-        "and the options end up outside the viewport.",
-    );
+  test("attendance statuses are set per attendant in the edit form", {tag: "@ui"}, async ({page, api}) => {
     const {facilityId, pastMeeting} = artifact();
     await login(page, STAFF);
     const form = await openMeeting(page, pastMeeting);

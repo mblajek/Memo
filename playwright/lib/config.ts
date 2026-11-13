@@ -19,6 +19,7 @@ export interface DBAPIConfig {
 
 export interface E2EConfigBase {
   readonly ui: UIConfig;
+  readonly failureDumps?: boolean;
 }
 
 export interface RCConfig extends E2EConfigBase {
@@ -108,6 +109,9 @@ function validateCredentials(prefix: string, c: Credentials | undefined) {
 
 function validate(c: E2EConfig) {
   requireField("ui.baseURL", c.ui?.baseURL);
+  if (c.failureDumps !== undefined && typeof c.failureDumps !== "boolean") {
+    throw new Error(`E2E config: failureDumps must be true or false`);
+  }
   switch (c.targetType) {
     case "rc":
       validateCredentials("ui.admin", c.ui.admin);
@@ -177,4 +181,17 @@ export function reuseStateEnabled() {
  */
 export function recoverEnabled() {
   return envFlag("MEMO_E2E_RECOVER");
+}
+
+/**
+ * Whether the DB is dumped after a failed test. `MEMO_E2E_FAILURE_DUMPS`, if set to anything but
+ * an empty string, decides for the run (`0` for no); otherwise the `failureDumps` of the config
+ * does, and if that is not given either, the target: no on `rc`, yes on the others.
+ */
+export async function failureDumpsEnabled() {
+  if (process.env.MEMO_E2E_FAILURE_DUMPS) {
+    return envFlag("MEMO_E2E_FAILURE_DUMPS");
+  }
+  const cfg = await loadConfig();
+  return cfg.failureDumps ?? cfg.targetType !== "rc";
 }
