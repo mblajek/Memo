@@ -552,7 +552,9 @@ export class MemoAPI {
     if (this.csrfToken) {
       headers["X-CSRF-TOKEN"] = this.csrfToken;
     }
-    const res = await this.api.fetch(`/api/v1/${path}`, {method, headers, data});
+    // A kept-alive connection that the server closes just as a request goes out resets it
+    // (ECONNRESET) before the request is handled; the retry is for that only.
+    const res = await this.api.fetch(`/api/v1/${path}`, {method, headers, data, maxRetries: 1});
     const newCsrf = res.headers()["x-set-csrf-token"];
     if (newCsrf) {
       this.csrfToken = newCsrf;
