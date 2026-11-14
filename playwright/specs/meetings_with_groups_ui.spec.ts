@@ -143,11 +143,16 @@ meetingsWithGroupsLayer.describe((artifact) => {
       const savedClients = () => meetingClients(staffApi, facilityId, todayMeeting.id);
       expect(await savedClients()).toMatchObject([{userId: bea.id, clientGroupId: null}]);
       await login(page, STAFF);
+      const groupLoaded = page.waitForResponse(
+        (res) => res.url().includes("/client-group/list") && res.url().includes(familyGroup.id),
+      );
       const form = await openMeeting(page, todayMeeting);
       // No group so far, so nothing about groups in the view mode.
       await expect(form.getByText(familyGroup.notes)).toHaveCount(0);
 
       await test.step("editing proposes the only group of the client", async () => {
+        // Also when the view mode got the group first.
+        await groupLoaded;
         await startEditing(page);
         await expectSectionShown(modeLabel(form, "shared_one_client"), true);
         await expectSectionShown(addAllButton(form), true);

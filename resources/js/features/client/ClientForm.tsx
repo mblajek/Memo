@@ -4,7 +4,9 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {ATTRIBUTES_SCHEMA} from "components/ui/form/AttributeFields";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
 import {TextField} from "components/ui/form/TextField";
-import {VoidComponent, splitProps} from "solid-js";
+import {BigSpinner} from "components/ui/Spinner";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {Show, VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
 import {ClientFields} from "./ClientFields";
 
@@ -24,29 +26,33 @@ interface Props extends FormConfigWithoutTransformFn<ClientFormType> {
 export const ClientForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "onCancel"]);
   const confirmation = createFormLeaveConfirmation();
+  const attributes = useAttributes();
   return (
-    <FelteForm
-      id={props.id}
-      translationsFormNames={[props.id, "client", "facility_user"]}
-      schema={getSchema()}
-      translationsModel={["client", "facility_user"]}
-      class="flex flex-col gap-4 items-stretch"
-      {...formProps}
-    >
-      {(form) => {
-        async function cancel() {
-          if (!form.isDirty() || (await confirmation.confirm())) {
-            props.onCancel?.();
+    // Without the attributes the form would submit none of them.
+    <Show when={attributes()} fallback={<BigSpinner />}>
+      <FelteForm
+        id={props.id}
+        translationsFormNames={[props.id, "client", "facility_user"]}
+        schema={getSchema()}
+        translationsModel={["client", "facility_user"]}
+        class="flex flex-col gap-4 items-stretch"
+        {...formProps}
+      >
+        {(form) => {
+          async function cancel() {
+            if (!form.isDirty() || (await confirmation.confirm())) {
+              props.onCancel?.();
+            }
           }
-        }
-        return (
-          <>
-            <TextField name="name" autofocus />
-            <ClientFields editMode />
-            <FelteSubmit cancel={props.onCancel ? () => void cancel() : undefined} />
-          </>
-        );
-      }}
-    </FelteForm>
+          return (
+            <>
+              <TextField name="name" autofocus />
+              <ClientFields editMode />
+              <FelteSubmit cancel={props.onCancel ? () => void cancel() : undefined} />
+            </>
+          );
+        }}
+      </FelteForm>
+    </Show>
   );
 };

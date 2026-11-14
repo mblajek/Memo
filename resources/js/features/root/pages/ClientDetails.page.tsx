@@ -26,6 +26,7 @@ import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {makeAttributable, readAttribute} from "data-access/memo-api/attributable";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -73,6 +74,7 @@ export default (() => {
   const activeFacility = useActiveFacility();
   const {getCSVData} = useClientCSVData();
   const clientAttributesProcessor = createAttributesProcessor("client");
+  const attributes = useAttributes();
   const userId = () => params.userId!;
   const dataQuery = useQuery(() => FacilityClient.clientQueryOptions(userId()));
   const meetingsStats = useUserMeetingsStats("clients", userId);
@@ -97,7 +99,8 @@ export default (() => {
   return (
     <div class="m-2">
       <QueryBarrier queries={[dataQuery]} ignoreCachedData {...notFoundError()}>
-        <Show when={dataQuery.data} fallback={<BigSpinner />}>
+        {/* Without the attributes the form would submit, and the export would contain, none of them. */}
+        <Show when={attributes() && dataQuery.data} fallback={<BigSpinner />}>
           {(user) => {
             const client = createMemo(() => makeAttributable(user().client, "client"));
             const [selectedGroupId, setSelectedGroupId] = createSignal<string>();

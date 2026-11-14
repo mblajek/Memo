@@ -298,6 +298,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 _prevInput,
                 prev:
                   | {
+                      viewMode: boolean | undefined;
                       formData: FormAttendantsData;
                       sharedGroups: readonly string[];
                       groupsByClientId: ReadonlyMap<string, readonly string[]>;
@@ -385,8 +386,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   }
                 }
                 const modeChanged = prev && clientsGroupsMode() !== prev.clientsGroupsMode;
+                // The groups are proposed in the edit mode only, so if they got known in the view mode,
+                // entering the edit mode is the moment to propose them.
+                const sharedGroupsAppeared = !prev?.sharedGroups.length || (prev.viewMode && !props.viewMode);
                 if (clientsGroupsMode() === "none") {
-                  if (!props.viewMode && !modeChanged && sharedGroups.length && !prev?.sharedGroups.length) {
+                  if (!props.viewMode && !modeChanged && sharedGroups.length && sharedGroupsAppeared) {
                     setMode("shared", sharedGroups[0]);
                   } else {
                     setSharedClientsGroupId("");
@@ -419,6 +423,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 }
                 setAttendanceGroups(form.data());
                 return {
+                  viewMode,
                   formData: toPlainObject(form.data()),
                   sharedGroups,
                   groupsByClientId: groupsByClientId(),
