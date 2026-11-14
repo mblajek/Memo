@@ -23,7 +23,7 @@ class Kernel extends HttpKernel
 
         // cookies, session, security
         \App\Http\Middleware\EncryptCookies::class,
-        \Illuminate\Session\Middleware\StartSession::class,
+        \App\Http\Middleware\StartSession::class,
     ];
 
     /**

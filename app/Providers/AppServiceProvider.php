@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use App\Exceptions\FatalExceptionFactory;
+use App\Http\Middleware\StartSession;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Services\System\Translator;
+use Illuminate\Contracts\Cache\Factory as CacheFactory;
+use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -26,6 +29,14 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton('translator', Translator::class);
+        // As the framework registers its own class, with the cache that session blocking needs.
+        $this->app->singleton(
+            StartSession::class,
+            fn($app) => new StartSession(
+                $app->make(SessionManager::class),
+                fn() => $app->make(CacheFactory::class),
+            ),
+        );
     }
 
     /**
