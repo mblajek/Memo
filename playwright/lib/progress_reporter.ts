@@ -26,10 +26,22 @@ export default class ProgressReporter implements Reporter {
 
   onTestEnd(test: TestCase) {
     this.finished.add(test);
-    const done = this.finished.size;
+    const finished = [...this.finished];
+    const numDone = finished.length;
+    const percent = Math.floor((numDone / this.total) * 100);
+    const numFailed = finished.filter((t) => t.outcome() === "unexpected").length;
+    const numFlaky = finished.filter((t) => t.outcome() === "flaky").length;
     const elapsed = Date.now() - this.startMillis;
-    const percent = Math.floor((done / this.total) * 100);
-    console.log(`Progress: ${done} / ${this.total} (${percent}%), ${formatMinutes(elapsed)} elapsed`);
+    console.log(
+      [
+        `Progress: ${numDone} / ${this.total} (${percent}%)`,
+        numFailed ? `${numFailed} failed` : undefined,
+        numFlaky ? `${numFlaky} flaky` : undefined,
+        `${formatMinutes(elapsed)} elapsed`,
+      ]
+        .filter(Boolean)
+        .join(", "),
+    );
   }
 
   printsToStdio() {
