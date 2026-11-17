@@ -72,7 +72,7 @@ Where a test needs something out-of-the-ordinary, it's called out in the notes.
 
 ## Current state (2026-10-12)
 
-- **Size:** 411 tests: 155 that talk to the server alone (the project `api`) and 256 that drive a
+- **Size:** 412 tests: 155 that talk to the server alone (the project `api`) and 257 that drive a
   page (the projects `chromium` and `firefox`, each running all of them). On the `docker` target,
   with either base, a few minutes for `api`, about 34 for `chromium` and 32 for `firefox`; 45–50
   minutes without Firefox on the `local` target against a remote DB. One worker. One test is a
@@ -224,6 +224,13 @@ needs no waiting. The spec logs in a lot and waits the login throttle out (about
   also pins that a caller who is not logged in gets the state of the server (see the app problems).
   _(E)_ `(system.spec.ts)`
 - ✅ **Translation list endpoint returns the testing-language pack** _(E)_ `(system.spec.ts)`
+
+### Styles
+
+- ✅ **A dimmed icon stays dimmed under a text colour utility** — on icons put into the login page,
+  plain and `inlineIcon`, `dimmed` wins over a `text-*` utility on the same icon (it lost to it
+  after the migration to Tailwind v4, whose layers are real cascade layers). _(E)_
+  `(styles_ui.spec.ts)`
 
 ### Global admin: bootstrapping
 
