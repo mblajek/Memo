@@ -246,9 +246,6 @@ html {
   /* Icons */
   svg {
     @apply text-black;
-    &.dimmed {
-      @apply text-black/30;
-    }
   }
 
   /* An icon displayed inline in text. It is black by default, and reacts to
@@ -259,9 +256,6 @@ html {
     @apply shrink-0 inline mb-1 text-current fill-current;
     &.strokeIcon {
       @apply stroke-current fill-none;
-    }
-    &.dimmed {
-      @apply text-black/30;
     }
   }
 
@@ -278,5 +272,13 @@ html {
   .wrapLinkAnywhere {
     word-break: break-all;
     overflow-wrap: anywhere;
+  }
+}
+
+/* In the utilities layer, after the generated utilities and with a higher
+   specificity, so that dimming wins over text colour utilities on the same icon. */
+@layer utilities {
+  :is(svg, .inlineIcon).dimmed {
+    @apply text-black/30;
   }
 }

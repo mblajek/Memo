@@ -69,7 +69,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
   const isInactive = () => memberData()?.isStaff && !memberData()?.isActiveStaff;
   const icon = () => props.icon ?? true;
   const iconStyleProps = () => ({
-    class: cx("inlineIcon", isInactive() ? "text-black dimmed" : undefined),
+    class: cx("inlineIcon", isInactive() ? "dimmed" : undefined),
     style: {"margin-right": "0.1em", "margin-bottom": "0.1em"},
     size: props.icon === "tiny" ? "1.05em" : "1.3em",
   });

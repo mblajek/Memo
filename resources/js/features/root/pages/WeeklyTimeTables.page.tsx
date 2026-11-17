@@ -749,7 +749,7 @@ export default (() => {
               title={t("facility_user.weekly_time_tables.reset_dates")}
             >
               <actionIcons.Reset
-                class={cx("-ml-1 text-black", isDefaultMonthsRange() ? "dimmed" : undefined)}
+                class={cx("-ml-1", isDefaultMonthsRange() ? "dimmed" : undefined)}
                 size="20"
               />
             </Button>
