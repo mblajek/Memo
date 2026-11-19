@@ -5,8 +5,7 @@ name: E2E happy path
 on:
   push:
     branches:
-      - master
-      - RC-**
+      - release/**
   workflow_dispatch:
 
 permissions:
