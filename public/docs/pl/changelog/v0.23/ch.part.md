@@ -1,6 +1,6 @@
 ## $t(app_name) $t(app_version.v)0.23 {#v0.23}
 
-Data wydania: **19 listopada 2026**
+Data wydania: **23 listopada 2026**
 
 `🔴` Placówka może ustawić własną ikonę w miejsce ikony FDDS. Ustawiana przez globalnego administratora.
 

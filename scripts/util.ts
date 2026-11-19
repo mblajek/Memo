@@ -1,9 +1,12 @@
 export async function run(
-  command: readonly string[],
+  command: readonly [string, ...string[]],
   options: Deno.CommandOptions & {stdout: "inherit"},
 ): Promise<void>;
-export async function run(command: readonly string[], options?: Deno.CommandOptions): Promise<string>;
-export async function run(command: readonly string[], options?: Deno.CommandOptions): Promise<string | void> {
+export async function run(command: readonly [string, ...string[]], options?: Deno.CommandOptions): Promise<string>;
+export async function run(
+  command: readonly [string, ...string[]],
+  options?: Deno.CommandOptions,
+): Promise<string | void> {
   console.debug("Running: ", command.map((e) => JSON.stringify(e)).join(" "));
   const res = await new Deno.Command(command[0], {
     args: command.slice(1),

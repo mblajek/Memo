@@ -25,6 +25,7 @@
     }
   },
   "redirects": {
+    "https://esm.sh/@types/luxon@~3.7.1/index.d.ts": "https://esm.sh/@types/luxon@3.7.6/index.d.ts",
     "https://esm.sh/luxon@latest": "https://esm.sh/luxon@3.7.2"
   },
   "remote": {

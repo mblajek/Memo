@@ -11,24 +11,54 @@ const API_CONTROLLER_PATH = "./app/Http/Controllers/ApiController.php";
 const MD_FILE = "ch.part.md";
 const GITHUB_REPO = "mblajek/Memo";
 
+type MinorVersion = readonly [major: number, minor: number];
+
+function parseMinorVersion(v: string): MinorVersion | undefined {
+  const match = v.match(/^(?<major>\d+)\.(?<minor>\d+)$/);
+  return match ? [Number(match.groups!.major), Number(match.groups!.minor)] : undefined;
+}
+
+function compareMinorVersions([aMajor, aMinor]: MinorVersion, [bMajor, bMinor]: MinorVersion) {
+  return aMajor - bMajor || aMinor - bMinor;
+}
+
 const apiControllerCode = await Deno.readTextFile(API_CONTROLLER_PATH);
-const match = apiControllerCode.match(/^\s+final public const string VERSION = '(\d+\.\d+)\.\d+';$/m);
-if (!match) {
+const versionMatch = apiControllerCode.match(
+  /^\s+final public const string VERSION = '(?<major>\d+)\.(?<minor>\d+)\.\d+';$/m,
+)?.groups;
+if (!versionMatch?.major || !versionMatch.minor) {
   throw new Error(`Cannot find version info in ${API_CONTROLLER_PATH}`);
 }
-const version = match[1];
+const currentVersion: MinorVersion = [Number(versionMatch.major), Number(versionMatch.minor)];
+const version = currentVersion.join(".");
 console.log(`Current version: ${version}`);
 
+const RELEASE_BRANCH_PREFIX = "origin/release/";
+const releaseBranches = (
+  await run(["git", "for-each-ref", "--format=%(refname:short)", `refs/remotes/${RELEASE_BRANCH_PREFIX}`])
+)
+  .split("\n")
+  .flatMap((branch) => {
+    const v = parseMinorVersion(branch.slice(RELEASE_BRANCH_PREFIX.length));
+    return v ? [{branch, v}] : [];
+  });
+const previousReleaseBranch =
+  releaseBranches
+    .filter(({v}) => compareMinorVersions(v, currentVersion) < 0)
+    .sort((a, b) => compareMinorVersions(a.v, b.v))
+    .at(-1)?.branch ??
+  // The last release before the release/x.y branches.
+  "origin/master";
+console.log(`Previous release branch: ${previousReleaseBranch}`);
+
 const gitLog = Array.from(
-  (await run(["git", "log", "origin/master..HEAD", "--reverse", "--no-merges", "--format=%H %at %an%n%s%n"])).matchAll(
-    /^(?<hash>[0-9a-f]{40}) (?<timestamp>\d+) (?<author>.+?)\n(?<title>.+?)\n\n/gm,
-  ),
-  (match) => ({
-    hash: match.groups!.hash,
-    date: DateTime.fromSeconds(Number(match.groups!.timestamp)),
-    author: match.groups!.author,
-    title: match.groups!.title,
-  }),
+  (
+    await run(["git", "log", `${previousReleaseBranch}..HEAD`, "--reverse", "--no-merges", "--format=%H %at %an%n%s%n"])
+  ).matchAll(/^(?<hash>[0-9a-f]{40}) (?<timestamp>\d+) (?<author>.+?)\n(?<title>.+?)\n\n/gm),
+  ({groups}) => {
+    const {hash, timestamp, author, title} = groups as Record<"hash" | "timestamp" | "author" | "title", string>;
+    return {hash, date: DateTime.fromSeconds(Number(timestamp)), author, title};
+  },
 );
 if (!gitLog.length) {
   console.log("No entries in git log");
